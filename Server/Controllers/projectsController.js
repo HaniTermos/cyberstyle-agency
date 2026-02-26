@@ -23,7 +23,7 @@ async function getProjectById(req, res, next) {
     const project = await db.getProjectById(id);
     
     if (!project) {
-      return res.status(404).render("404", { message: "Project not found" });
+      return res.status(404).render("error", { message: "Project not found" });
     }
     
     // TODO: Fix this - getItemsByProjectId doesn't exist
@@ -35,9 +35,12 @@ async function getProjectById(req, res, next) {
   }
 }
 
-async function createNewProjectGet(req, res) {
-  // Remove unnecessary DB call
-  res.render("projects/new");
+async function createNewProjectGet(req, res, next) {
+  try{
+      res.render("projects/new", { project: {}, error: null });
+  } catch (error) {
+      next(error);
+  }
 }
 
 async function createNewProjectPost(req, res, next) {
@@ -48,7 +51,7 @@ async function createNewProjectPost(req, res, next) {
     if (!projectData?.title || !projectData?.slug) {
       return res.status(400).render("projects/new", { 
         error: "Title and slug are required",
-        project: projectData 
+        project: projectData || {}
       });
     }
     
@@ -83,9 +86,14 @@ async function updateProjectPost(req, res, next) {
   try {
     const { id } = req.params;
     const projectData = req.body.project || req.body;
+    const existing = await db.getProjectById(id);
     
     if (!isValidUUID(id)) {
       return res.status(400).render("error", { message: "Invalid ID" });
+    }
+
+    if (!existing) {
+      return res.status(404).render("error", { message: "Project not found" });
     }
     
     await db.updateProject(id, projectData);
@@ -98,9 +106,14 @@ async function updateProjectPost(req, res, next) {
 async function deleteProjectPost(req, res, next) {
   try {
     const { id } = req.params;
+    const existing = await db.getProjectById(id);
     
     if (!isValidUUID(id)) {
       return res.status(400).render("error", { message: "Invalid ID" });
+    }
+
+    if (!existing) {
+      return res.status(404).render("error", { message: "Project not found" });
     }
     
     await db.deleteProject(id);

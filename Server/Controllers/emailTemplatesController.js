@@ -31,25 +31,25 @@ const createNewEmailTemplate = async (req, res) => {
         if (!emailTemplateData) {
             return res.status(400).render("error", { message: "EmailTemplate data is required" });
         }
-        res.render("emailTemplates/new", { emailTemplate: emailTemplateData });
+        res.render("emailTemplates/new", { emailTemplate: {} });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
 
-const createNewEmailTemplatePOST = async (req, res) => {
+const createNewEmailTemplatePOST = async (req, res, next) => {
     try {
         const emailTemplateData = req.body.emailTemplate || req.body;
-        if (!emailTemplateData) {
+        if (!emailTemplateData || Object.keys(emailTemplateData).length === 0) {
             return res.status(400).render("emailTemplates/new", { 
                 error: "EmailTemplate data is required",
-                emailTemplate: emailTemplateData 
+                emailTemplate: {}
             });
         }
         await db.createNewEmailTemplate(emailTemplateData);
         res.redirect("/emailTemplates");
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        next(error);
     }
 };
 
@@ -72,10 +72,14 @@ const updateEmailTemplate = async (req, res) => {
 const updateEmailTemplatePOST = async (req, res) => {
     try {
         const { id } = req.params;
+        const emailTemplateId = await db.getEmailTemplateById(id);
         const emailTemplateData = req.body.emailTemplate || req.body;
 
         if (!isValidUUID(id)) {
             return res.status(400).render("error", { message: "Invalid emailTemplate ID" });
+        }
+        else if (!emailTemplateId) {
+            return res.status(404).render("error", { message: "EmailTemplate not found" });
         }
 
         await db.updateEmailTemplate(id, emailTemplateData);
@@ -88,8 +92,12 @@ const updateEmailTemplatePOST = async (req, res) => {
 const deleteEmailTemplate = async (req, res) => {
     try {
         const { id } = req.params;
+        const emailTemplateId = await db.getEmailTemplateById(id);
         if (!isValidUUID(id)) {
             return res.status(400).render("error", { message: "Invalid emailTemplate ID" });
+        }
+        else if (!emailTemplateId) {
+            return res.status(404).render("error", { message: "EmailTemplate not found" });
         }
         await db.deleteEmailTemplate(id);
         res.redirect("/emailTemplates");

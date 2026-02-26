@@ -1,109 +1,122 @@
 const db = require("../Database/queries/settingsQueries");
 
-const isValidUUID = (id) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
-
+// GET /settings - Admin: list all grouped by category
 const getAllSettings = async (req, res) => {
     try {
         const settings = await db.getAllSettings();
-        res.render("settings/index", { settings: settings });
+        
+        // Group by setting_group for UI
+        const grouped = settings.reduce((acc, setting) => {
+            const group = setting.setting_group;
+            if (!acc[group]) acc[group] = [];
+            acc[group].push(setting);
+            return acc;
+        }, {});
+        
+        res.render("settings/index", { grouped, settings });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).render("error", { message: error.message });
     }
 };
 
-const getSettingById = async (req, res) => {
+// GET /settings/:group - Admin: list by group (e.g., /settings/email)
+const getSettingsByGroup = async (req, res) => {
     try {
-        const { id } = req.params;
-        const setting = await db.getSettingById(id);
-        if (setting) {
-            res.render("settings/show", { setting: setting });
-        } else {
-            res.status(404).json({ error: "Setting not found" });
-        }
+        const { group } = req.params;
+        const settings = await db.getSettingsByGroup(group);
+        
+        res.render("settings/group", { group, settings });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).render("error", { message: error.message });
     }
 };
 
-const createNewSetting = async (req, res) => {
+// GET /settings/key/:key - Admin: edit single setting
+const getSettingByKey = async (req, res) => {
     try {
-        const settingData = req.body.setting || req.body;
-        if (!settingData) {
-            return res.status(400).render("error", { message: "Setting data is required" });
-        }
-        res.render("settings/new", { setting: settingData });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
-
-const createNewSettingPOST = async (req, res) => {
-    try {
-        const settingData = req.body.setting || req.body;
-        if (!settingData) {
-            return res.status(400).render("settings/new", { 
-                error: "Setting data is required",
-                setting: settingData 
-            });
-        }
-        await db.createNewSetting(settingData);
-        res.redirect("/settings");
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
-
-const updateSetting = async (req, res) => {
-    try {
-        const { id } = req.params;
-        if (!isValidUUID(id)) {
-            return res.status(400).render("error", { message: "Invalid setting ID" });
-        }
-        const setting = await db.getSettingById(id);
+        const { key } = req.params;
+        const setting = await db.getSettingByKey(key);
+        
         if (!setting) {
-            return res.status(404).render("error", { message: "Setting not found" });
+            return res.status(404).render("404", { message: "Setting not found" });
         }
+        
         res.render("settings/edit", { setting });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).render("error", { message: error.message });
     }
 };
 
-const updateSettingPOST = async (req, res) => {
+// POST /settings/key/:key - Admin: update single setting
+const updateSettingByKey = async (req, res) => {
     try {
-        const { id } = req.params;
-        const settingData = req.body.setting || req.body;
-
-        if (!isValidUUID(id)) {
-            return res.status(400).render("error", { message: "Invalid setting ID" });
+        const { key } = req.params;
+        const { value } = req.body;
+        
+        const setting = await db.getSettingByKey(key);
+        if (!setting) {
+            return res.status(404).render("404", { message: "Setting not found" });
         }
-
-        await db.updateSetting(id, settingData);
+        
+        // Validate based on setting_type
+        let validatedValue;
+        switch (setting.setting_type) {
+            case 'number':
+                validatedValue = Number(value);
+                if (isNaN(validatedValue)) {
+                    return res.status(400).render("settings/edit", {
+                        error: "Must be a number",
+                        setting: { ...setting, setting_value: value }
+                    });
+                }
+                break;
+            case 'boolean':
+                validatedValue = value === 'true' || value === true;
+                break;
+            case 'array':
+            case 'object':
+                try {
+                    validatedValue = JSON.parse(value);
+                } catch {
+                    return res.status(400).render("settings/edit", {
+                        error: "Invalid JSON",
+                        setting: { ...setting, setting_value: value }
+                    });
+                }
+                break;
+            default:
+                validatedValue = value;
+        }
+        
+        await db.updateSettingByKey(key, validatedValue);
         res.redirect("/settings");
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).render("error", { message: error.message });
     }
 };
 
-const deleteSetting = async (req, res) => {
+// POST /settings/bulk - Admin: update multiple settings at once
+const updateSettingsBulk = async (req, res) => {
     try {
-        const { id } = req.params;
-        if (!isValidUUID(id)) {
-            return res.status(400).render("error", { message: "Invalid setting ID" });
+        const updates = req.body.settings; // { key1: value1, key2: value2 }
+        
+        for (const [key, value] of Object.entries(updates)) {
+            await db.updateSettingByKey(key, value);
         }
-        await db.deleteSetting(id);
+        
         res.redirect("/settings");
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).render("error", { message: error.message });
     }
 };
+
+// NO createNewSetting - Settings are seeded, not created in UI
+// NO deleteSetting - Deleting settings breaks the app
 
 module.exports = {
     getAllSettings,
-    getSettingById,
-    createNewSetting,
-    createNewSettingPOST,
-    updateSetting,
-    updateSettingPOST,
-    deleteSetting
+    getSettingsByGroup,
+    getSettingByKey,
+    updateSettingByKey,
+    updateSettingsBulk
 };

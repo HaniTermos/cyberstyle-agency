@@ -25,15 +25,11 @@ const getIntegrationById = async (req, res) => {
     }
 };
 
-const createNewIntegration = async (req, res) => {
+const createNewIntegration = async (req, res, next) => {
     try {
-        const integrationData = req.body.integration || req.body;
-        if (!integrationData) {
-            return res.status(400).render("error", { message: "Integration data is required" });
-        }
-        res.render("integrations/new", { integration: integrationData });
+        res.render("integrations/new", { integration: {}, error: null });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        next(error);
     }
 };
 
@@ -69,27 +65,36 @@ const updateIntegration = async (req, res) => {
     }
 };
 
-const updateIntegrationPOST = async (req, res) => {
+const updateIntegrationPOST = async (req, res, next) => {
     try {
         const { id } = req.params;
+        const existing = await db.getIntegrationById(id);
         const integrationData = req.body.integration || req.body;
 
         if (!isValidUUID(id)) {
             return res.status(400).render("error", { message: "Invalid integration ID" });
         }
 
+        if(!existing) {
+            return res.status(404).render("error", { message: "Integration not found" });
+        }
+
         await db.updateIntegration(id, integrationData);
         res.redirect("/integrations");
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        next(error);    
     }
 };
 
 const deleteIntegration = async (req, res) => {
     try {
         const { id } = req.params;
+        const existing = await db.getIntegrationById(id);
         if (!isValidUUID(id)) {
             return res.status(400).render("error", { message: "Invalid integration ID" });
+        }
+        if (!existing) {
+            return res.status(404).render("error", { message: "Integration not found" });
         }
         await db.deleteIntegration(id);
         res.redirect("/integrations");

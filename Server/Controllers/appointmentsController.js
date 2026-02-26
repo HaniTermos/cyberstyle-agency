@@ -1,182 +1,103 @@
 const db = require("../Database/queries/appointmentsQueries");
 
+// GET /appointments - List all
 const getAllAppointments = async (req, res) => {
     try {
         const appointments = await db.getAllAppointments();
-        res.render("appointments/index", { appointments: appointments });
+        res.render("appointments/index", { appointments });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).render("error", { message: error.message });
     }
 };
 
+// GET /appointments/new - Show empty form
+const getNewAppointmentForm = async (req, res) => {
+    try {
+        // Fetch related data for dropdowns (clients, staff, services)
+        const staff = await db.getAllStaffMembers(); // You need this
+        const services = await db.getAllServices();  // You need this
+        
+        res.render("appointments/new", { staff, services });
+    } catch (error) {
+        res.status(500).render("error", { message: error.message });
+    }
+};
+
+// POST /appointments - Create new
+const createAppointment = async (req, res) => {
+    try {
+        const appointmentData = req.body;
+        await db.createNewAppointment(appointmentData);
+        res.redirect('/appointments');
+    } catch (error) {
+        res.status(500).render("error", { message: error.message });
+    }
+};
+
+// GET /appointments/:id - Show one
 const getAppointmentById = async (req, res) => {
     try {
         const { id } = req.params;
         const appointment = await db.getAppointmentById(id);
-        if (appointment) {
-            res.render("appointments/show", { appointment: appointment });
-        } else {
-            res.status(404).json({ error: "Appointment not found" });
+        
+        if (!appointment) {
+            return res.status(404).render("404", { message: "Appointment not found" });
         }
+        
+        res.render("appointments/show", { appointment });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).render("error", { message: error.message });
     }
 };
 
-const createNewAppointment = async (req, res) => {
+// GET /appointments/:id/edit - Show edit form
+const getEditAppointmentForm = async (req, res) => {
     try {
-        const {client_id, staff_id, service_id, scheduled_start, scheduled_end , duration_minutes, timezone, status, meeting_type, meeting_url ,location_address, client_notes, custom_fields, internal_notes, cancellation_reason, cancellation_initiated_by, reminders_sent, follow_up_required, follow_up_scheduled, price, currency, payment_status, invoice_id} = req.body;
-        const newAppointment = await db.createNewAppointment({
-            client_id,
-            staff_id,
-            service_id,
-            scheduled_start,
-            scheduled_end,
-            duration_minutes,
-            timezone,
-            status,
-            meeting_type,
-            meeting_url,
-            location_address,
-            client_notes,
-            custom_fields,
-            internal_notes,
-            cancellation_reason,
-            cancellation_initiated_by,
-            reminders_sent,
-            follow_up_required,
-            follow_up_scheduled,
-            price,
-            currency,
-            payment_status,
-            invoice_id
-        });
-        res.render("appointments/new", { appointment: newAppointment });
+        const { id } = req.params;
+        const appointment = await db.getAppointmentById(id);
+        
+        if (!appointment) {
+            return res.status(404).render("404", { message: "Appointment not found" });
+        }
+        const staff = await db.getAllStaffMembers();
+        const services = await db.getAllServices();
+        
+        res.render("appointments/edit", { appointment, staff, services });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).render("error", { message: error.message });
     }
 };
 
-const createNewAppointmentPOST = async (req, res) => {
-    try {
-        const {client_id, staff_id, service_id, scheduled_start, scheduled_end , duration_minutes, timezone, status, meeting_type, meeting_url ,location_address, client_notes, custom_fields, internal_notes, cancellation_reason, cancellation_initiated_by, reminders_sent, follow_up_required, follow_up_scheduled, price, currency, payment_status, invoice_id} = req.body;
-        const newAppointment = await db.createNewAppointment({
-            client_id,
-            staff_id,
-            service_id,
-            scheduled_start,
-            scheduled_end,
-            duration_minutes,
-            timezone,
-            status,
-            meeting_type,
-            meeting_url,
-            location_address,
-            client_notes,
-            custom_fields,
-            internal_notes,
-            cancellation_reason,
-            cancellation_initiated_by,
-            reminders_sent,
-            follow_up_required,
-            follow_up_scheduled,
-            price,
-            currency,
-            payment_status,
-            invoice_id
-        });
-        res.redirect(`/appointments`);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
-
+// PUT /appointments/:id - Update
 const updateAppointment = async (req, res) => {
     try {
         const { id } = req.params;
-        const {client_id, staff_id, service_id, scheduled_start, scheduled_end , duration_minutes, timezone, status, meeting_type, meeting_url ,location_address, client_notes, custom_fields, internal_notes, cancellation_reason, cancellation_initiated_by, reminders_sent, follow_up_required, follow_up_scheduled, price, currency, payment_status, invoice_id} = req.body;
-        const updatedAppointment = await db.updateAppointment(id, {
-            client_id,
-            staff_id,
-            service_id,
-            scheduled_start,
-            scheduled_end,
-            duration_minutes,
-            timezone,
-            status,
-            meeting_type,
-            meeting_url,
-            location_address,
-            client_notes,
-            custom_fields,
-            internal_notes,
-            cancellation_reason,
-            cancellation_initiated_by,
-            reminders_sent,
-            follow_up_required,
-            follow_up_scheduled,
-            price,
-            currency,
-            payment_status,
-            invoice_id
-        });
-        res.render("appointments/edit", { updatedAppointment });
+        const appointmentData = req.body;
+        
+        await db.updateAppointment(id, appointmentData);
+        res.redirect(`/appointments/${id}`);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).render("error", { message: error.message });
     }
 };
 
-const updateAppointmentPOST = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const {client_id, staff_id, service_id, scheduled_start, scheduled_end , duration_minutes, timezone, status, meeting_type, meeting_url ,location_address, client_notes, custom_fields, internal_notes, cancellation_reason, cancellation_initiated_by, reminders_sent, follow_up_required, follow_up_scheduled, price, currency, payment_status, invoice_id} = req.body;
-        const updatedAppointment = await db.updateAppointment(id, {
-            client_id,
-            staff_id,
-            service_id,
-            scheduled_start,
-            scheduled_end,
-            duration_minutes,
-            timezone,
-            status,
-            meeting_type,
-            meeting_url,
-            location_address,
-            client_notes,
-            custom_fields,
-            internal_notes,
-            cancellation_reason,
-            cancellation_initiated_by,
-            reminders_sent,
-            follow_up_required,
-            follow_up_scheduled,
-            price,
-            currency,
-            payment_status,
-            invoice_id
-        });
-        res.redirect(`/appointments`);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
-
+// DELETE /appointments/:id - Delete
 const deleteAppointment = async (req, res) => {
     try {
         const { id } = req.params;
-        const deletedAppointment = await db.deleteAppointment(id);
-        res.redirect(`/appointments`);
+        await db.deleteAppointment(id);
+        res.redirect('/appointments');
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).render("error", { message: error.message });
     }
 };
 
 module.exports = {
     getAllAppointments,
+    getNewAppointmentForm,
+    createAppointment,
     getAppointmentById,
-    createNewAppointment,
-    createNewAppointmentPOST,
+    getEditAppointmentForm,
     updateAppointment,
-    updateAppointmentPOST,
     deleteAppointment
 };

@@ -15,6 +15,10 @@ const getInvoiceById = async (req, res) => {
     try {
         const { id } = req.params;
         const invoice = await db.getInvoiceById(id);
+
+        if (!isValidUUID(id)) {
+            return res.status(400).render("error", { message: "Invalid invoice ID" });
+        }
         if (invoice) {
             res.render("invoices/show", { invoice: invoice });
         } else {
@@ -25,31 +29,27 @@ const getInvoiceById = async (req, res) => {
     }
 };
 
-const createNewInvoice = async (req, res) => {
+const createNewInvoice = async (req, res, next) => {
     try {
-        const invoiceData = req.body.invoice || req.body;
-        if (!invoiceData) {
-            return res.status(400).render("error", { message: "Invoice data is required" });
-        }
-        res.render("invoices/new", { invoice: invoiceData });
+        res.render("invoices/new", { invoice: {}, error: null });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        next(error);
     }
 };
 
-const createNewInvoicePOST = async (req, res) => {
+const createNewInvoicePOST = async (req, res, next) => {
     try {
         const invoiceData = req.body.invoice || req.body;
-        if (!invoiceData) {
+        if (!invoiceData || Object.keys(invoiceData).length === 0) {
             return res.status(400).render("invoices/new", { 
                 error: "Invoice data is required",
-                invoice: invoiceData 
+                invoice: req.body || {} 
             });
         }
         await db.createNewInvoice(invoiceData);
         res.redirect("/invoices");
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        next(error);
     }
 };
 
@@ -69,32 +69,42 @@ const updateInvoice = async (req, res) => {
     }
 };
 
-const updateInvoicePOST = async (req, res) => {
+const updateInvoicePOST = async (req, res, next) => {
     try {
         const { id } = req.params;
         const invoiceData = req.body.invoice || req.body;
+         const existing = await db.getInvoiceById(id);
 
         if (!isValidUUID(id)) {
             return res.status(400).render("error", { message: "Invalid invoice ID" });
+        }
+        if (!existing) {
+            return res.status(404).render("error", { message: "Invoice not found" });
         }
 
         await db.updateInvoice(id, invoiceData);
         res.redirect("/invoices");
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        next(error);
     }
 };
 
-const deleteInvoice = async (req, res) => {
+const deleteInvoice = async (req, res, next) => {
     try {
         const { id } = req.params;
+        const existing = await db.getInvoiceById(id);
+
         if (!isValidUUID(id)) {
             return res.status(400).render("error", { message: "Invalid invoice ID" });
         }
+        if (!existing) {
+            return res.status(404).render("error", { message: "Invoice not found" });
+        }
+
         await db.deleteInvoice(id);
         res.redirect("/invoices");
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        next(error);
     }
 };
 
