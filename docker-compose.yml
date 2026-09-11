@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  # ----------------------------------------------------------------------------
+  # PostgreSQL 16 Database
+  # ----------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: cyberstyle_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_secure_password
+      POSTGRES_DB: cyberstyle_db
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d cyberstyle_db']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - cyberstyle_network
+
+  # ----------------------------------------------------------------------------
+  # Redis 7 (Caching, Queues, Rate Limiting)
+  # ----------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: cyberstyle_redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass redis_secure_password
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', '-a', 'redis_secure_password', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - cyberstyle_network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  cyberstyle_network:
+    driver: bridge

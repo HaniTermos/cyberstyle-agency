@@ -1,0 +1,9 @@
+{
+  "watch": ["src", "index.ts"],
+  "ext": "ts,json",
+  "ignore": ["src/**/*.spec.ts", "dist", "node_modules"],
+  "execMap": {
+    "ts": "npx ts-node"
+  },
+  "exec": "npx ts-node src/index.ts"
+}
