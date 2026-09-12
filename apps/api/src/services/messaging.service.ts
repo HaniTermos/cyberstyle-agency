@@ -1,6 +1,6 @@
 import { prisma } from '../config/db';
 import { logAudit } from '../utils/auditLogger';
-import { emailQueue } from '../queues/email.queue';
+import { safeAddEmailJob } from '../queues/email.queue';
 import { UserRole, ThreadStatus, ThreadContextType, MessageType } from '@prisma/client';
 import fs from 'fs';
 import path from 'path';
@@ -339,23 +339,19 @@ export class MessagingService {
 
       // Email Notification (respect internal vs client boundary)
       if (!input.isInternal || isRecipientAdmin) {
-        try {
-          await emailQueue.add('thread-created-notification', {
-            to: pUser.email,
-            subject: `New discussion in ${thread.title} – CYBERSTYLE`,
-            template: 'thread_created',
-            variables: {
-              threadTitle: thread.title,
-              creatorName: user.name || user.email,
-              excerpt: input.initialMessage ? input.initialMessage.slice(0, 160) : 'A new discussion channel has been opened.',
-              deepLink: isRecipientAdmin
-                ? `http://localhost:3000/admin/messages?threadId=${thread.id}`
-                : `http://localhost:3000/portal/messages?threadId=${thread.id}`,
-            },
-          });
-        } catch {
-          // Redis offline in dev fallback
-        }
+        safeAddEmailJob('thread-created-notification', {
+          to: pUser.email,
+          subject: `New discussion in ${thread.title} – CYBERSTYLE`,
+          template: 'thread_created',
+          variables: {
+            threadTitle: thread.title,
+            creatorName: user.name || user.email,
+            excerpt: input.initialMessage ? input.initialMessage.slice(0, 160) : 'A new discussion channel has been opened.',
+            deepLink: isRecipientAdmin
+              ? `http://localhost:3000/admin/messages?threadId=${thread.id}`
+              : `http://localhost:3000/portal/messages?threadId=${thread.id}`,
+          },
+        }).catch(() => {});
       }
     }
 
@@ -581,23 +577,19 @@ export class MessagingService {
 
         // Email Notification: Never send internal notes to external client users
         if (!isInternal || isRecipientAdmin) {
-          try {
-            await emailQueue.add('new-message-notification', {
-              to: p.user.email,
-              subject: `New message in ${thread.title || 'Discussion'} – CYBERSTYLE`,
-              template: 'message_new',
-              variables: {
-                threadTitle: thread.title,
-                senderName: user.name || user.email,
-                excerpt: input.content.slice(0, 160),
-                deepLink: isRecipientAdmin
-                  ? `http://localhost:3000/admin/messages?threadId=${threadId}`
-                  : `http://localhost:3000/portal/messages?threadId=${threadId}`,
-              },
-            });
-          } catch {
-            // Quiet fallback for dev environments
-          }
+          safeAddEmailJob('new-message-notification', {
+            to: p.user.email,
+            subject: `New message in ${thread.title || 'Discussion'} – CYBERSTYLE`,
+            template: 'message_new',
+            variables: {
+              threadTitle: thread.title,
+              senderName: user.name || user.email,
+              excerpt: input.content.slice(0, 160),
+              deepLink: isRecipientAdmin
+                ? `http://localhost:3000/admin/messages?threadId=${threadId}`
+                : `http://localhost:3000/portal/messages?threadId=${threadId}`,
+            },
+          }).catch(() => {});
         }
       }
     }

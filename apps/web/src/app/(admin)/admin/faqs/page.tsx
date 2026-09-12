@@ -20,7 +20,7 @@ import { apiRequest } from '@/lib/api';
 
 interface FAQItem {
   id: string;
-  category: 'ENGINEERING' | 'PRICING_SLA' | 'SECURITY' | 'CLIENT_PORTAL';
+  category: 'ENGINEERING' | 'PRICING_SLA' | 'SECURITY' | 'CLIENT_PORTAL' | 'PREMIUM_WEB' | 'AI_AUTOMATION' | 'SAAS_CLOUD';
   question: string;
   answer: string;
   isPublished: boolean;
@@ -81,7 +81,7 @@ export default function AdminFAQsPage() {
 
   // Form
   const [formData, setFormData] = useState({
-    category: 'ENGINEERING' as 'ENGINEERING' | 'PRICING_SLA' | 'SECURITY' | 'CLIENT_PORTAL',
+    category: 'ENGINEERING' as 'ENGINEERING' | 'PRICING_SLA' | 'SECURITY' | 'CLIENT_PORTAL' | 'PREMIUM_WEB' | 'AI_AUTOMATION' | 'SAAS_CLOUD',
     question: '',
     answer: '',
     isPublished: true,
@@ -261,6 +261,9 @@ export default function AdminFAQsPage() {
             <option value="PRICING_SLA">PRICING & SLA</option>
             <option value="SECURITY">SECURITY</option>
             <option value="CLIENT_PORTAL">CLIENT PORTAL</option>
+            <option value="PREMIUM_WEB">SERVICE: PREMIUM WEB</option>
+            <option value="AI_AUTOMATION">SERVICE: AI AUTOMATION</option>
+            <option value="SAAS_CLOUD">SERVICE: SAAS & CLOUD</option>
           </select>
         </div>
       </div>
@@ -364,6 +367,9 @@ export default function AdminFAQsPage() {
                     <option value="PRICING_SLA">PRICING & SLA</option>
                     <option value="SECURITY">SECURITY</option>
                     <option value="CLIENT_PORTAL">CLIENT PORTAL</option>
+                    <option value="PREMIUM_WEB">SERVICE: PREMIUM WEB</option>
+                    <option value="AI_AUTOMATION">SERVICE: AI AUTOMATION</option>
+                    <option value="SAAS_CLOUD">SERVICE: SAAS & CLOUD</option>
                   </select>
                 </div>
                 <div>
@@ -454,6 +460,9 @@ export default function AdminFAQsPage() {
                     <option value="PRICING_SLA">PRICING & SLA</option>
                     <option value="SECURITY">SECURITY</option>
                     <option value="CLIENT_PORTAL">CLIENT PORTAL</option>
+                    <option value="PREMIUM_WEB">SERVICE: PREMIUM WEB</option>
+                    <option value="AI_AUTOMATION">SERVICE: AI AUTOMATION</option>
+                    <option value="SAAS_CLOUD">SERVICE: SAAS & CLOUD</option>
                   </select>
                 </div>
                 <div>

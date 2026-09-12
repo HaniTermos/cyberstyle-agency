@@ -61,6 +61,47 @@ export default function CustomSaaSServicePage() {
               When standard tools limit your operational efficiency or client experience, custom software creates an enduring competitive advantage. We engineer modular, secure, high-performance web applications ready for enterprise workloads.
             </p>
 
+            {/* Plain-English Non-Technical Collaboration Workflow */}
+            <div className="pt-6 border-t border-white/10 space-y-4">
+              <span className="text-xs font-mono uppercase tracking-widest text-[#00F0FF]">How We Work Together</span>
+              <h3 className="font-display font-bold text-2xl text-white">
+                Step-by-Step Delivery Without the Technical Confusion
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="p-4 rounded-xl bg-white/[0.03] border border-white/10 space-y-2">
+                  <div className="w-6 h-6 rounded-md bg-[#00F0FF]/10 text-[#00F0FF] text-xs font-mono flex items-center justify-center font-bold">1</div>
+                  <h4 className="text-sm font-semibold text-white">Discovery & Architecture Blueprint</h4>
+                  <p className="text-xs text-neutral-400 leading-relaxed">
+                    We map your business processes into intuitive user journeys, database schemas, and clear milestone schedules before writing a single line of code.
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-xl bg-white/[0.03] border border-white/10 space-y-2">
+                  <div className="w-6 h-6 rounded-md bg-[#00F0FF]/10 text-[#00F0FF] text-xs font-mono flex items-center justify-center font-bold">2</div>
+                  <h4 className="text-sm font-semibold text-white">Core Engine & UI Build</h4>
+                  <p className="text-xs text-neutral-400 leading-relaxed">
+                    We build your application in sprints. You test live previews in a secure sandbox and verify features as they are finished.
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-xl bg-white/[0.03] border border-white/10 space-y-2">
+                  <div className="w-6 h-6 rounded-md bg-[#00F0FF]/10 text-[#00F0FF] text-xs font-mono flex items-center justify-center font-bold">3</div>
+                  <h4 className="text-sm font-semibold text-white">Security & Performance Hardening</h4>
+                  <p className="text-xs text-neutral-400 leading-relaxed">
+                    We test data protection, configure SSL encryption, set up automated database backups, and connect Stripe billing.
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-xl bg-white/[0.03] border border-white/10 space-y-2">
+                  <div className="w-6 h-6 rounded-md bg-[#00F0FF]/10 text-[#00F0FF] text-xs font-mono flex items-center justify-center font-bold">4</div>
+                  <h4 className="text-sm font-semibold text-white">Launch & Full Code Ownership</h4>
+                  <p className="text-xs text-neutral-400 leading-relaxed">
+                    Your platform goes live on your dedicated server. You receive 100% intellectual property ownership and full documentation.
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <div className="pt-6 border-t border-white/10 space-y-4">
               <h3 className="font-display font-bold text-xl text-white">Full-Stack Architecture Scope</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -74,7 +115,7 @@ export default function CustomSaaSServicePage() {
             </div>
           </div>
 
-          <div className="lg:col-span-5">
+          <div className="lg:col-span-5 space-y-6">
             <Card variant="highlight" className="p-8 space-y-6 sticky top-28 bg-[#0C0F17]">
               <div>
                 <span className="text-xs font-mono text-[#00F0FF] uppercase tracking-wider">Investment Framework</span>
@@ -96,6 +137,46 @@ export default function CustomSaaSServicePage() {
                 </Button>
               </Link>
             </Card>
+
+            {/* $30/month Essential Maintenance & Support Plan */}
+            <div className="p-6 rounded-2xl bg-white/[0.02] border border-[#00F0FF]/30 space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-mono text-[#00F0FF] uppercase tracking-wider">Peace-of-Mind Care</span>
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-[#00F0FF]/10 text-[#00F0FF] border border-[#00F0FF]/20">
+                  Optional Add-on
+                </span>
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="font-display font-bold text-2xl text-white">$30</span>
+                <span className="text-xs text-neutral-400 font-mono">/ month</span>
+              </div>
+              <p className="text-xs text-neutral-400 leading-relaxed">
+                Keep your SaaS secure, updated, and fast. Includes security patching, automated encrypted database backups, uptime monitoring, and priority technical assistance.
+              </p>
+              <ul className="space-y-1.5 text-xs text-neutral-300">
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#00F0FF] shrink-0" />
+                  <span>Nightly encrypted database backups</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#00F0FF] shrink-0" />
+                  <span>Software security patches & dependency updates</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#00F0FF] shrink-0" />
+                  <span>24/7 uptime monitoring & rapid recovery</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#00F0FF] shrink-0" />
+                  <span>Priority email support for questions and fixes</span>
+                </li>
+              </ul>
+              <Link href="/start-project?plan=saas-maintenance">
+                <Button variant="outline" size="sm" className="w-full justify-center text-xs mt-2">
+                  Add Maintenance to Project
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </section>

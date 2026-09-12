@@ -223,15 +223,28 @@ export default function AdminMessagesPage() {
     if (e) e.preventDefault();
     if (!activeThreadId || (!inputText.trim() && !selectedFile)) return;
 
+    const messageText = inputText.trim();
+    const fileToUpload = selectedFile;
+    const internalNoteFlag = isInternalNote;
+
+    setInputText('');
+    setSelectedFile(null);
+    setIsInternalNote(false);
     setSending(true);
+
+    const safetyTimer = setTimeout(() => {
+      setSending(false);
+      setUploadingFile(false);
+    }, 6000);
+
     let uploadedFileId: string | null = null;
 
     try {
       // 1. Upload file if attached
-      if (selectedFile) {
+      if (fileToUpload) {
         setUploadingFile(true);
         const formData = new FormData();
-        formData.append('file', selectedFile);
+        formData.append('file', fileToUpload);
         if (activeThread?.organizationId) {
           formData.append('organizationId', activeThread.organizationId);
         }
@@ -252,19 +265,16 @@ export default function AdminMessagesPage() {
       const res = await apiRequest<MessageItem>(`/messaging/threads/${activeThreadId}/messages`, {
         method: 'POST',
         body: JSON.stringify({
-          content: inputText.trim() || (selectedFile ? `Shared file: ${selectedFile.name}` : ''),
+          content: messageText || (fileToUpload ? `Shared file: ${fileToUpload.name}` : ''),
           messageType: uploadedFileId ? 'FILE' : 'TEXT',
           fileId: uploadedFileId,
-          isInternal: isInternalNote,
+          isInternal: internalNoteFlag,
         }),
       });
 
       if (res.success && res.data) {
         const newMsg = (res.data as any).message || res.data;
         setMessages((prev) => [...prev, newMsg]);
-        setInputText('');
-        setSelectedFile(null);
-        setIsInternalNote(false);
         setTimeout(scrollToBottom, 50);
 
         // Refresh threads list snippet
@@ -279,6 +289,7 @@ export default function AdminMessagesPage() {
     } catch (err) {
       console.error('Failed to send message:', err);
     } finally {
+      clearTimeout(safetyTimer);
       setSending(false);
       setUploadingFile(false);
     }

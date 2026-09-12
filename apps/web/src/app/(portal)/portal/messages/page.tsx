@@ -178,15 +178,25 @@ export default function PortalMessagesPage() {
     if (e) e.preventDefault();
     if (!activeThreadId || (!inputText.trim() && !selectedFile)) return;
 
+    const messageText = inputText.trim();
+    const fileToUpload = selectedFile;
+    setInputText('');
+    setSelectedFile(null);
     setSending(true);
+
+    const safetyTimer = setTimeout(() => {
+      setSending(false);
+      setUploadingFile(false);
+    }, 6000);
+
     let uploadedFileId: string | null = null;
 
     try {
       // 1. Upload file if selected
-      if (selectedFile) {
+      if (fileToUpload) {
         setUploadingFile(true);
         const formData = new FormData();
-        formData.append('file', selectedFile);
+        formData.append('file', fileToUpload);
         if (activeThread?.organizationId) {
           formData.append('organizationId', activeThread.organizationId);
         }
@@ -207,7 +217,7 @@ export default function PortalMessagesPage() {
       const res = await apiRequest<MessageItem>(`/messaging/threads/${activeThreadId}/messages`, {
         method: 'POST',
         body: JSON.stringify({
-          content: inputText.trim() || (selectedFile ? `Shared file: ${selectedFile.name}` : ''),
+          content: messageText || (fileToUpload ? `Shared file: ${fileToUpload.name}` : ''),
           messageType: uploadedFileId ? 'FILE' : 'TEXT',
           fileId: uploadedFileId,
           isInternal: false,
@@ -217,8 +227,6 @@ export default function PortalMessagesPage() {
       if (res.success && res.data) {
         const newMsg = (res.data as any).message || res.data;
         setMessages((prev) => [...prev, newMsg]);
-        setInputText('');
-        setSelectedFile(null);
         setTimeout(scrollToBottom, 50);
       } else if (activeThreadId.startsWith('demo_')) {
         // Demo fallback
@@ -230,19 +238,18 @@ export default function PortalMessagesPage() {
             senderId: 'client_me',
             senderName: 'You',
             senderRole: 'CLIENT',
-            content: inputText.trim(),
+            content: messageText,
             messageType: 'TEXT',
             isInternal: false,
             createdAt: new Date().toISOString(),
           },
         ]);
-        setInputText('');
-        setSelectedFile(null);
         setTimeout(scrollToBottom, 50);
       }
     } catch (err) {
       console.error('Failed to send client message:', err);
     } finally {
+      clearTimeout(safetyTimer);
       setSending(false);
       setUploadingFile(false);
     }
@@ -290,10 +297,10 @@ export default function PortalMessagesPage() {
         <div>
           <div className="flex items-center gap-3 mb-1">
             <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-              <MessageSquare className="w-6 h-6 text-emerald-400" />
+              <MessageSquare className="w-6 h-6 text-cyan-400" />
               Direct Engineering Comms
             </h1>
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 shadow-[0_0_10px_rgba(0,240,255,0.15)]">
               DIRECT SQUAD CHANNEL
             </span>
           </div>
@@ -304,12 +311,12 @@ export default function PortalMessagesPage() {
 
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs font-mono text-zinc-400">
-            <Radio className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+            <Radio className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
             <span>ENCRYPTED CHANNEL // ACTIVE</span>
           </div>
           <button
             onClick={() => setShowNewThreadModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold text-xs rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all"
+            className="flex items-center gap-2 px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-black font-semibold text-xs rounded-xl shadow-[0_0_15px_rgba(0,240,255,0.3)] transition-all"
           >
             <Plus className="w-4 h-4" />
             <span>New Conversation</span>
@@ -344,7 +351,7 @@ export default function PortalMessagesPage() {
                   thread.contextType === 'PROJECT' ? (
                     <Briefcase className="w-3 h-3 text-cyan-400" />
                   ) : thread.contextType === 'INVOICE' ? (
-                    <Receipt className="w-3 h-3 text-emerald-400" />
+                    <Receipt className="w-3 h-3 text-cyan-400" />
                   ) : (
                     <MessageSquare className="w-3 h-3 text-zinc-400" />
                   );
@@ -355,7 +362,7 @@ export default function PortalMessagesPage() {
                     onClick={() => setActiveThreadId(thread.id)}
                     className={`w-full text-left p-4 transition-all relative flex flex-col gap-1.5 ${
                       isSelected
-                        ? 'bg-emerald-500/10 border-l-4 border-l-emerald-500'
+                        ? 'bg-cyan-500/10 border-l-4 border-l-cyan-400'
                         : 'hover:bg-zinc-900/40 border-l-4 border-l-transparent'
                     }`}
                   >
@@ -367,11 +374,11 @@ export default function PortalMessagesPage() {
                       {thread.status === 'CLOSED' ? (
                         <span className="text-[9px] font-mono text-zinc-500">CLOSED</span>
                       ) : (
-                        <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                        <span className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(0,240,255,0.8)]" />
                       )}
                     </div>
 
-                    <h3 className={`text-xs font-semibold line-clamp-1 ${isSelected ? 'text-emerald-400' : 'text-zinc-200'}`}>
+                    <h3 className={`text-xs font-semibold line-clamp-1 ${isSelected ? 'text-cyan-400' : 'text-zinc-200'}`}>
                       {thread.title}
                     </h3>
 
@@ -403,7 +410,7 @@ export default function PortalMessagesPage() {
                     <span
                       className={`px-2 py-0.5 rounded-full text-[9px] font-mono font-semibold ${
                         activeThread.status === 'OPEN'
-                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
+                          ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 shadow-[0_0_8px_rgba(0,240,255,0.1)]'
                           : 'bg-zinc-800 text-zinc-400'
                       }`}
                     >
@@ -428,7 +435,6 @@ export default function PortalMessagesPage() {
                           a.click();
                           URL.revokeObjectURL(url);
                         } else {
-                          // Fallback local export
                           const exportData = { thread: activeThread, messages, exportedAt: new Date().toISOString() };
                           const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
                           const url = URL.createObjectURL(blob);
@@ -476,7 +482,7 @@ export default function PortalMessagesPage() {
                         <div className="flex items-center gap-2 mb-1 px-1">
                           <span
                             className={`text-[11px] font-mono font-semibold ${
-                              isStaff ? 'text-zinc-300' : 'text-emerald-400'
+                              isStaff ? 'text-zinc-300' : 'text-cyan-400'
                             }`}
                           >
                             {isStaff ? 'CYBERSTYLE Engineering' : 'You'}
@@ -498,7 +504,7 @@ export default function PortalMessagesPage() {
                               ? 'bg-zinc-900/50 border border-dashed border-zinc-800 text-zinc-500 italic'
                               : isStaff
                               ? 'bg-zinc-900 border border-zinc-800 text-zinc-100 rounded-tl-none'
-                              : 'bg-emerald-600 text-black font-medium rounded-tr-none'
+                              : 'bg-cyan-500 text-black font-semibold rounded-tr-none shadow-[0_0_20px_rgba(0,240,255,0.2)]'
                           }`}
                         >
                           {isDeleted ? (
@@ -513,7 +519,7 @@ export default function PortalMessagesPage() {
                               {/* Attached File */}
                               {msg.file && (
                                 <div className={`mt-3 p-2.5 rounded-xl flex items-center justify-between gap-3 ${
-                                  isStaff ? 'bg-black/50 border border-zinc-800' : 'bg-emerald-700 text-white'
+                                  isStaff ? 'bg-black/50 border border-zinc-800' : 'bg-cyan-600 text-black font-bold'
                                 }`}>
                                   <div className="flex items-center gap-2 min-w-0">
                                     <FileText className="w-4 h-4 shrink-0" />
@@ -547,11 +553,11 @@ export default function PortalMessagesPage() {
               </div>
 
               {/* Compose Box */}
-              <form onSubmit={handleSendMessage} className="p-4 border-t border-zinc-800 bg-zinc-950 space-y-2">
+              <form onSubmit={handleSendMessage} className="p-4 border-t border-zinc-800 bg-[#080A10] space-y-2">
                 {selectedFile && (
                   <div className="flex items-center justify-between gap-2 px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs font-mono text-zinc-300">
                     <div className="flex items-center gap-2 truncate">
-                      <Paperclip className="w-3.5 h-3.5 text-emerald-400" />
+                      <Paperclip className="w-3.5 h-3.5 text-cyan-400" />
                       <span className="truncate">{selectedFile.name}</span>
                     </div>
                     <button
@@ -573,7 +579,7 @@ export default function PortalMessagesPage() {
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white transition-colors"
+                    className="p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-cyan-400 transition-colors"
                     title="Attach File"
                   >
                     <Paperclip className="w-4 h-4" />
@@ -584,13 +590,13 @@ export default function PortalMessagesPage() {
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
                     placeholder="Type your message to the engineering team..."
-                    className="flex-1 bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500 transition-colors"
+                    className="flex-1 bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-400 transition-colors"
                   />
 
                   <button
                     type="submit"
                     disabled={sending || uploadingFile || (!inputText.trim() && !selectedFile)}
-                    className="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold text-xs rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all flex items-center gap-2 disabled:opacity-40"
+                    className="px-4 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-black font-semibold text-xs rounded-xl shadow-[0_0_15px_rgba(0,240,255,0.3)] transition-all flex items-center gap-2 disabled:opacity-40"
                   >
                     <Send className="w-3.5 h-3.5" />
                     <span>{sending ? 'Sending...' : 'Send'}</span>
@@ -612,7 +618,7 @@ export default function PortalMessagesPage() {
           <div className="bg-zinc-950 border border-zinc-800 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
             <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
               <h2 className="text-base font-bold text-white flex items-center gap-2">
-                <Plus className="w-4 h-4 text-emerald-400" />
+                <Plus className="w-4 h-4 text-cyan-400" />
                 Start New Conversation
               </h2>
               <button
@@ -632,7 +638,7 @@ export default function PortalMessagesPage() {
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
                   placeholder="e.g. Scope query regarding staging build"
-                  className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400 font-sans"
                 />
               </div>
 
@@ -642,7 +648,7 @@ export default function PortalMessagesPage() {
                   <select
                     value={newContextType}
                     onChange={(e) => setNewContextType(e.target.value as any)}
-                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400 font-sans"
                   >
                     <option value="GENERAL">General Support</option>
                     <option value="PROJECT">Active Project / Build</option>
@@ -657,7 +663,7 @@ export default function PortalMessagesPage() {
                     value={newContextId}
                     onChange={(e) => setNewContextId(e.target.value)}
                     placeholder="e.g. Project or Invoice ID"
-                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400 font-mono"
                   />
                 </div>
               </div>
@@ -670,7 +676,7 @@ export default function PortalMessagesPage() {
                   value={newInitialMessage}
                   onChange={(e) => setNewInitialMessage(e.target.value)}
                   placeholder="Describe your inquiry or feedback..."
-                  className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-emerald-500 resize-none"
+                  className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-cyan-400 resize-none font-sans"
                 />
               </div>
 
@@ -685,7 +691,7 @@ export default function PortalMessagesPage() {
                 <button
                   type="submit"
                   disabled={creatingThread}
-                  className="px-5 py-2 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold text-xs rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all"
+                  className="px-5 py-2 bg-cyan-500 hover:bg-cyan-400 text-black font-semibold text-xs rounded-xl shadow-[0_0_15px_rgba(0,240,255,0.3)] transition-all"
                 >
                   {creatingThread ? 'Starting...' : 'Send Message'}
                 </button>

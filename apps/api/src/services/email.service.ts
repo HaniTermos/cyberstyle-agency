@@ -230,6 +230,118 @@ export class EmailService {
   }
 
   /**
+   * Generates an executive CYBERSTYLE branded HTML email wrapper
+   */
+  public static wrapExecutiveEmailTemplate(options: {
+    subject: string;
+    preheader?: string;
+    contentHtml: string;
+    ctaText?: string;
+    ctaUrl?: string;
+  }): string {
+    const { subject, preheader = '', contentHtml, ctaText, ctaUrl } = options;
+    const year = new Date().getFullYear();
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${subject}</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #080A10; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #E2E8F0;">
+  <!-- CYBERSTYLE-EXECUTIVE-TEMPLATE -->
+  <div style="display: none; max-height: 0px; overflow: hidden; opacity: 0;">${preheader || subject}</div>
+  
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #080A10; min-height: 100vh; padding: 40px 16px;">
+    <tr>
+      <td align="center">
+        <!-- Main Container -->
+        <table role="presentation" width="100%" style="max-width: 640px; background-color: #0C0E17; border: 1px solid rgba(0, 240, 255, 0.25); border-radius: 16px; overflow: hidden; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 25px rgba(0, 240, 255, 0.08);">
+          
+          <!-- Top Neon Accent -->
+          <tr>
+            <td style="height: 4px; background: linear-gradient(90deg, #00F0FF 0%, #7000FF 50%, #00F0FF 100%);"></td>
+          </tr>
+
+          <!-- Header -->
+          <tr>
+            <td style="padding: 28px 36px 20px 36px; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                  <td>
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td style="width: 34px; height: 34px; background-color: rgba(0, 240, 255, 0.12); border: 1px solid #00F0FF; border-radius: 8px; text-align: center; vertical-align: middle;">
+                          <span style="color: #00F0FF; font-weight: 900; font-size: 15px; font-family: monospace;">CS</span>
+                        </td>
+                        <td style="padding-left: 10px; vertical-align: middle;">
+                          <span style="font-family: monospace; font-size: 17px; font-weight: 800; letter-spacing: 2px; color: #FFFFFF;">CYBERSTYLE</span>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                  <td align="right">
+                    <span style="display: inline-block; font-family: monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: #00F0FF; background-color: rgba(0, 240, 255, 0.1); border: 1px solid rgba(0, 240, 255, 0.3); padding: 4px 10px; border-radius: 20px;">
+                      VERIFIED DISPATCH
+                    </span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Content Body -->
+          <tr>
+            <td style="padding: 36px 36px 28px 36px; color: #CBD5E1; font-size: 15px; line-height: 1.75;">
+              <h1 style="margin: 0 0 20px 0; font-size: 20px; font-weight: 700; color: #FFFFFF; letter-spacing: -0.3px;">
+                ${subject}
+              </h1>
+              
+              <div style="color: #CBD5E1; font-size: 15px; line-height: 1.75;">
+                ${contentHtml}
+              </div>
+
+              ${ctaText && ctaUrl ? `
+              <div style="margin: 32px 0 16px 0;">
+                <a href="${ctaUrl}" style="display: inline-block; background-color: #00F0FF; color: #000000; font-weight: 700; font-size: 14px; text-decoration: none; padding: 13px 26px; border-radius: 8px; box-shadow: 0 0 20px rgba(0, 240, 255, 0.4); text-align: center;">
+                  ${ctaText} &rarr;
+                </a>
+              </div>
+              ` : ''}
+            </td>
+          </tr>
+
+          <!-- Executive Signature -->
+          <tr>
+            <td style="padding: 24px 36px 28px 36px; background-color: #090B12; border-top: 1px solid rgba(255, 255, 255, 0.06);">
+              <div style="border-left: 2px solid #00F0FF; padding-left: 14px; margin-bottom: 20px;">
+                <div style="font-weight: 800; color: #FFFFFF; font-size: 13px; letter-spacing: 0.5px;">CYBERSTYLE ARCHITECTURE & CLOUD OS</div>
+                <div style="font-size: 12px; color: #94A3B8; margin-top: 2px;">Next-Gen Web Platforms &bull; AI Agent Systems &bull; Enterprise SaaS</div>
+                <div style="margin-top: 8px; font-size: 11px; color: #64748B; font-family: monospace;">
+                  <span>🌐 <a href="https://cyberstyle.net" style="color: #00F0FF; text-decoration: none;">cyberstyle.net</a></span>
+                  <span style="margin: 0 6px; color: #334155;">&bull;</span>
+                  <span>✉️ <a href="mailto:contact@cyberstyle.net" style="color: #94A3B8; text-decoration: none;">contact@cyberstyle.net</a></span>
+                  <span style="margin: 0 6px; color: #334155;">&bull;</span>
+                  <span>📞 +1 (800) CYBER-STYLE</span>
+                </div>
+              </div>
+
+              <!-- Confidentiality Notice -->
+              <div style="font-size: 10px; color: #475569; line-height: 1.5; font-family: monospace; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 14px;">
+                CONFIDENTIALITY NOTICE: This transmission is intended strictly for the named recipient and contains proprietary agency materials. Unauthorized interception, copying, or dissemination is strictly prohibited. &copy; ${year} CYBERSTYLE LLC.
+              </div>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+  }
+
+  /**
    * Sends an email with full threading and DB tracking
    */
   public static async sendMail(options: EmailDispatchOptions): Promise<{
@@ -247,12 +359,21 @@ export class EmailService {
     try {
       let sentMessageId = `msg_${Date.now()}`;
 
+      // Auto-wrap outbound HTML in executive CYBERSTYLE template if not already wrapped
+      let finalHtml = options.html;
+      if (!finalHtml.includes('CYBERSTYLE-EXECUTIVE-TEMPLATE')) {
+        finalHtml = this.wrapExecutiveEmailTemplate({
+          subject: options.subject,
+          contentHtml: options.html,
+        });
+      }
+
       // In SMTP or Gmail mode:
       const info = await transporter.sendMail({
         from: fromAddress,
         to: options.to,
         subject: options.subject,
-        html: options.html,
+        html: finalHtml,
         text: options.text || options.html.replace(/<[^>]*>/g, ''),
         inReplyTo: options.inReplyTo,
       });

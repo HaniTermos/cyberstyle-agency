@@ -18,6 +18,10 @@ import {
 import { ProjectHealthService } from '../services/project-health.service';
 import { TaskService } from '../services/task.service';
 import { MilestoneDeliveryService } from '../services/milestone-delivery.service';
+import { AuthService } from '../services/auth.service';
+import { EmailService } from '../services/email.service';
+import crypto from 'crypto';
+import { z } from 'zod';
 
 const router = Router();
 
@@ -1509,6 +1513,470 @@ router.delete('/reports/:id', async (req: AuthenticatedRequest, res: Response, n
     });
 
     res.status(200).json({ status: 'success', message: 'Report deleted successfully' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ==============================================================================
+// 11. USER & CLIENT ACCESS CONTROL MANAGEMENT
+// ==============================================================================
+
+/**
+ * @route   GET /api/v1/admin/users
+ * @desc    Fetch all administrative and client users
+ */
+router.get('/users', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const users = await prisma.user.findMany({
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        status: true,
+        twoFactorEnabled: true,
+        isEmailVerified: true,
+        createdAt: true,
+        clientProfile: {
+          include: {
+            organization: {
+              select: {
+                id: true,
+                name: true,
+                domain: true,
+                industry: true,
+              },
+            },
+          },
+        },
+        adminProfile: {
+          select: {
+            department: true,
+            permissions: true,
+          },
+        },
+      },
+    });
+
+    res.status(200).json({
+      status: 'success',
+      data: users,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * @route   GET /api/v1/admin/clients
+ * @desc    Fetch client organizations for portal management
+ */
+router.get('/clients', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const clients = await prisma.clientOrganization.findMany({
+      orderBy: { name: 'asc' },
+      include: {
+        members: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                email: true,
+                name: true,
+                status: true,
+                twoFactorEnabled: true,
+              },
+            },
+          },
+        },
+        projects: {
+          select: { id: true, name: true, status: true },
+        },
+        invoices: {
+          where: { status: { in: ['SENT', 'OVERDUE', 'PARTIALLY_PAID'] } },
+          select: { id: true, total: true, status: true },
+        },
+      },
+    });
+
+    res.status(200).json({
+      status: 'success',
+      data: clients,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * @route   POST /api/v1/admin/users/invite
+ * @desc    Invite/create a new Admin or Client user with branded email dispatch
+ */
+router.post('/users/invite', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const schema = z.object({
+      email: z.string().email(),
+      name: z.string().optional(),
+      role: z.nativeEnum(UserRole).default(UserRole.ADMIN),
+      organizationId: z.string().optional(),
+      organizationName: z.string().optional(),
+      department: z.string().optional(),
+    });
+
+    const body = schema.parse(req.body);
+    const email = body.email.toLowerCase().trim();
+
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (existingUser) {
+      res.status(409).json({
+        status: 'error',
+        message: 'A user with this email address already exists in the system.',
+      });
+      return;
+    }
+
+    // Generate temporary password
+    const rawTempPassword = `CS-${crypto.randomBytes(4).toString('hex').toUpperCase()}!9`;
+    const passwordHash = await AuthService.hashPassword(rawTempPassword);
+
+    const newUser = await prisma.$transaction(async (tx) => {
+      let resolvedOrgId = body.organizationId;
+
+      if (body.role === UserRole.CLIENT) {
+        if (!resolvedOrgId && body.organizationName) {
+          const newOrg = await tx.clientOrganization.create({
+            data: { name: body.organizationName.trim() },
+          });
+          resolvedOrgId = newOrg.id;
+        } else if (!resolvedOrgId) {
+          // Default organization if none specified
+          const defaultOrg = await tx.clientOrganization.findFirst({
+            orderBy: { createdAt: 'asc' },
+          });
+          resolvedOrgId = defaultOrg ? defaultOrg.id : (await tx.clientOrganization.create({
+            data: { name: body.name ? `${body.name}'s Organization` : 'Client Organization' },
+          })).id;
+        }
+      }
+
+      const user = await tx.user.create({
+        data: {
+          email,
+          name: body.name || email.split('@')[0],
+          passwordHash,
+          role: body.role,
+          status: 'ACTIVE',
+          isEmailVerified: true,
+        },
+      });
+
+      if (body.role === UserRole.CLIENT && resolvedOrgId) {
+        await tx.clientProfile.create({
+          data: {
+            userId: user.id,
+            organizationId: resolvedOrgId,
+            jobTitle: 'Client Representative',
+          },
+        });
+      } else if (body.role === UserRole.ADMIN || body.role === UserRole.SUPER_ADMIN) {
+        await tx.adminProfile.create({
+          data: {
+            userId: user.id,
+            department: body.department || 'Operations',
+            permissions: ['READ', 'WRITE', 'TELEMETRY'],
+          },
+        });
+      }
+
+      return user;
+    });
+
+    const loginUrl = body.role === UserRole.CLIENT
+      ? 'http://localhost:3000/portal/login'
+      : 'http://localhost:3000/admin/login';
+
+    // Dispatch branded invitation email
+    await EmailService.sendMail({
+      to: newUser.email,
+      subject: `⚡ Welcome to CYBERSTYLE // Access Invitation (${body.role === UserRole.CLIENT ? 'Client Workspace' : 'Staff Console'})`,
+      html: `
+        <p>Hello <strong>${newUser.name}</strong>,</p>
+        <p>You have been authorized by an Executive Administrator to access the <strong>CYBERSTYLE ${body.role === UserRole.CLIENT ? 'Client Enclave' : 'Admin Operations Console'}</strong>.</p>
+        
+        <div style="margin: 24px 0; padding: 20px; background-color: rgba(0, 240, 255, 0.05); border: 1px solid rgba(0, 240, 255, 0.25); border-radius: 12px;">
+          <p style="margin: 0 0 10px 0; font-size: 11px; font-family: monospace; text-transform: uppercase; color: #00F0FF; letter-spacing: 1.5px;">Your Access Credentials</p>
+          <p style="margin: 4px 0; font-family: monospace; font-size: 13px; color: #E2E8F0;">Username: <strong>${newUser.email}</strong></p>
+          <p style="margin: 4px 0; font-family: monospace; font-size: 13px; color: #E2E8F0;">Temporary Password: <span style="background-color: #000; padding: 2px 8px; border-radius: 4px; border: 1px solid #334155; color: #00F0FF; font-weight: bold;">${rawTempPassword}</span></p>
+          <p style="margin: 10px 0 0 0; font-size: 11px; color: #94A3B8;">Please log in and update your security credentials upon first session authorization.</p>
+        </div>
+
+        <div style="margin: 28px 0;">
+          <a href="${loginUrl}" style="display: inline-block; background-color: #00F0FF; color: #000000; font-weight: 800; font-size: 13px; text-decoration: none; padding: 12px 24px; border-radius: 8px; box-shadow: 0 0 20px rgba(0, 240, 255, 0.35);">
+            Launch ${body.role === UserRole.CLIENT ? 'Client Portal' : 'Admin Console'} &rarr;
+          </a>
+        </div>
+      `,
+    });
+
+    await logAudit({
+      userId: req.user.id,
+      action: 'USER_INVITED',
+      entityType: 'User',
+      entityId: newUser.id,
+      metadata: { email: newUser.email, role: newUser.role },
+      req,
+    });
+
+    res.status(201).json({
+      status: 'success',
+      message: `User ${newUser.email} successfully created and dispatched credentials email.`,
+      data: {
+        id: newUser.id,
+        email: newUser.email,
+        name: newUser.name,
+        role: newUser.role,
+        tempPassword: rawTempPassword,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * @route   POST /api/v1/admin/users/:id/reset-2fa
+ * @desc    Reset 2FA requirement and secrets for a user
+ */
+router.post('/users/:id/reset-2fa', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const id = req.params.id as string;
+    const targetUser = await prisma.user.findUnique({ where: { id } });
+
+    if (!targetUser) {
+      res.status(404).json({ status: 'error', message: 'User not found' });
+      return;
+    }
+
+    await prisma.user.update({
+      where: { id },
+      data: {
+        twoFactorEnabled: false,
+        twoFactorSecret: null,
+        twoFactorBackupCodes: [],
+      },
+    });
+
+    await logAudit({
+      userId: req.user.id,
+      action: 'ADMIN_2FA_RESET',
+      entityType: 'User',
+      entityId: id,
+      metadata: { targetEmail: targetUser.email },
+      req,
+    });
+
+    res.status(200).json({
+      status: 'success',
+      message: `Two-factor authentication reset for ${targetUser.email}. User can re-enroll upon login.`,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * @route   POST /api/v1/admin/users/:id/reset-password
+ * @desc    Admin forces password reset and generates/emails temporary credentials
+ */
+router.post('/users/:id/reset-password', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const id = req.params.id as string;
+    const targetUser = await prisma.user.findUnique({ where: { id } });
+
+    if (!targetUser) {
+      res.status(404).json({ status: 'error', message: 'User not found' });
+      return;
+    }
+
+    const rawTempPassword = `CS-${crypto.randomBytes(4).toString('hex').toUpperCase()}!7`;
+    const passwordHash = await AuthService.hashPassword(rawTempPassword);
+
+    await prisma.user.update({
+      where: { id },
+      data: { passwordHash },
+    });
+
+    // Invalidate existing sessions
+    await AuthService.invalidateAllUserSessions(id);
+
+    // Send notification email
+    await EmailService.sendMail({
+      to: targetUser.email,
+      subject: '🔐 CYBERSTYLE Account Security: Temporary Password Issued by Administrator',
+      html: `
+        <p>Hello ${targetUser.name || 'User'},</p>
+        <p>An authorized administrator has reset your password.</p>
+        <p>Your new temporary password is: <span style="background-color: #000; padding: 2px 8px; border-radius: 4px; border: 1px solid #334155; color: #00F0FF; font-weight: bold;">${rawTempPassword}</span></p>
+        <p>Please log in immediately and update your password.</p>
+      `,
+    });
+
+    await logAudit({
+      userId: req.user.id,
+      action: 'ADMIN_FORCE_PASSWORD_RESET',
+      entityType: 'User',
+      entityId: id,
+      metadata: { targetEmail: targetUser.email },
+      req,
+    });
+
+    res.status(200).json({
+      status: 'success',
+      message: `Temporary password generated and dispatched to ${targetUser.email}.`,
+      data: { tempPassword: rawTempPassword },
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ==============================================================================
+// 12. MEDIA & DIGITAL ASSETS MANAGEMENT
+// ==============================================================================
+
+/**
+ * @route   GET /api/v1/admin/media
+ * @desc    Fetch all stored media assets
+ */
+router.get('/media', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const assets = await prisma.fileAsset.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: {
+        organization: { select: { id: true, name: true } },
+        uploader: { select: { id: true, name: true, email: true } },
+      },
+    });
+
+    res.status(200).json({
+      status: 'success',
+      data: assets.map((a) => ({
+        id: a.id,
+        filename: a.filename,
+        mimeType: a.mimeType,
+        sizeBytes: a.sizeBytes,
+        url: a.url || `http://localhost:4000/api/v1/messaging/files/${a.id}`,
+        organization: a.organization?.name || 'CYBERSTYLE Agency Global',
+        uploader: a.uploader?.name || a.uploader?.email || 'Executive Admin',
+        createdAt: a.createdAt,
+      })),
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * @route   POST /api/v1/admin/media
+ * @desc    Register a new media asset or CDN asset
+ */
+router.post('/media', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const schema = z.object({
+      filename: z.string().min(1),
+      mimeType: z.string().default('application/octet-stream'),
+      sizeBytes: z.number().default(0),
+      url: z.string().url().optional(),
+      organizationId: z.string().optional(),
+    });
+
+    const body = schema.parse(req.body);
+
+    let orgId = body.organizationId;
+    if (!orgId) {
+      const firstOrg = await prisma.clientOrganization.findFirst({ orderBy: { createdAt: 'asc' } });
+      orgId = firstOrg?.id || (await prisma.clientOrganization.create({ data: { name: 'CYBERSTYLE Global Assets' } })).id;
+    }
+
+    const asset = await prisma.fileAsset.create({
+      data: {
+        filename: body.filename,
+        mimeType: body.mimeType,
+        sizeBytes: body.sizeBytes,
+        url: body.url || null,
+        storageKey: `media/${Date.now()}_${body.filename.replace(/\s+/g, '_')}`,
+        organizationId: orgId,
+        uploaderId: req.user.id,
+      },
+    });
+
+    await logAudit({
+      userId: req.user.id,
+      action: 'MEDIA_ASSET_CREATED',
+      entityType: 'FileAsset',
+      entityId: asset.id,
+      metadata: { filename: asset.filename },
+      req,
+    });
+
+    res.status(201).json({ status: 'success', data: asset });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * @route   PATCH /api/v1/admin/media/:id
+ * @desc    Update media asset metadata
+ */
+router.patch('/media/:id', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const id = req.params.id as string;
+    const { filename, url } = req.body;
+
+    const asset = await prisma.fileAsset.update({
+      where: { id },
+      data: {
+        ...(filename ? { filename } : {}),
+        ...(url !== undefined ? { url } : {}),
+      },
+    });
+
+    await logAudit({
+      userId: req.user.id,
+      action: 'MEDIA_ASSET_UPDATED',
+      entityType: 'FileAsset',
+      entityId: id,
+      metadata: { filename: asset.filename },
+      req,
+    });
+
+    res.status(200).json({ status: 'success', data: asset });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * @route   DELETE /api/v1/admin/media/:id
+ * @desc    Delete a media asset
+ */
+router.delete('/media/:id', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const id = req.params.id as string;
+    await prisma.fileAsset.delete({ where: { id } });
+
+    await logAudit({
+      userId: req.user.id,
+      action: 'MEDIA_ASSET_DELETED',
+      entityType: 'FileAsset',
+      entityId: id,
+      req,
+    });
+
+    res.status(200).json({ status: 'success', message: 'Asset removed successfully' });
   } catch (error) {
     next(error);
   }

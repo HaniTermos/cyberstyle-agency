@@ -10,6 +10,7 @@ import {
 } from '@cyberstyle/config/src/schemas';
 import { UserRole, UserStatus } from '@prisma/client';
 import { z } from 'zod';
+import { EmailService } from '../services/email.service';
 
 const router = Router();
 
@@ -404,6 +405,151 @@ router.post('/logout', async (req: Request, res: Response) => {
   }
   res.clearCookie('cyberstyle_session', { path: '/' });
   res.status(200).json({ status: 'success', message: 'Logged out successfully' });
+});
+
+/**
+ * @route   POST /api/auth/forgot-password
+ * @desc    Request password reset instructions for client or admin
+ */
+router.post('/forgot-password', strictAuthLimiter, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { email } = z.object({ email: z.string().email() }).parse(req.body);
+
+    const user = await prisma.user.findUnique({
+      where: { email: email.toLowerCase().trim() },
+    });
+
+    if (user) {
+      // Generate 6-digit numeric recovery code and 32-byte secure token
+      const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+      await AuthService.createVerificationToken(user.email, 'PASSWORD_RESET', 60);
+
+      // Store the numeric code as a verification token too for easy typing
+      await prisma.verificationToken.create({
+        data: {
+          identifier: user.email,
+          token: resetCode,
+          type: 'PASSWORD_RESET_CODE',
+          expires: new Date(Date.now() + 60 * 60 * 1000), // 1 hour
+        },
+      });
+
+      const resetUrl = `http://localhost:3000/portal/login?action=reset&email=${encodeURIComponent(user.email)}`;
+
+      // Dispatch branded executive email
+      await EmailService.sendMail({
+        to: user.email,
+        subject: '🔐 CYBERSTYLE Account Security: Password Reset Verification Code',
+        html: `
+          <p>Hello ${user.name || 'Client'},</p>
+          <p>We received an authorized request to reset the password for your CYBERSTYLE workspace account (<strong>${user.email}</strong>).</p>
+          
+          <div style="margin: 28px 0; padding: 20px; background-color: rgba(0, 240, 255, 0.06); border: 1px solid rgba(0, 240, 255, 0.3); border-radius: 12px; text-align: center;">
+            <p style="margin: 0 0 8px 0; font-size: 11px; font-family: monospace; text-transform: uppercase; color: #00F0FF; letter-spacing: 2px;">Your 6-Digit Verification Code</p>
+            <span style="font-family: monospace; font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #FFFFFF;">${resetCode}</span>
+            <p style="margin: 8px 0 0 0; font-size: 11px; color: #94A3B8;">Expires in 60 minutes. Do not share this code with anyone.</p>
+          </div>
+
+          <p>If you did not request this password reset, please disregard this email or notify <a href="mailto:security@cyberstyle.net" style="color: #00F0FF;">security@cyberstyle.net</a> immediately. Your password remains securely unchanged.</p>
+        `,
+      });
+
+      await logAudit({
+        userId: user.id,
+        action: 'PASSWORD_RESET_REQUESTED',
+        entityType: 'User',
+        entityId: user.id,
+        req,
+      });
+    }
+
+    // Always respond with success to prevent user enumeration
+    res.status(200).json({
+      status: 'success',
+      message: 'If an account exists with this email, password reset instructions have been dispatched.',
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * @route   POST /api/auth/reset-password
+ * @desc    Submit verification code and new password
+ */
+router.post('/reset-password', strictAuthLimiter, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { email, code, newPassword } = z
+      .object({
+        email: z.string().email(),
+        code: z.string().min(6),
+        newPassword: z.string().min(8),
+      })
+      .parse(req.body);
+
+    const user = await prisma.user.findUnique({
+      where: { email: email.toLowerCase().trim() },
+    });
+
+    if (!user) {
+      res.status(400).json({ status: 'error', message: 'Invalid or expired verification code.' });
+      return;
+    }
+
+    // Check verification code
+    const validToken = await prisma.verificationToken.findFirst({
+      where: {
+        identifier: user.email,
+        token: code.trim(),
+        type: 'PASSWORD_RESET_CODE',
+        expires: { gt: new Date() },
+      },
+    });
+
+    if (!validToken) {
+      res.status(400).json({ status: 'error', message: 'Invalid or expired verification code.' });
+      return;
+    }
+
+    // Hash new password and update user
+    const passwordHash = await AuthService.hashPassword(newPassword);
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { passwordHash },
+    });
+
+    // Invalidate the consumed token and all user sessions
+    await prisma.verificationToken.deleteMany({
+      where: { identifier: user.email, type: 'PASSWORD_RESET_CODE' },
+    });
+    await AuthService.invalidateAllUserSessions(user.id);
+
+    await logAudit({
+      userId: user.id,
+      action: 'PASSWORD_RESET_SUCCESS',
+      entityType: 'User',
+      entityId: user.id,
+      req,
+    });
+
+    // Send confirmation email
+    await EmailService.sendMail({
+      to: user.email,
+      subject: '✅ CYBERSTYLE Account Security: Password Changed Successfully',
+      html: `
+        <p>Hello ${user.name || 'Client'},</p>
+        <p>This is confirmation that the password for your CYBERSTYLE workspace account (<strong>${user.email}</strong>) has been successfully updated.</p>
+        <p>If you made this change, no further action is required. If you did not make this change, please contact <a href="mailto:security@cyberstyle.net" style="color: #00F0FF;">security@cyberstyle.net</a> immediately to secure your enclave.</p>
+      `,
+    });
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Password has been successfully updated. You may now log in.',
+    });
+  } catch (error) {
+    next(error);
+  }
 });
 
 export default router;

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -16,6 +16,7 @@ import {
   Sparkles,
   ExternalLink
 } from 'lucide-react';
+import { apiRequest } from '@/lib/api';
 
 const navigation = [
   { name: 'Dashboard', href: '/portal/dashboard', icon: LayoutDashboard },
@@ -30,17 +31,75 @@ const navigation = [
 
 export function PortalSidebar() {
   const pathname = usePathname();
+  const [orgData, setOrgData] = useState<{ name: string; plan: string; initials: string }>({
+    name: 'Client Enclave',
+    plan: 'Active SLA',
+    initials: 'CE',
+  });
+
+  useEffect(() => {
+    // 1. Check local session storage first
+    if (typeof window !== 'undefined') {
+      const stored = sessionStorage.getItem('cyberstyle_portal_session');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          const userName = parsed.user?.name || parsed.user?.email?.split('@')[0] || '';
+          const orgName = parsed.user?.organizationName || (userName ? `${userName}'s Workspace` : 'Client Enclave');
+          const initials = orgName.substring(0, 2).toUpperCase();
+          setOrgData({
+            name: orgName,
+            plan: 'Enterprise Workspace',
+            initials: initials || 'CW',
+          });
+        } catch {}
+      }
+    }
+
+    // 2. Fetch live profile from backend
+    apiRequest('/portal/profile')
+      .then((res) => {
+        if (res.success && res.data) {
+          const org = res.data.organization || res.data;
+          const name = org.name || res.data.name || 'Client Enclave';
+          const initials = name
+            .split(' ')
+            .map((w: string) => w[0])
+            .join('')
+            .substring(0, 2)
+            .toUpperCase() || 'CE';
+
+          setOrgData({
+            name,
+            plan: org.industry ? `${org.industry} Enclave` : 'Verified Agreement',
+            initials,
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleSignOut = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('cyberstyle_portal_token');
+      localStorage.removeItem('portal_token');
+      sessionStorage.removeItem('cyberstyle_portal_session');
+      document.cookie = 'cyberstyle_portal_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+      document.cookie = 'portal_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+      window.location.href = '/portal/login';
+    }
+  };
 
   return (
-    <aside className="w-64 bg-zinc-950 border-r border-zinc-800/80 flex flex-col h-screen sticky top-0 text-zinc-300 select-none z-30 font-sans">
+    <aside className="w-64 bg-[#080A10] border-r border-zinc-800/80 flex flex-col h-screen sticky top-0 text-zinc-300 select-none z-30 font-sans">
       {/* Brand Header */}
       <div className="p-5 border-b border-zinc-800/80 flex items-center justify-between">
         <Link href="/portal/dashboard" className="flex items-center gap-2 group">
-          <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 group-hover:border-emerald-400 transition-colors">
+          <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 group-hover:border-cyan-400 group-hover:shadow-[0_0_15px_rgba(0,240,255,0.3)] transition-all">
             <Sparkles className="w-4 h-4" />
           </div>
           <div>
-            <span className="font-mono text-sm tracking-wider font-bold text-white group-hover:text-emerald-400 transition-colors">
+            <span className="font-mono text-sm tracking-wider font-bold text-white group-hover:text-cyan-400 transition-colors">
               CYBERSTYLE
             </span>
             <span className="block text-[10px] text-zinc-500 font-mono tracking-widest uppercase">
@@ -65,45 +124,42 @@ export function PortalSidebar() {
               href={item.href}
               className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
                 isActive
-                  ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold'
+                  ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 font-semibold shadow-[0_0_12px_rgba(0,240,255,0.1)]'
                   : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900/60 border border-transparent'
               }`}
             >
-              <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-emerald-400' : 'text-zinc-400'}`} />
+              <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-cyan-400' : 'text-zinc-400'}`} />
               <span>{item.name}</span>
             </Link>
           );
         })}
       </nav>
 
-      {/* Organization Info / Footer */}
-      <div className="p-4 border-t border-zinc-800/80 bg-zinc-950/80 space-y-3">
+      {/* Organization Info / Dynamic Real Client Footer */}
+      <div className="p-4 border-t border-zinc-800/80 bg-[#080A10]/95 space-y-3">
         <div className="flex items-center gap-3 px-2 py-1.5 rounded-md bg-zinc-900/60 border border-zinc-800/80">
-          <div className="w-7 h-7 rounded bg-emerald-500/20 text-emerald-300 font-mono text-xs flex items-center justify-center font-bold">
-            CO
+          <div className="w-7 h-7 rounded bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 font-mono text-xs flex items-center justify-center font-bold">
+            {orgData.initials}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-semibold text-zinc-200 truncate">Acme Global</p>
-            <p className="text-[10px] text-zinc-500 font-mono truncate">Enterprise SLA</p>
+            <p className="text-xs font-semibold text-zinc-100 truncate">{orgData.name}</p>
+            <p className="text-[10px] text-cyan-400/80 font-mono truncate">{orgData.plan}</p>
           </div>
         </div>
 
         <div className="flex items-center justify-between pt-1 text-xs">
           <Link
             href="/"
-            className="text-zinc-500 hover:text-zinc-300 flex items-center gap-1 text-[11px] transition-colors"
+            className="text-zinc-500 hover:text-cyan-400 flex items-center gap-1 text-[11px] transition-colors"
             target="_blank"
           >
             <ExternalLink className="w-3 h-3" />
             <span>cyberstyle.net</span>
           </Link>
           <button
-            onClick={() => {
-              document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-              window.location.href = '/admin/login';
-            }}
-            className="text-zinc-500 hover:text-red-400 transition-colors flex items-center gap-1 text-[11px]"
-            title="Sign out"
+            onClick={handleSignOut}
+            className="text-zinc-500 hover:text-rose-400 transition-colors flex items-center gap-1 text-[11px]"
+            title="Sign out of Client Portal"
           >
             <LogOut className="w-3 h-3" />
             <span>Sign Out</span>

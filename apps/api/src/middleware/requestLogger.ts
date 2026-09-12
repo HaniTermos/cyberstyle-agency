@@ -49,41 +49,10 @@ export function detailedRequestLogger(req: Request, res: Response, next: NextFun
     return originalSend.call(this, body);
   };
 
-  // Format request summary
-  console.log(`\n${GRAY}─────────────────────────────────────────────────────────────────${RESET}`);
-  console.log(
-    `${GRAY}[${timeStr}]${RESET} 📥 ${BOLD}${methodColor}${req.method}${RESET} ${BOLD}${req.originalUrl || req.url}${RESET}`
-  );
-  console.log(`${GRAY}├─ IP:${RESET} ${ip} ${GRAY}│ Origin:${RESET} ${origin}`);
+  const url = req.originalUrl || req.url;
+  const isPollingOrHealth = url.includes('/poll') || url.includes('/health') || url.includes('/ready');
 
-  // Log Headers if present
-  if (req.headers['authorization']) {
-    console.log(`${GRAY}├─ Auth:${RESET} Bearer **********`);
-  }
-
-  // Log Query Parameters
-  if (req.query && Object.keys(req.query).length > 0) {
-    console.log(`${GRAY}├─ Query Params:${RESET}`, JSON.stringify(req.query));
-  }
-
-  // Log Request Body (sanitized)
-  if (req.body && Object.keys(req.body).length > 0) {
-    const sanitized = { ...req.body };
-    if (sanitized.password) sanitized.password = '******';
-    if (sanitized.token) sanitized.token = '******';
-    if (sanitized.refreshToken) sanitized.refreshToken = '******';
-    if (sanitized.secret) sanitized.secret = '******';
-
-    const bodyStr = JSON.stringify(sanitized, null, 2);
-    // Truncate if extremely long (e.g. huge batch leads array)
-    if (bodyStr.length > 1000) {
-      console.log(`${GRAY}├─ Body:${RESET} ${bodyStr.slice(0, 1000)}... ${GRAY}(truncated ${bodyStr.length} chars)${RESET}`);
-    } else {
-      console.log(`${GRAY}├─ Body:${RESET} ${bodyStr.replace(/\n/g, '\n' + GRAY + '│  ' + RESET)}`);
-    }
-  }
-
-  // Hook into response finish event to print response outcome
+  // Hook into response finish event
   res.on('finish', () => {
     const duration = Date.now() - startTime;
     const status = res.statusCode;
@@ -96,13 +65,52 @@ export function detailedRequestLogger(req: Request, res: Response, next: NextFun
         ? YELLOW
         : RED;
 
-    const icon = status >= 200 && status < 300 ? '✅' : status >= 400 ? '⚠️' : 'ℹ️';
+    const icon = status >= 200 && status < 300 ? '✓' : status >= 400 ? '⚠' : '○';
+
+    // If polling or health check, print a clean single line matching Next.js terminal style
+    if (isPollingOrHealth) {
+      if (status !== 304 || process.env.LOG_POLLING === 'true') {
+        console.log(
+          `${GRAY}[${timeStr}]${RESET} ${icon} ${BOLD}${methodColor}${req.method}${RESET} ${url} ${statusColor}${status}${RESET} ${GRAY}(${duration}ms)${RESET}`
+        );
+      }
+      return;
+    }
+
+    // Format standard request summary
+    console.log(`\n${GRAY}─────────────────────────────────────────────────────────────────${RESET}`);
+    console.log(
+      `${GRAY}[${timeStr}]${RESET} 📥 ${BOLD}${methodColor}${req.method}${RESET} ${BOLD}${url}${RESET}`
+    );
+    console.log(`${GRAY}├─ IP:${RESET} ${ip} ${GRAY}│ Origin:${RESET} ${origin}`);
+
+    if (req.headers['authorization']) {
+      console.log(`${GRAY}├─ Auth:${RESET} Bearer **********`);
+    }
+
+    if (req.query && Object.keys(req.query).length > 0) {
+      console.log(`${GRAY}├─ Query Params:${RESET}`, JSON.stringify(req.query));
+    }
+
+    if (req.body && Object.keys(req.body).length > 0) {
+      const sanitized = { ...req.body };
+      if (sanitized.password) sanitized.password = '******';
+      if (sanitized.token) sanitized.token = '******';
+      if (sanitized.refreshToken) sanitized.refreshToken = '******';
+      if (sanitized.secret) sanitized.secret = '******';
+
+      const bodyStr = JSON.stringify(sanitized, null, 2);
+      if (bodyStr.length > 800) {
+        console.log(`${GRAY}├─ Body:${RESET} ${bodyStr.slice(0, 800)}... ${GRAY}(truncated)${RESET}`);
+      } else {
+        console.log(`${GRAY}├─ Body:${RESET} ${bodyStr.replace(/\n/g, '\n' + GRAY + '│  ' + RESET)}`);
+      }
+    }
 
     console.log(
       `${GRAY}├─ Status:${RESET} ${icon} ${BOLD}${statusColor}${status} ${res.statusMessage || ''}${RESET} ${GRAY}(took ${duration}ms)${RESET}`
     );
 
-    // If response was an error (4xx or 5xx), print the exact response payload in detail
     if (status >= 400 && responseBody) {
       const errStr = typeof responseBody === 'object' ? JSON.stringify(responseBody, null, 2) : String(responseBody);
       console.log(`${GRAY}├─ Error Payload:${RESET} ${RED}${errStr.replace(/\n/g, '\n' + GRAY + '│  ' + RED)}${RESET}`);

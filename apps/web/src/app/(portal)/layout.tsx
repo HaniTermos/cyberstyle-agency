@@ -13,12 +13,12 @@ export default function PortalLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-black text-zinc-100 flex flex-row antialiased selection:bg-emerald-500 selection:text-black">
+    <div className="min-h-screen bg-[#080A10] text-zinc-100 flex flex-row antialiased selection:bg-cyan-500 selection:text-black">
       {/* Sidebar Navigation */}
       <PortalSidebar />
 
       {/* Main Execution View */}
-      <div className="flex-1 flex flex-col min-w-0 bg-zinc-950 overflow-x-hidden">
+      <div className="flex-1 flex flex-col min-w-0 bg-[#0A0C14] overflow-x-hidden">
         <PortalTopBar />
         <main className="flex-1 p-6 md:p-8 max-w-7xl w-full mx-auto">
           {children}
