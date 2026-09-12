@@ -26,42 +26,82 @@ async function getPost(slug: string) {
   }
 
   const fallbacks: Record<string, any> = {
-    'engineering-sub-second-3d-web-experiences': {
-      title: 'Engineering Sub-Second 3D Web Experiences with Next.js and Three.js',
-      slug: 'engineering-sub-second-3d-web-experiences',
-      excerpt: 'How we achieve 90+ Lighthouse Core Web Vitals while running complex WebGL shader canvases on high-conversion agency websites.',
-      content: `Traditional agency websites often force a false trade-off: either build a flat, static layout to satisfy Google Lighthouse, or load heavy 3D assets that cause mobile devices to stutter and bounce high-intent buyers.\n\n## 1. The Problem with Unconstrained WebGL\nWhen a standard Three.js canvas initializes without device-pixel-ratio (DPR) limits or dynamic geometry subdivision, high-resolution retina screens can easily attempt to render 4K buffers at 60 FPS. This exhausts mobile GPU memory and delays the Largest Contentful Paint (LCP).\n\n## 2. Our Architecture: The Three-Tier Rendering Strategy\nAt CYBERSTYLE, we employ a three-tier rendering pipeline:\n- Instant CSS Fallback: Server-rendered gradient geometry displays in 0ms without waiting for WebGL shaders to compile.\n- Device-Aware DPR Clamping: We limit canvas DPR strictly to [1.0, 1.5], preserving 95% visual sharpness while reducing pixel fill rate by over 60%.\n- Reduced-Motion Gate: For users with vestibular sensitivity or battery saver mode active, the Three.js loop automatically pauses without layout shifts.\n\n## 3. Measurable Performance Results\nBy treating 3D elements as non-blocking ambient layers, you achieve unforgettable visual prestige while maintaining 90+ Core Web Vitals across every global jurisdiction.`,
-      category: 'Web Architecture',
-      authorName: 'CYBERSTYLE Core',
+    'why-fast-websites-turn-visitors-into-paying-clients': {
+      title: 'Why Fast Websites Turn 3x More Visitors Into Paying Clients',
+      slug: 'why-fast-websites-turn-visitors-into-paying-clients',
+      excerpt: 'Most business websites lose over half their mobile visitors before the page even loads. Here is how instant phone speed directly drives more calls and sales.',
+      content: `If your website takes more than 2 or 3 seconds to open on a phone, you are losing money every single day. Most business owners spend thousands on advertising, social media, or business cards—only for prospective clients to click the link, wait 4 seconds, get frustrated, and tap the back button to call a competitor instead.\n\n## 1. People Have Zero Patience on Mobile Phones\nOver 70% of your prospective customers are looking at your website on a mobile phone, often on cellular data while walking or in between meetings. If your website does not pop open instantly, they will not wait around. Google's own research proves that every single second of loading delay cuts customer inquiries by 20%.\n\n## 2. Instant Speed Creates Instant Trust\nWhen a customer clicks your website and it opens in under 1 second, it instantly signals professionalism, authority, and reliability. They subconsciously trust you before they have even finished reading your headline. A fast website makes your business look like the industry leader.\n\n## 3. How We Guarantee Under 1-Second Loading\nAt CYBERSTYLE, we don't use heavy, bloated templates or slow WordPress plugins that drag your website down. Every website we build is custom-crafted to load instantly on any device, anywhere in the world. You get gorgeous visuals, stunning design, and lightning-fast speed that turns curious visitors into paying clients.`,
+      category: 'Website Growth',
+      authorName: 'Growth Strategy Team',
       readingTimeMinutes: 4,
       publishedAt: '2026-08-19T00:00:00.000Z',
-      tags: ['Next.js 15', 'Three.js', 'Core Web Vitals', 'Performance'],
+      tags: ['Website Speed', 'Mobile Sales', 'Customer Conversion', 'Business Growth'],
+      geoCity: 'San Francisco, CA',
+      geoCountry: 'US',
+    },
+    'how-24-7-ai-assistants-stop-lost-leads': {
+      title: 'How a 24/7 AI Receptionist Stops Leads From Going to Competitors',
+      slug: 'how-24-7-ai-assistants-stop-lost-leads',
+      excerpt: 'When an interested customer contacts your business, every minute of delay cuts your closing rate in half. Here is how replying in 30 seconds doubles your bookings.',
+      content: `In business, speed to lead is everything. When an interested customer fills out a form or messages your business, they are actively looking to buy right now. If you take 4 hours—or until tomorrow morning—to reply, they have already messaged three of your competitors and hired the first one who answered.\n\n## 1. The 30-Second Rule That Wins Deals\nStudies show that replying to a new customer inquiry within 5 minutes makes you 21 times more likely to win the deal compared to waiting just 30 minutes. Customers love fast, respectful service, and they buy from whoever gives them clear answers first.\n\n## 2. Never Miss an Inquiry at Night or on Weekends\nMost high-ticket buyers browse at night after work or over the weekend. While you and your staff are sleeping, our 24/7 AI Lead Assistant greets every visitor warmly, answers their questions accurately, qualifies their budget, and schedules an appointment directly onto your calendar.\n\n## 3. Easy Setup With Zero Technical Headache\nOur team trains your AI assistant on your exact business, services, pricing guidelines, and booking links. You don't have to learn any complex software—you just wake up to qualified appointments already booked on your calendar.`,
+      category: '24/7 AI Automation',
+      authorName: 'AI Systems Team',
+      readingTimeMinutes: 5,
+      publishedAt: '2026-07-15T00:00:00.000Z',
+      tags: ['AI Assistant', 'Lead Generation', 'Automated Booking', 'Sales Growth'],
+      geoCity: 'Austin, TX',
+      geoCountry: 'US',
+    },
+    'why-owning-your-custom-tools-saves-thousands': {
+      title: 'Stop Paying Software Rent: Why Owning Your Custom Tools Saves Thousands',
+      slug: 'why-owning-your-custom-tools-saves-thousands',
+      excerpt: 'Tired of monthly per-user software fees eating away your profits? Here is why smart businesses build once and own 100% of their private client tools forever.',
+      content: `Almost every growing business falls into the same trap: you start paying $30/month for one tool, $50/month for another, and soon you are paying thousands of dollars every year in recurring software subscriptions that you will never own.\n\n## 1. The Hidden Cost of Software Subscriptions\nSubscription platforms charge you per user, per month. As your team grows and you add more clients, your software bills balloon. If you ever stop paying, you lose access to your client history, your workflows, and your data.\n\n## 2. Build Once, Own It 100% Forever\nWhen CYBERSTYLE builds your custom client portal or internal dashboard, you own 100% of the files, code, and database forever. There are zero per-user monthly license fees. You can add 10 clients or 1,000 clients without paying a penny more.\n\n## 3. Tailored Specifically to How You Work\nInstead of forcing your business into rigid off-the-shelf software, your custom portal does exactly what you need: clients log in securely, check project milestones, upload documents, and pay invoices via credit card in seconds.`,
+      category: 'Business Efficiency',
+      authorName: 'Client Systems Team',
+      readingTimeMinutes: 6,
+      publishedAt: '2026-06-20T00:00:00.000Z',
+      tags: ['Zero Software Rent', 'Client Portal', '100% Ownership', 'Cost Savings'],
+      geoCity: 'Toronto, ON',
+      geoCountry: 'CA',
+    },
+    // Backwards compatibility aliases
+    'engineering-sub-second-3d-web-experiences': {
+      title: 'Why Fast Websites Turn 3x More Visitors Into Paying Clients',
+      slug: 'why-fast-websites-turn-visitors-into-paying-clients',
+      excerpt: 'Most business websites lose over half their mobile visitors before the page even loads. Here is how instant phone speed directly drives more calls and sales.',
+      content: `If your website takes more than 2 or 3 seconds to open on a phone, you are losing money every single day. Most business owners spend thousands on advertising, social media, or business cards—only for prospective clients to click the link, wait 4 seconds, get frustrated, and tap the back button to call a competitor instead.\n\n## 1. People Have Zero Patience on Mobile Phones\nOver 70% of your prospective customers are looking at your website on a mobile phone, often on cellular data while walking or in between meetings. If your website does not pop open instantly, they will not wait around. Google's own research proves that every single second of loading delay cuts customer inquiries by 20%.\n\n## 2. Instant Speed Creates Instant Trust\nWhen a customer clicks your website and it opens in under 1 second, it instantly signals professionalism, authority, and reliability. They subconsciously trust you before they have even finished reading your headline. A fast website makes your business look like the industry leader.\n\n## 3. How We Guarantee Under 1-Second Loading\nAt CYBERSTYLE, we don't use heavy, bloated templates or slow WordPress plugins that drag your website down. Every website we build is custom-crafted to load instantly on any device, anywhere in the world. You get gorgeous visuals, stunning design, and lightning-fast speed that turns curious visitors into paying clients.`,
+      category: 'Website Growth',
+      authorName: 'Growth Strategy Team',
+      readingTimeMinutes: 4,
+      publishedAt: '2026-08-19T00:00:00.000Z',
+      tags: ['Website Speed', 'Mobile Sales', 'Customer Conversion', 'Business Growth'],
       geoCity: 'San Francisco, CA',
       geoCountry: 'US',
     },
     'ai-lead-qualification-architecture': {
-      title: 'Building 24/7 AI Lead Qualification Pipelines with Node.js and BullMQ',
-      slug: 'ai-lead-qualification-architecture',
-      excerpt: 'A practical breakdown of how automated scoring and prompt routing turns cold website visitors into booked client calls in under 30 seconds.',
-      content: `Speed to lead is the single highest predictor of conversion in B2B service sales. If a prospect waits longer than 5 minutes for a response, lead qualification drops by over 80%.\n\n## 1. Event-Driven Architecture with BullMQ\nWhen a prospect submits an inquiry via the public CYBERSTYLE website, an asynchronous BullMQ worker intercepts the payload immediately.\n\n## 2. Multi-Model AI Qualification & Scoring\nThe ingestion worker runs structured LLM inference to parse budget, timeline, technical scope, and domain authority. Leads scoring above 70 receive instant personalized calendar invites with dynamic pricing previews.\n\n## 3. Resilience and Failover\nIf the AI provider encounters latency spikes, Redis retry queues safeguard every lead with exponential backoff and instant fallback notification channels.`,
-      category: 'AI & Automation',
+      title: 'How a 24/7 AI Receptionist Stops Leads From Going to Competitors',
+      slug: 'how-24-7-ai-assistants-stop-lost-leads',
+      excerpt: 'When an interested customer contacts your business, every minute of delay cuts your closing rate in half. Here is how replying in 30 seconds doubles your bookings.',
+      content: `In business, speed to lead is everything. When an interested customer fills out a form or messages your business, they are actively looking to buy right now. If you take 4 hours—or until tomorrow morning—to reply, they have already messaged three of your competitors and hired the first one who answered.\n\n## 1. The 30-Second Rule That Wins Deals\nStudies show that replying to a new customer inquiry within 5 minutes makes you 21 times more likely to win the deal compared to waiting just 30 minutes. Customers love fast, respectful service, and they buy from whoever gives them clear answers first.\n\n## 2. Never Miss an Inquiry at Night or on Weekends\nMost high-ticket buyers browse at night after work or over the weekend. While you and your staff are sleeping, our 24/7 AI Lead Assistant greets every visitor warmly, answers their questions accurately, qualifies their budget, and schedules an appointment directly onto your calendar.\n\n## 3. Easy Setup With Zero Technical Headache\nOur team trains your AI assistant on your exact business, services, pricing guidelines, and booking links. You don't have to learn any complex software—you just wake up to qualified appointments already booked on your calendar.`,
+      category: '24/7 AI Automation',
       authorName: 'AI Systems Team',
       readingTimeMinutes: 5,
       publishedAt: '2026-07-15T00:00:00.000Z',
-      tags: ['AI Pipelines', 'Node.js', 'BullMQ', 'Lead Gen'],
+      tags: ['AI Assistant', 'Lead Generation', 'Automated Booking', 'Sales Growth'],
       geoCity: 'Austin, TX',
       geoCountry: 'US',
     },
     'self-hosted-auth-vs-third-party-saas': {
-      title: 'Why We Build Custom SaaS Platforms with Self-Hosted Argon2id Auth',
-      slug: 'self-hosted-auth-vs-third-party-saas',
-      excerpt: 'Eliminating expensive per-user pricing jumps, securing tenant boundaries, and ensuring 100% data sovereignty on Linux VPS deployments.',
-      content: `Many modern startups blindly integrate third-party authentication services, only to face staggering monthly API costs as their active user base scales.\n\n## 1. Total Data Sovereignty\nBy implementing RFC 9106 Argon2id password hashing paired with cryptographic refresh token rotation in PostgreSQL, your business retains full ownership of user identity assets without vendor lock-in.\n\n## 2. Hardened Tenant Isolation\nUsing PostgreSQL Row-Level Security (RLS) combined with cryptographically signed session tokens, multi-tenant data leaks are mathematically prevented at the database kernel level.\n\n## 3. Cost Predictability\nSelf-hosted authentication runs on your existing VPS infrastructure with zero marginal cost per active user, protecting agency margins as client applications scale.`,
-      category: 'Product Engineering',
-      authorName: 'SecOps Team',
+      title: 'Stop Paying Software Rent: Why Owning Your Custom Tools Saves Thousands',
+      slug: 'why-owning-your-custom-tools-saves-thousands',
+      excerpt: 'Tired of monthly per-user software fees eating away your profits? Here is why smart businesses build once and own 100% of their private client tools forever.',
+      content: `Almost every growing business falls into the same trap: you start paying $30/month for one tool, $50/month for another, and soon you are paying thousands of dollars every year in recurring software subscriptions that you will never own.\n\n## 1. The Hidden Cost of Software Subscriptions\nSubscription platforms charge you per user, per month. As your team grows and you add more clients, your software bills balloon. If you ever stop paying, you lose access to your client history, your workflows, and your data.\n\n## 2. Build Once, Own It 100% Forever\nWhen CYBERSTYLE builds your custom client portal or internal dashboard, you own 100% of the files, code, and database forever. There are zero per-user monthly license fees. You can add 10 clients or 1,000 clients without paying a penny more.\n\n## 3. Tailored Specifically to How You Work\nInstead of forcing your business into rigid off-the-shelf software, your custom portal does exactly what you need: clients log in securely, check project milestones, upload documents, and pay invoices via credit card in seconds.`,
+      category: 'Business Efficiency',
+      authorName: 'Client Systems Team',
       readingTimeMinutes: 6,
       publishedAt: '2026-06-20T00:00:00.000Z',
-      tags: ['Security', 'Argon2id', 'Authentication', 'PostgreSQL'],
+      tags: ['Zero Software Rent', 'Client Portal', '100% Ownership', 'Cost Savings'],
       geoCity: 'Toronto, ON',
       geoCountry: 'CA',
     },
@@ -263,15 +303,15 @@ export default async function BlogPostDetailPage({ params }: Props) {
           {/* Call to action */}
           <div className="p-8 rounded-3xl bg-[#08090C] text-white my-12 space-y-6 text-center">
             <h3 className="font-display font-bold text-2xl text-white">
-              Want us to build your next web platform?
+              Ready to get more customers and automate your business?
             </h3>
             <p className="text-sm text-neutral-300 max-w-md mx-auto">
-              Our engineering team crafts bespoke Next.js 15 platforms, automated AI pipelines, and custom SaaS architectures.
+              We design websites that sell, 24/7 AI assistants that book leads in 30 seconds, and custom portals that eliminate monthly software bills.
             </p>
             <div>
               <Link href="/start-project">
                 <Button variant="electric" size="lg" icon={<ArrowUpRight className="w-5 h-5" />}>
-                  Start a Project
+                  Get Your Free 15-Min Gameplan
                 </Button>
               </Link>
             </div>

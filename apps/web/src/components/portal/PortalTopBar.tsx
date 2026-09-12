@@ -44,7 +44,7 @@ export function PortalTopBar() {
       .catch(() => {});
   }, []);
 
-  const initial = (user.name || user.email || 'C')[0].toUpperCase();
+  const initial = (user.name?.[0] || user.email?.[0] || 'C').toUpperCase();
 
   return (
     <header className="h-14 bg-[#080A10]/90 backdrop-blur border-b border-zinc-800/80 px-6 flex items-center justify-between sticky top-0 z-20 font-sans">

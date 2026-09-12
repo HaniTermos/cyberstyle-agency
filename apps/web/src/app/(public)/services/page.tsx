@@ -7,18 +7,18 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 
 export const metadata: Metadata = {
-  title: 'Services & Capabilities',
+  title: 'Services & Solutions That Drive Revenue',
   description:
-    'Explore CYBERSTYLE capabilities: Premium Web Experiences, AI Workflow Automations, and Custom SaaS Engineering.',
+    'Explore CYBERSTYLE services: High-Converting Websites, 24/7 AI Sales Assistants, and Custom Business Software you own 100%.',
 };
 
 export default function ServicesPage() {
   return (
     <div className="min-h-screen bg-black text-white">
       <PageBanner
-        badgeText="Core Capabilities"
-        title="Digital Systems Engineered to Move Business Forward."
-        description="We design and build bespoke high-conversion websites, 3D interactive experiences, intelligent AI automation pipelines, and custom SaaS platforms."
+        badgeText="What We Do"
+        title="Digital Solutions Built to Get You More Customers and Save You Time."
+        description="We don't build generic brochures. We build websites that turn visitors into paying clients, 24/7 AI assistants that capture leads while you sleep, and custom software that saves your team hours every day."
       />
 
       {/* Services Detail Grid */}
@@ -31,19 +31,19 @@ export default function ServicesPage() {
                 <Layers className="w-6 h-6" />
               </div>
               <div className="space-y-2">
-                <span className="text-xs font-mono uppercase tracking-widest text-[#00F0FF]">01 // Flagship Build</span>
+                <span className="text-xs font-mono uppercase tracking-widest text-[#00F0FF]">01 // High-Converting Web</span>
                 <h2 className="font-display font-bold text-3xl sm:text-4xl text-white">
-                  Premium Web Development & 3D Experiences
+                  Premium Websites That Turn Visitors Into Clients
                 </h2>
               </div>
               <p className="text-neutral-300 text-base sm:text-lg leading-relaxed">
-                Elevate your brand beyond generic templates. We build bespoke Next.js 15 web experiences incorporating fluid Three.js/Silk 3D shaders, sub-second Core Web Vitals, and conversion funnels engineered to convert visitors into qualified leads.
+                Stop losing customers to slow, outdated websites. We build sleek, lightning-fast websites that build instant trust and make customers want to buy from you instead of your competitors.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-neutral-300 pt-2 font-medium">
-                <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> Custom 3D & Silk Canvas Shaders</span>
-                <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> Self-Hosted Headless CMS</span>
-                <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> 90+ Lighthouse Performance Score</span>
-                <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> 100% Code & Asset Ownership</span>
+                <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> Luxury Design That Builds Instant Trust</span>
+                <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> Opens in Under 1 Second on Any Mobile Phone</span>
+                <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> Rank Higher on Google &amp; AI Search</span>
+                <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> 100% Code &amp; Asset Ownership Forever</span>
               </div>
             </div>
             <div className="lg:col-span-5 flex flex-col justify-between p-8 rounded-2xl bg-black/60 border border-white/10 space-y-6">
@@ -51,18 +51,18 @@ export default function ServicesPage() {
                 <div className="text-xs font-mono text-neutral-400">Starting Investment</div>
                 <div className="font-display font-bold text-3xl text-white mt-1">From $800</div>
                 <p className="text-xs text-neutral-400 mt-2">
-                  Final pricing depends on 3D depth, custom animations, integrations, and content scope.
+                  One-time build fee. Final price depends on page count, custom visuals, and forms.
                 </p>
               </div>
               <div className="flex flex-col gap-3">
                 <Link href="/services/premium-web">
                   <Button variant="outline" className="w-full justify-center" icon={<ArrowRight className="w-4 h-4" />}>
-                    Explore Service Details
+                    See What's Included
                   </Button>
                 </Link>
                 <Link href="/start-project">
                   <Button variant="electric" className="w-full justify-center" icon={<ArrowUpRight className="w-4 h-4" />}>
-                    Inquire About This Build
+                    Get Your Website
                   </Button>
                 </Link>
               </div>
@@ -76,19 +76,19 @@ export default function ServicesPage() {
                 <Cpu className="w-6 h-6" />
               </div>
               <div className="space-y-2">
-                <span className="text-xs font-mono uppercase tracking-widest text-[#00F0FF]">02 // Intelligent Systems</span>
+                <span className="text-xs font-mono uppercase tracking-widest text-[#00F0FF]">02 // 24/7 AI Sales Assistant</span>
                 <h2 className="font-display font-bold text-3xl sm:text-4xl text-white">
-                  AI & Business Workflow Automation
+                  AI Lead &amp; Appointment Booking Assistants
                 </h2>
               </div>
               <p className="text-neutral-300 text-base sm:text-lg leading-relaxed">
-                Transform manual business operations into automated 24/7 revenue drivers. We implement AI prospect qualification pipelines, automated CRM syncing, customized email drafting, and operational dashboards.
+                Never miss another customer inquiry because you were busy. Our smart AI receptionist answers questions, qualifies customer budgets, and books appointments onto your calendar in under 30 seconds.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-neutral-300 pt-2 font-medium">
-                <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> Automated 24/7 Lead Routing</span>
-                <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> Gemini / OpenAI API Integrations</span>
-                <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> Smart Follow-Up Email Triggers</span>
-                <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> Custom Internal Telemetry UI</span>
+                <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> Instant 24/7 Replies in Under 30 Seconds</span>
+                <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> Automatic Calendar Booking Without Back-and-Forth</span>
+                <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> Instant SMS &amp; Email Alerts to Your Phone</span>
+                <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> Saves Your Team 20+ Hours of Phone Calls</span>
               </div>
             </div>
             <div className="lg:col-span-5 flex flex-col justify-between p-8 rounded-2xl bg-black/60 border border-white/10 space-y-6">
@@ -96,18 +96,18 @@ export default function ServicesPage() {
                 <div className="text-xs font-mono text-neutral-400">Starting Investment</div>
                 <div className="font-display font-bold text-3xl text-white mt-1">From $1,200</div>
                 <p className="text-xs text-neutral-400 mt-2">
-                  Tailored to your CRM endpoints, custom prompt engineering, database volume, and notification rules.
+                  One-time build fee. Custom-trained on your business FAQs, prices, and booking rules.
                 </p>
               </div>
               <div className="flex flex-col gap-3">
                 <Link href="/services/ai-automation">
                   <Button variant="outline" className="w-full justify-center" icon={<ArrowRight className="w-4 h-4" />}>
-                    Explore Service Details
+                    See How AI Works
                   </Button>
                 </Link>
                 <Link href="/start-project">
                   <Button variant="electric" className="w-full justify-center" icon={<ArrowUpRight className="w-4 h-4" />}>
-                    Inquire About Automation
+                    Get Your AI Assistant
                   </Button>
                 </Link>
               </div>
@@ -121,19 +121,19 @@ export default function ServicesPage() {
                 <Zap className="w-6 h-6" />
               </div>
               <div className="space-y-2">
-                <span className="text-xs font-mono uppercase tracking-widest text-[#00F0FF]">03 // Custom Software</span>
+                <span className="text-xs font-mono uppercase tracking-widest text-[#00F0FF]">03 // Custom Business Software</span>
                 <h2 className="font-display font-bold text-3xl sm:text-4xl text-white">
-                  Custom SaaS Platforms & Client Portals
+                  Custom Client Portals &amp; Operations Tools
                 </h2>
               </div>
               <p className="text-neutral-300 text-base sm:text-lg leading-relaxed">
-                Full-stack web application engineering from conception to production VPS deployment. Scalable architecture powered by Next.js, Express, PostgreSQL, Prisma, self-hosted authentication, and Stripe payments.
+                Stop paying thousands every year for 10 different software subscriptions that don't fit your business. We build custom client portals, billing dashboards, and tools built just for you that you own forever.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-neutral-300 pt-2 font-medium">
-                <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> Multi-Tenant Architecture & RBAC</span>
-                <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> Self-Hosted Auth with Argon2id</span>
-                <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> Invoicing, Line Items & Stripe Webhooks</span>
-                <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> Docker Compose Production VPS Ready</span>
+                <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> Private Portals for Clients to Check Project Status</span>
+                <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> Automatic Credit Card Invoicing &amp; Online Payments</span>
+                <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> Everything in One Simple, Clean Dashboard</span>
+                <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> You Own 100% of the Code — Zero Monthly Rent</span>
               </div>
             </div>
             <div className="lg:col-span-5 flex flex-col justify-between p-8 rounded-2xl bg-black/60 border border-white/10 space-y-6">
@@ -141,18 +141,18 @@ export default function ServicesPage() {
                 <div className="text-xs font-mono text-neutral-400">Starting Investment</div>
                 <div className="font-display font-bold text-3xl text-white mt-1">From $3,000</div>
                 <p className="text-xs text-neutral-400 mt-2">
-                  Full product build covering data modeling, API services, security auditing, and deployment automation.
+                  Complete custom software build with authentication, billing, and team permissions.
                 </p>
               </div>
               <div className="flex flex-col gap-3">
                 <Link href="/services/custom-saas">
                   <Button variant="outline" className="w-full justify-center" icon={<ArrowRight className="w-4 h-4" />}>
-                    Explore Service Details
+                    See Software Capabilities
                   </Button>
                 </Link>
                 <Link href="/start-project">
                   <Button variant="electric" className="w-full justify-center" icon={<ArrowUpRight className="w-4 h-4" />}>
-                    Inquire About SaaS Build
+                    Build Your Custom Tool
                   </Button>
                 </Link>
               </div>

@@ -25,11 +25,11 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: 'CYBERSTYLE LLC | Premium Web Experiences, AI Systems & Custom SaaS',
-    template: '%s | CYBERSTYLE LLC',
+    default: 'CYBERSTYLE | High-Converting Websites, 24/7 AI Assistants & Custom Software',
+    template: '%s | CYBERSTYLE',
   },
   description:
-    'Elevate business websites into premium, 3D-driven experiences that increase leads and revenue. High-converting web architecture, AI workflow automation, and custom SaaS platforms.',
+    'Stop losing customers to outdated websites and slow replies. We build premium websites that turn visitors into paying clients, 24/7 AI assistants that book appointments while you sleep, and custom business software you own 100%.',
   metadataBase: new URL('https://cyberstyle.net'),
   alternates: {
     canonical: 'https://cyberstyle.net',
@@ -41,8 +41,8 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: 'CYBERSTYLE LLC | Premium Web Experiences & AI Systems',
-    description: 'Elevate business websites into premium, 3D-driven experiences that increase leads and revenue.',
+    title: 'CYBERSTYLE | High-Converting Websites & 24/7 AI Sales Assistants',
+    description: 'Stop losing customers to outdated websites and slow replies. Turn more visitors into paying clients and automate your business growth.',
     url: 'https://cyberstyle.net',
     siteName: 'CYBERSTYLE',
     locale: 'en_US',
@@ -78,7 +78,7 @@ const rootStructuredData = {
         'https://linkedin.com/company/cyberstyle-agency',
       ],
       description:
-        'Elite software & digital experience agency specializing in bespoke 3D web engineering, AI workflow automation, and custom SaaS platforms.',
+        'CYBERSTYLE helps businesses make more money, capture more leads, and automate daily tasks with custom websites, AI sales assistants, and software platforms you own 100% forever.',
     },
     {
       '@type': ['ProfessionalService', 'LocalBusiness'],

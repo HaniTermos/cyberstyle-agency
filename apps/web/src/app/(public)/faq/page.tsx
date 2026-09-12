@@ -15,38 +15,43 @@ interface FaqItem {
 const faqs: FaqItem[] = [
   {
     category: 'Pricing & Investment',
-    q: 'What is the starting price for CYBERSTYLE services?',
-    a: 'Our bespoke websites start from $800, AI & business automation systems from $1,200, and full-stack custom SaaS/MVPs from $3,000. Exact pricing is scoped transparently based on your functional specifications, 3D complexity, and timeline.',
+    q: 'How much does a project with CYBERSTYLE cost?',
+    a: 'High-converting websites start from $800, 24/7 AI Lead Assistants start from $1,200, and custom business tools/client portals start from $3,000. You get a clear, flat-rate price upfront before we write a single line of code—no hidden fees, no hourly surprises, and no sudden price hikes.',
   },
   {
     category: 'Pricing & Investment',
-    q: 'What payment terms and methods do you accept?',
-    a: 'Standard projects are structured with a 50% upfront deposit to commence discovery and architecture, with the remaining 50% due upon staging approval and prior to production deployment. We accept credit cards via Stripe and direct wire transfers.',
+    q: 'How do payments work?',
+    a: 'We keep it simple: 50% upfront to start your project, and the remaining 50% only when you review, test, and 100% approve everything on your private preview link. You can pay securely with any major credit card via Stripe or bank transfer.',
   },
   {
-    category: 'Performance & 3D Engineering',
-    q: 'Will custom 3D WebGL and Silk backgrounds affect mobile loading times?',
-    a: 'No. We engineer our shaders with lazy compilation, power-preference tuning, frame throttling, and automatic CSS gradient fallbacks for low-power or reduced-motion environments. We target 90+ Lighthouse Core Web Vitals on every build.',
+    category: 'Speed & Mobile Experience',
+    q: 'How fast will my new website load on mobile phones?',
+    a: 'In under 1 second. Most websites lose over half their customers because they take 4 to 6 seconds to open on phones. We make sure your site pops open instantly on any phone, tablet, or slow cellular connection so prospective customers never bounce away to your competitors.',
   },
   {
-    category: 'Performance & 3D Engineering',
-    q: 'Do you design with accessible contrast and keyboard navigation?',
-    a: 'Yes. All interactive controls feature high-contrast visible focus rings (:focus-visible), WCAG 2.2 AA compliant color contrast ratios across both dark and light surfaces, and ARIA landmarks.',
+    category: '24/7 AI Lead Assistant',
+    q: 'How does the 24/7 AI Assistant actually bring me more customers?',
+    a: 'Think of it as your best full-time receptionist who never sleeps, never takes a break, and responds in under 30 seconds. When an interested buyer visits your website or messages you at 10 PM on a Sunday, the AI greets them warmly, answers questions about your services accurately, collects their contact info, and books an appointment directly onto your calendar.',
   },
   {
-    category: 'AI & Business Automation',
-    q: 'How does AI lead qualification work in practice?',
-    a: 'When an inquiry is submitted, our backend pipeline parses the payload through custom Gemini/OpenAI evaluation pipelines to score budget, timeline, and urgency, saving the structured record to PostgreSQL and dispatching notifications with drafted responses.',
+    category: '100% Ownership & Zero Rent',
+    q: 'Do I really own 100% of everything forever?',
+    a: 'Yes, 100%. When we hand over your project, you own all the files, designs, databases, and assets. You are never trapped paying monthly "software rent" to keep your own website online. If you ever decide to move, everything is yours to take.',
   },
   {
-    category: 'Ownership & Delivery',
-    q: 'Do we own 100% of the code, assets, and database upon completion?',
-    a: 'Yes. Upon final invoice settlement, complete ownership of all source code repositories, design files, database schemas, and Docker deployment scripts is transferred to your organization.',
+    category: 'Timeline & Delivery',
+    q: 'How long does it take from our first call to launch?',
+    a: 'Most premium websites are built, reviewed, and launched in 7 to 14 days. AI lead systems take 2 to 3 weeks. We work fast with zero fluff so you can start capturing paying customers right away.',
   },
   {
-    category: 'Ownership & Delivery',
-    q: 'Where are the web applications deployed?',
-    a: 'We configure modern Linux VPS deployments via Docker Compose (PostgreSQL 16, Redis 7, Express API, Next.js Web, Nginx reverse proxy with automated Let’s Encrypt TLS renewal) for zero vendor lock-in.',
+    category: 'Ongoing Support & Care',
+    q: 'What happens after my website or AI assistant is launched?',
+    a: 'You can either manage it yourself with zero ongoing fees, or let us handle everything for a simple $30/month VIP Care plan (daily automatic backups, security monitoring, and instant updates). You also get an easy guide so anyone on your team can make updates in seconds.',
+  },
+  {
+    category: 'Getting Started',
+    q: 'What do I need to prepare before we get started?',
+    a: 'Nothing at all! You do not need any technical knowledge. Just tell us about your business, who your ideal customers are, and what you want to achieve. We handle all the design, copywriting guidance, setup, and launch for you.',
   },
 ];
 
@@ -56,9 +61,9 @@ export default function FaqPage() {
   return (
     <div className="min-h-screen bg-black text-white">
       <PageBanner
-        badgeText="Knowledge Base"
-        title="Frequently Answered Questions"
-        description="Clear answers regarding our engineering standards, investment tiers, 3D performance, AI automations, and delivery process."
+        badgeText="Common Questions"
+        title="Everything You Need to Know."
+        description="Clear, honest answers about pricing, speed, 24/7 AI assistants, and 100% asset ownership—no confusing technical jargon."
       />
 
       {/* Atmospheric Black-to-White Scrim Gradient */}
@@ -96,12 +101,22 @@ export default function FaqPage() {
           ))}
 
           <div className="pt-12 text-center space-y-4">
-            <h3 className="font-display font-bold text-2xl text-black">Have a question not listed here?</h3>
-            <a href="mailto:hello@cyberstyle.net">
-              <Button variant="secondary" size="md" icon={<ArrowUpRight className="w-4 h-4" />}>
-                Ask Directly: hello@cyberstyle.net
-              </Button>
-            </a>
+            <h3 className="font-display font-bold text-2xl text-black">Ready to grow your business?</h3>
+            <p className="text-sm text-neutral-600 max-w-md mx-auto">
+              Book a quick, zero-pressure 15-minute Gameplan Call or email us anytime.
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
+              <a href="/start-project">
+                <Button variant="electric" size="md" icon={<ArrowUpRight className="w-4 h-4" />}>
+                  Get Your Free Gameplan
+                </Button>
+              </a>
+              <a href="mailto:hello@cyberstyle.net">
+                <Button variant="secondary" size="md">
+                  Email Us: hello@cyberstyle.net
+                </Button>
+              </a>
+            </div>
           </div>
         </div>
       </section>

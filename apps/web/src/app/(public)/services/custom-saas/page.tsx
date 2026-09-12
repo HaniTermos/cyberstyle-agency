@@ -8,35 +8,35 @@ import { Card } from '@/components/ui/Card';
 import { SectionGradient } from '@/components/ui/SectionGradient';
 
 export const metadata: Metadata = {
-  title: 'Custom SaaS & Platform Engineering',
+  title: 'Custom Business Software & Client Portals // CYBERSTYLE',
   description:
-    'Full-stack custom SaaS, internal business operations tools, and client portals built with Next.js, Express, PostgreSQL, and Docker. Starting from $3,000.',
+    'Custom software, client portals, and automated business tools tailored to your exact workflows. You own 100% of the code with zero monthly software rent. Starting from $3,000.',
 };
 
 export default function CustomSaaSServicePage() {
   const deliverables = [
-    'Full-Stack Architecture: Next.js 15 App Router + Express REST API + PostgreSQL',
-    'Self-Hosted Authentication & RBAC (Argon2id, Session rotation, TOTP 2FA)',
-    'Multi-Tenant Data Partitioning & Security Scoping',
-    'Stripe Invoicing, Hosted Checkouts & Idempotent Webhook Verification',
-    'Client Portals with Real-Time Milestone Tracking & Deliverable Vaults',
-    'Redis Caching & BullMQ Background Job Architecture',
-    'Docker Compose VPS Deployment Scripts with Nginx & Let’s Encrypt TLS',
-    'Automated Nightly Encrypted Database Backups & Restore Runbooks',
+    'Private Client Portals: Give clients their own login to view project progress, approve milestones, and download deliverables.',
+    'Automatic Credit Card Invoicing: Integrated Stripe payments, subscriptions, and instant digital receipts sent to customers.',
+    'Everything in One Simple Dashboard: Replace 5 messy software subscriptions with one clean tool tailored to your exact team.',
+    'Zero Monthly Per-User Fees: Stop paying $30/month per employee to SaaS companies. Your platform is yours forever.',
+    'Bank-Grade Data Security: Encrypted user logins, phone verification codes, and total privacy for all company records.',
+    'Automatic Nightly Backups: Your customer data is backed up safely every night so you never have to worry about data loss.',
+    '100% Code & Asset Ownership: Once finished, all software files and code belong entirely to you with zero vendor lock-in.',
+    'Flawless Phone & Computer Access: Fast, responsive access for your team on iPhones, Androids, iPads, and office desktops.',
   ];
 
   const faqs = [
     {
-      q: 'What is included in a $3,000 Custom SaaS/MVP build?',
-      a: 'We deliver a production-ready software foundation: normalized PostgreSQL schema, secure authentication and RBAC, core business workflows, Stripe payment integration, client/admin dashboards, and VPS deployment scripts.',
+      q: 'What is included in a $3,000 Custom Software build?',
+      a: 'You get a complete, working software platform tailored to your business: secure client logins, automatic credit card invoicing with Stripe, custom dashboards, customer management, and deployment ready for real customers.',
     },
     {
-      q: 'Why self-host auth and database instead of using third-party managed services?',
-      a: 'Self-hosting on a high-performance Linux VPS eliminates expensive per-user pricing (like Clerk or Firebase Auth tier jumps), ensures 100% data sovereignty, and keeps your operational costs predictable as you scale.',
+      q: 'Why should I build custom software instead of paying for existing tools?',
+      a: 'Most software tools charge expensive monthly fees per user and force you to change how your business operates to fit their templates. Custom software fits your exact workflow, saves your team 20+ hours a week, and saves you tens of thousands in recurring software rent over time.',
     },
     {
-      q: 'Do you provide maintenance and ongoing development?',
-      a: 'Yes. We offer continuous growth and maintenance partnerships to ship new features, monitor server health, and scale database performance.',
+      q: 'Do you help us maintain and update the software after launch?',
+      a: 'Yes! We offer an optional $30/month peace-of-mind care plan that covers 24/7 uptime monitoring, server security patches, nightly encrypted backups, and rapid technical support whenever you need it.',
     },
   ];
 
@@ -44,21 +44,21 @@ export default function CustomSaaSServicePage() {
     <div className="min-h-screen bg-black text-white">
       <PageBanner
         badgeText="Service // 03"
-        title="Custom SaaS & Platform Engineering"
-        description="We engineer bespoke full-stack SaaS applications, client portals, and internal tools built for security, scalability, and long-term business value. Starting from $3,000."
+        title="Custom Business Software & Client Portals"
+        description="Stop paying monthly rent for software that doesn't fit your business. We build custom client portals, billing dashboards, and automated tools that you own 100% forever. Starting from $3,000."
       />
 
       <section className="py-24 px-6 bg-[#08090C]">
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
           <div className="lg:col-span-7 space-y-8">
             <div className="space-y-4">
-              <span className="text-xs font-mono uppercase tracking-widest text-[#00F0FF]">Custom Software</span>
+              <span className="text-xs font-mono uppercase tracking-widest text-[#00F0FF]">Custom Business Tools</span>
               <h2 className="font-display font-bold text-3xl sm:text-4xl text-white">
-                Off-the-shelf software rarely fits unique business models. We build platforms you own.
+                Off-the-shelf software rarely fits how you work. We build tools you actually own.
               </h2>
             </div>
             <p className="text-neutral-300 text-base sm:text-lg leading-relaxed">
-              When standard tools limit your operational efficiency or client experience, custom software creates an enduring competitive advantage. We engineer modular, secure, high-performance web applications ready for enterprise workloads.
+              When standard tools slow down your team or force you into expensive monthly fees, custom software creates an unfair competitive advantage. We build clean, fast, secure software tailored to your exact business.
             </p>
 
             {/* Plain-English Non-Technical Collaboration Workflow */}
@@ -70,40 +70,40 @@ export default function CustomSaaSServicePage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-4 rounded-xl bg-white/[0.03] border border-white/10 space-y-2">
                   <div className="w-6 h-6 rounded-md bg-[#00F0FF]/10 text-[#00F0FF] text-xs font-mono flex items-center justify-center font-bold">1</div>
-                  <h4 className="text-sm font-semibold text-white">Discovery & Architecture Blueprint</h4>
+                  <h4 className="text-sm font-semibold text-white">Discovery &amp; Blueprint</h4>
                   <p className="text-xs text-neutral-400 leading-relaxed">
-                    We map your business processes into intuitive user journeys, database schemas, and clear milestone schedules before writing a single line of code.
+                    We map out what your team and clients need, define simple screens, and create a clear milestone schedule before writing code.
                   </p>
                 </div>
 
                 <div className="p-4 rounded-xl bg-white/[0.03] border border-white/10 space-y-2">
                   <div className="w-6 h-6 rounded-md bg-[#00F0FF]/10 text-[#00F0FF] text-xs font-mono flex items-center justify-center font-bold">2</div>
-                  <h4 className="text-sm font-semibold text-white">Core Engine & UI Build</h4>
+                  <h4 className="text-sm font-semibold text-white">Interactive Prototype</h4>
                   <p className="text-xs text-neutral-400 leading-relaxed">
-                    We build your application in sprints. You test live previews in a secure sandbox and verify features as they are finished.
+                    You click through a live preview of your software in a private sandbox. You test features as they are finished and give direct feedback.
                   </p>
                 </div>
 
                 <div className="p-4 rounded-xl bg-white/[0.03] border border-white/10 space-y-2">
                   <div className="w-6 h-6 rounded-md bg-[#00F0FF]/10 text-[#00F0FF] text-xs font-mono flex items-center justify-center font-bold">3</div>
-                  <h4 className="text-sm font-semibold text-white">Security & Performance Hardening</h4>
+                  <h4 className="text-sm font-semibold text-white">Security &amp; Payment Setup</h4>
                   <p className="text-xs text-neutral-400 leading-relaxed">
-                    We test data protection, configure SSL encryption, set up automated database backups, and connect Stripe billing.
+                    We connect your credit card billing with Stripe, set up bank-level security, and configure automated nightly database backups.
                   </p>
                 </div>
 
                 <div className="p-4 rounded-xl bg-white/[0.03] border border-white/10 space-y-2">
                   <div className="w-6 h-6 rounded-md bg-[#00F0FF]/10 text-[#00F0FF] text-xs font-mono flex items-center justify-center font-bold">4</div>
-                  <h4 className="text-sm font-semibold text-white">Launch & Full Code Ownership</h4>
+                  <h4 className="text-sm font-semibold text-white">Launch &amp; 100% Handover</h4>
                   <p className="text-xs text-neutral-400 leading-relaxed">
-                    Your platform goes live on your dedicated server. You receive 100% intellectual property ownership and full documentation.
+                    Your platform goes live on your dedicated server. You receive 100% intellectual property ownership, source files, and a simple video guide.
                   </p>
                 </div>
               </div>
             </div>
 
             <div className="pt-6 border-t border-white/10 space-y-4">
-              <h3 className="font-display font-bold text-xl text-white">Full-Stack Architecture Scope</h3>
+              <h3 className="font-display font-bold text-xl text-white">What’s Included in Your Build</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {deliverables.map((item, idx) => (
                   <div key={idx} className="flex items-start gap-2.5 text-xs text-neutral-300">
@@ -121,19 +121,19 @@ export default function CustomSaaSServicePage() {
                 <span className="text-xs font-mono text-[#00F0FF] uppercase tracking-wider">Investment Framework</span>
                 <div className="font-display font-bold text-4xl text-white mt-1">From $3,000</div>
                 <p className="text-xs text-neutral-400 mt-2">
-                  Full product MVP engineering covering data modeling, REST API, authentication, Stripe billing, and VPS containerization.
+                  Complete custom software build covering user logins, customer management, Stripe billing, and server deployment.
                 </p>
               </div>
 
               <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-2 text-xs font-mono text-neutral-300">
-                <div className="flex justify-between"><span>Timeline:</span><span className="text-white">3–6 Weeks</span></div>
-                <div className="flex justify-between"><span>Database:</span><span className="text-white">PostgreSQL 16 + Prisma</span></div>
-                <div className="flex justify-between"><span>Auth & Security:</span><span className="text-white">Argon2id + 2FA</span></div>
+                <div className="flex justify-between"><span>Delivery Timeline:</span><span className="text-white">3–6 Weeks</span></div>
+                <div className="flex justify-between"><span>Code Ownership:</span><span className="text-[#00F0FF] font-bold">100% Yours Forever</span></div>
+                <div className="flex justify-between"><span>Monthly User Rent:</span><span className="text-emerald-400 font-bold">$0 / Month</span></div>
               </div>
 
               <Link href="/start-project">
                 <Button variant="electric" size="lg" className="w-full justify-center" icon={<ArrowUpRight className="w-5 h-5" />}>
-                  Start SaaS Architecture Build
+                  Start Your Custom Software Build
                 </Button>
               </Link>
             </Card>

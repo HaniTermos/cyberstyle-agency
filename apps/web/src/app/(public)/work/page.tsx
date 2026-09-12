@@ -25,39 +25,39 @@ const fallbackCaseStudies: CaseStudyItem[] = [
   {
     id: 'cs-1',
     slug: 'nexus-logistics-ai-routing',
-    title: 'Automated Lead Qualification & High-Conversion Web Architecture',
+    title: '24/7 AI Lead Assistant That Turns Inquiries Into Booked Calls',
     clientName: 'Nexus Global Logistics',
-    industry: 'Logistics & Supply Chain',
+    industry: 'Logistics & Shipping',
     serviceCategory: 'ai',
-    summary: 'Engineered a bespoke 3D web platform paired with automated 24/7 AI quote routing and CRM synchronization.',
+    summary: 'Replaced slow manual email replies with an instant 30-second AI receptionist that qualifies leads and automatically books appointments on the team calendar.',
     metric: '+340%',
-    metricLabel: 'Qualified Inquiries',
+    metricLabel: 'More Booked Leads',
     geoCity: 'Chicago, IL',
     geoCountry: 'US',
   },
   {
     id: 'cs-2',
     slug: 'apex-capital-web-experience',
-    title: 'High-Impact Editorial Web Platform & Three.js Shader System',
+    title: 'High-Converting Website That Loads in Under 1 Second',
     clientName: 'Apex Capital Advisory',
     industry: 'Financial Advisory',
     serviceCategory: 'web',
-    summary: 'Redesigned brand identity, created fluid interactive Silk visual backgrounds, and boosted conversion velocity.',
-    metric: '99/100',
-    metricLabel: 'Core Web Vitals',
+    summary: 'Redesigned an outdated website into an ultra-fast, premium sales engine that doubled customer inquiries and looks stunning on every mobile phone.',
+    metric: '2.4x',
+    metricLabel: 'More Paying Clients',
     geoCity: 'New York, NY',
     geoCountry: 'US',
   },
   {
     id: 'cs-3',
     slug: 'lumina-saas-client-portal',
-    title: 'Multi-Tenant Client Portal & Self-Hosted Billing Engine',
+    title: 'Private Client Portal That Saves 20+ Hours Every Week',
     clientName: 'Lumina Digital Systems',
-    industry: 'Enterprise SaaS',
+    industry: 'Business Services',
     serviceCategory: 'saas',
-    summary: 'Built full-stack operations portal with Argon2id auth, Stripe hosted billing, milestone tracking, and deliverable vault.',
-    metric: '4.2x',
-    metricLabel: 'Operational Efficiency',
+    summary: 'Built a centralized customer dashboard with automated credit card payments, project milestones, and zero monthly software subscription fees.',
+    metric: '20 hrs/wk',
+    metricLabel: 'Saved in Manual Work',
     geoCity: 'Dubai',
     geoCountry: 'AE',
   },
@@ -120,9 +120,9 @@ export default function WorkIndexPage() {
   return (
     <div className="min-h-screen bg-black text-white">
       <PageBanner
-        badgeText="Selected Work"
-        title="Digital Systems Built to Move Business Forward."
-        description="Explore our portfolio of high-converting web experiences, intelligent AI automation pipelines, and custom SaaS platforms."
+        badgeText="Real Client Results"
+        title="Websites & AI Systems Built to Make You More Money."
+        description="Explore how we turned slow websites, lost leads, and manual busywork into 24/7 client booking machines and real revenue growth."
       />
 
       {/* Filter Tabs */}
@@ -130,10 +130,10 @@ export default function WorkIndexPage() {
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0">
             {[
-              { id: 'all', label: 'All Systems' },
-              { id: 'web', label: 'Premium Web' },
-              { id: 'ai', label: 'AI & Automation' },
-              { id: 'saas', label: 'Custom SaaS' },
+              { id: 'all', label: 'All Projects' },
+              { id: 'web', label: 'Websites That Sell' },
+              { id: 'ai', label: '24/7 AI Assistants' },
+              { id: 'saas', label: 'Custom Portals & Tools' },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -151,7 +151,7 @@ export default function WorkIndexPage() {
 
           <div className="text-xs font-mono text-neutral-400 flex items-center gap-2">
             {loading && <RefreshCw className="w-3.5 h-3.5 animate-spin text-cyan-400" />}
-            Showing {filteredStudies.length} of {caseStudies.length} verified specimens
+            Showing {filteredStudies.length} of {caseStudies.length} client success stories
           </div>
         </div>
       </section>

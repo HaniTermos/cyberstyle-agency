@@ -185,7 +185,7 @@ export default function PortalLoginPage() {
     <div className="relative min-h-screen w-full flex items-center justify-center p-4 bg-[#080A10] text-zinc-100 overflow-hidden font-sans">
       {/* Dynamic Background */}
       <div className="absolute inset-0 pointer-events-none opacity-40">
-        <Silk speed={3} sparkCount={15} />
+        <Silk speed={3} />
       </div>
 
       <div className="relative z-10 w-full max-w-md">

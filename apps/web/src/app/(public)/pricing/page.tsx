@@ -9,21 +9,21 @@ import { Badge } from '@/components/ui/Badge';
 import Silk from '@/components/backgrounds/Silk';
 
 export const metadata: Metadata = {
-  title: 'Pricing & Investment Framework',
+  title: 'Pricing & Packages That Pay for Themselves // CYBERSTYLE',
   description:
-    'Transparent pricing structure for CYBERSTYLE web experiences, AI automation pipelines, and custom SaaS platforms. Starting from $800.',
+    'Clear, transparent pricing for high-converting websites, 24/7 AI sales assistants, and custom software. You own 100% of your assets with zero monthly software rent. Starting from $800.',
 };
 
 export default function PricingPage() {
   return (
     <div className="min-h-screen bg-black text-white">
       <PageBanner
-        badgeText="Investment Structure"
-        title="Predictable Pricing Engineered for Measurable ROI."
-        description="We believe in transparent starting rates. Final investment depends on 3D depth, custom workflows, API integrations, and timeline requirements."
+        badgeText="Transparent Investments"
+        title="Simple, Predictable Pricing That Pays for Itself."
+        description="No hidden fees. No endless monthly rental bills. Just clear investments designed to bring you more customers and save your team dozens of hours every week."
       />
 
-      {/* 3-Tier Grid (Matching Reference Direction) */}
+      {/* 3-Tier Grid */}
       <section className="py-24 px-6 bg-[#08090C]">
         <div className="max-w-7xl mx-auto space-y-16">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
@@ -32,24 +32,24 @@ export default function PricingPage() {
               <div className="space-y-6">
                 <div>
                   <span className="text-xs font-mono uppercase text-neutral-500">Tier 01</span>
-                  <h3 className="font-display font-bold text-2xl text-black mt-1">Strategy & Web Build</h3>
-                  <p className="text-xs text-neutral-500 mt-1">For brands needing a high-converting digital identity.</p>
+                  <h3 className="font-display font-bold text-2xl text-black mt-1">High-Converting Website</h3>
+                  <p className="text-xs text-neutral-500 mt-1">For businesses ready to look like the #1 choice in their market.</p>
                 </div>
                 <div className="pt-4 border-t border-black/10">
                   <div className="font-display font-bold text-4xl text-black">From $800</div>
-                  <span className="text-xs text-neutral-500 font-mono">Custom project scope</span>
+                  <span className="text-xs text-neutral-500 font-mono">One-time investment</span>
                 </div>
                 <ul className="space-y-3 text-xs text-neutral-700 pt-4 border-t border-black/10">
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Bespoke High-End Design System</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Next.js 15 App Router Architecture</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Sub-second Core Web Vitals</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Self-Hosted Headless CMS</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> 100% Code & Asset Transfer</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Custom Luxury Design That Builds Instant Trust</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Opens in Under 1 Second on Any Mobile Phone</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Built-in Google &amp; AI Search Optimization</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Every Inquiry Sent Straight to Your Phone &amp; Email</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> You Own 100% of the Website Forever</li>
                 </ul>
               </div>
               <Link href="/start-project" className="mt-8">
                 <Button variant="secondary" className="w-full justify-center">
-                  Start Web Build
+                  Get Your Website
                 </Button>
               </Link>
             </Card>
@@ -62,26 +62,26 @@ export default function PricingPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="text-xs font-mono uppercase text-[#00F0FF]">Tier 02</span>
-                      <h3 className="font-display font-bold text-2xl text-white mt-1">Growth & AI Automation</h3>
-                      <p className="text-xs text-neutral-400 mt-1">For businesses seeking automated qualification & 3D flair.</p>
+                      <h3 className="font-display font-bold text-2xl text-white mt-1">AI Sales &amp; Booking Machine</h3>
+                      <p className="text-xs text-neutral-400 mt-1">For businesses that want clients booked automatically 24/7.</p>
                     </div>
                     <Badge variant="electric">Most Popular</Badge>
                   </div>
                   <div className="pt-4 border-t border-white/10">
                     <div className="font-display font-bold text-4xl text-white">From $1,200</div>
-                    <span className="text-xs text-[#00F0FF] font-mono">Custom automation scope</span>
+                    <span className="text-xs text-[#00F0FF] font-mono">One-time investment</span>
                   </div>
                   <ul className="space-y-3 text-xs text-neutral-200 pt-4 border-t border-white/10">
-                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> Everything in Strategy & Web</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> Custom 3D / Silk Wave Shaders</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> 24/7 AI Prospect Qualification</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> Automated Email Follow-ups via Nodemailer</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> CRM & Webhook Integrations</li>
+                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> Everything in High-Converting Website</li>
+                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> 24/7 AI Receptionist Answers in Under 30s</li>
+                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> Automatically Qualifies Budgets &amp; Client Needs</li>
+                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> Direct Calendar Booking Straight Into Your Schedule</li>
+                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> Saves Your Team 20+ Hours of Phone Calls Every Week</li>
                   </ul>
                 </div>
                 <Link href="/start-project" className="relative z-10 mt-8">
                   <Button variant="electric" className="w-full justify-center">
-                    Start Growth Build
+                    Get Your AI Sales Machine
                   </Button>
                 </Link>
               </Card>
@@ -92,24 +92,24 @@ export default function PricingPage() {
               <div className="space-y-6">
                 <div>
                   <span className="text-xs font-mono uppercase text-neutral-500">Tier 03</span>
-                  <h3 className="font-display font-bold text-2xl text-black mt-1">Custom SaaS & MVPs</h3>
-                  <p className="text-xs text-neutral-500 mt-1">For companies engineering proprietary web platforms.</p>
+                  <h3 className="font-display font-bold text-2xl text-black mt-1">Custom Client Portals &amp; Tools</h3>
+                  <p className="text-xs text-neutral-500 mt-1">For companies that want their own custom software platform.</p>
                 </div>
                 <div className="pt-4 border-t border-black/10">
                   <div className="font-display font-bold text-4xl text-black">From $3,000</div>
-                  <span className="text-xs text-neutral-500 font-mono">Full-stack platform build</span>
+                  <span className="text-xs text-neutral-500 font-mono">Complete custom platform</span>
                 </div>
                 <ul className="space-y-3 text-xs text-neutral-700 pt-4 border-t border-black/10">
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Full-Stack Next.js + Express + Postgres</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Self-Hosted Auth, RBAC & TOTP 2FA</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Client Portals & Stripe Invoicing</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Redis BullMQ Background Queues</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Docker Compose Production VPS Deployment</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Private Client Portals for Project Updates &amp; Files</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Automatic Online Credit Card Billing &amp; Invoicing</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Replace 5 to 10 Expensive Monthly Software Subscriptions</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Clean, Simple Business Dashboard Your Whole Team Can Use</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> You Own 100% of the Code — Zero Monthly User Rent</li>
                 </ul>
               </div>
               <Link href="/start-project" className="mt-8">
                 <Button variant="secondary" className="w-full justify-center">
-                  Discuss Custom Scope
+                  Build Your Custom Tool
                 </Button>
               </Link>
             </Card>
@@ -117,7 +117,7 @@ export default function PricingPage() {
 
           {/* Pricing Disclaimer Note */}
           <div className="p-6 rounded-2xl bg-white/5 border border-white/10 text-xs font-mono text-neutral-400 text-center max-w-3xl mx-auto">
-            * Note: All prices are base starting indicators in USD. Final project proposals are provided after discovery based on exact functional specifications, integrations, timeline, and asset readiness.
+            * Note: All prices are base starting rates in USD. You will receive a clear, fixed-price proposal before we start, so you always know exactly what you are investing.
           </div>
         </div>
       </section>

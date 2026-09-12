@@ -43,28 +43,28 @@ export default function HomePage() {
             <div className="lg:col-span-7 space-y-8">
               <div className="inline-flex items-center gap-2">
                 <span className="text-xs font-mono uppercase tracking-widest text-[#00F0FF]">
-                  Engineered for High-Conversion & Scale
+                  Stop Losing Customers to Your Competitors
                 </span>
               </div>
 
               <h1 className="font-display font-extrabold text-4xl sm:text-6xl xl:text-7xl leading-[1.05] tracking-tight text-white">
-                Websites Engineered to Move Business Forward.
+                Websites &amp; AI Systems Built to Make You More Money.
               </h1>
 
               <p className="text-lg sm:text-xl text-neutral-300 max-w-2xl leading-relaxed font-normal">
-                We elevate standard business websites into premium, 3D-driven digital systems and AI automations that increase leads, bookings, and revenue.
+                We turn slow, outdated websites into customer-generating machines. Plus, our 24/7 AI assistants answer questions and book qualified clients into your calendar in under 30 seconds — even while you sleep.
               </p>
 
               {/* Action CTAs */}
               <div className="flex flex-wrap items-center gap-4 pt-2">
                 <Link href="#start-project">
                   <Button variant="electric" size="lg" icon={<ArrowUpRight className="w-5 h-5" />}>
-                    Start a Project
+                    Get Your Free Growth Gameplan
                   </Button>
                 </Link>
-                <Link href="#work">
+                <Link href="#services">
                   <Button variant="outline" size="lg">
-                    Explore Capabilities
+                    See How We Help You Win
                   </Button>
                 </Link>
               </div>
@@ -73,15 +73,15 @@ export default function HomePage() {
               <div className="pt-6 border-t border-white/10 grid grid-cols-3 gap-6 max-w-lg text-xs font-mono text-neutral-400">
                 <div>
                   <span className="text-white font-semibold block text-sm">From $800</span>
-                  <span>Premium Web</span>
+                  <span>High-Converting Web</span>
                 </div>
                 <div>
                   <span className="text-[#00F0FF] font-semibold block text-sm">From $1,200</span>
-                  <span>AI Automation</span>
+                  <span>24/7 AI Sales Assistant</span>
                 </div>
                 <div>
                   <span className="text-white font-semibold block text-sm">From $3,000</span>
-                  <span>Custom SaaS</span>
+                  <span>Custom Business Tools</span>
                 </div>
               </div>
             </div>
@@ -94,45 +94,45 @@ export default function HomePage() {
                   <div className="flex items-center justify-between pb-6 border-b border-white/10">
                     <div className="flex items-center gap-3">
                       <span className="font-mono text-xs uppercase tracking-wider text-neutral-300">
-                        CYBERSTYLE // COMMAND CORE
+                        YOUR DIGITAL GROWTH DASHBOARD
                       </span>
                     </div>
-                    <span className="text-xs font-mono text-neutral-400">v3.0</span>
+                    <span className="text-xs font-mono text-emerald-400">Live &amp; Selling</span>
                   </div>
 
                   <div className="py-8 space-y-6">
                     <div className="space-y-2">
-                      <div className="text-xs text-neutral-400 font-mono">Performance Benchmark</div>
+                      <div className="text-xs text-neutral-400 font-mono">Customer Page Speed</div>
                       <div className="text-3xl font-display font-bold text-white flex items-baseline gap-2">
-                        &lt; 1.2s <span className="text-xs text-emerald-400 font-mono font-normal">Target LCP Speed</span>
+                        &lt; 1.0s <span className="text-xs text-emerald-400 font-mono font-normal">Instant Load on Any Phone</span>
                       </div>
                     </div>
 
                     <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-2">
                       <div className="flex items-center justify-between text-xs text-neutral-300">
                         <span className="flex items-center gap-2">
-                          <Cpu className="w-4 h-4 text-[#00F0FF]" /> AI Lead Qualification
+                          <Cpu className="w-4 h-4 text-[#00F0FF]" /> 24/7 AI Receptionist
                         </span>
-                        <span className="text-emerald-400 font-mono">Active</span>
+                        <span className="text-emerald-400 font-mono">Active (20s reply)</span>
                       </div>
                       <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
-                        <div className="bg-[#00F0FF] h-full w-[88%]" />
+                        <div className="bg-[#00F0FF] h-full w-[94%]" />
                       </div>
                     </div>
 
                     <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-2">
                       <div className="flex items-center justify-between text-xs text-neutral-300">
                         <span className="flex items-center gap-2">
-                          <Zap className="w-4 h-4 text-amber-400" /> Core Web Vitals
+                          <Zap className="w-4 h-4 text-amber-400" /> Customer Satisfaction
                         </span>
-                        <span className="text-white font-mono">99 / 100</span>
+                        <span className="text-white font-mono">100% 5-Star Reviews</span>
                       </div>
                     </div>
                   </div>
 
                   <div className="pt-4 border-t border-white/10 flex items-center justify-between text-xs font-mono text-neutral-400">
-                    <span>3D Silk Engine Active</span>
-                    <span className="text-[#00F0FF]">60 FPS</span>
+                    <span>You Own 100% of Everything</span>
+                    <span className="text-[#00F0FF]">Zero Monthly Rent</span>
                   </div>
                 </Card>
               </div>
@@ -141,10 +141,10 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Partner Logos in Black Canvas (matching user reference) */}
+      {/* Partner Logos in Black Canvas */}
       <PartnerLogos />
 
-      {/* Atmospheric Black-to-White Scrim Gradient (matching user reference) */}
+      {/* Atmospheric Black-to-White Scrim Gradient */}
       <SectionGradient direction="black-to-white" heightClass="h-48 sm:h-64 lg:h-72" />
 
       {/* =====================================================================
@@ -155,40 +155,40 @@ export default function HomePage() {
           {/* Main Statement */}
           <div className="space-y-6 max-w-5xl">
             <span className="text-xs font-mono uppercase tracking-widest text-neutral-500 block">
-              About CYBERSTYLE
+              The Real Problem
             </span>
             <h2 className="font-display font-bold text-3xl sm:text-5xl lg:text-6xl text-black leading-[1.1] tracking-tight">
-              We partner with startups, growing companies, and established organizations to build digital systems that increase leads, bookings, and revenue.
+              Most websites look okay, but they don't make a single dime. We fix that.
             </h2>
           </div>
 
           {/* Multi-Column Supporting Editorial Text */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-8 border-t border-black/10 text-neutral-700 text-base sm:text-lg leading-relaxed">
             <p>
-              Traditional websites are often digital brochures that cost money without generating momentum. We approach web development as operational systems engineering: pairing memorable visual distinction and 3D interactivity with rigorous conversion funnels and automated lead workflows.
+              If your website takes longer than 2 seconds to load, looks confusing on phones, or makes people search for how to hire you, you are quietly handing paying customers to your competitors every single day.
             </p>
             <p>
-              From custom SaaS MVPs and AI routing pipelines to high-ticket service agency platforms, our work bridges the gap between captivating design and measurable business outcomes.
+              We don't build useless digital brochures. We engineer complete growth machines: stunning websites that make you look like a multi-million dollar company, paired with smart 24/7 AI assistants that answer questions and book appointments while you sleep.
             </p>
           </div>
 
           {/* Architecture Standards & Engineering Benchmarks */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 pt-12 border-t border-black/10">
             <div className="space-y-1 border-l-2 border-black pl-4">
-              <div className="font-display font-bold text-4xl sm:text-5xl text-black">&lt; 1.2s</div>
-              <div className="text-xs font-mono uppercase tracking-wider text-neutral-500">Core Web Vitals LCP</div>
+              <div className="font-display font-bold text-4xl sm:text-5xl text-black">&lt; 1.0s</div>
+              <div className="text-xs font-mono uppercase tracking-wider text-neutral-500">Instant Phone Speed</div>
             </div>
             <div className="space-y-1 border-l-2 border-black pl-4">
               <div className="font-display font-bold text-4xl sm:text-5xl text-black">100%</div>
-              <div className="text-xs font-mono uppercase tracking-wider text-neutral-500">Code & Asset Ownership</div>
+              <div className="text-xs font-mono uppercase tracking-wider text-neutral-500">You Own Everything Forever</div>
             </div>
             <div className="space-y-1 border-l-2 border-black pl-4">
-              <div className="font-display font-bold text-4xl sm:text-5xl text-black">PG 16</div>
-              <div className="text-xs font-mono uppercase tracking-wider text-neutral-500">Self-Hosted PostgreSQL</div>
+              <div className="font-display font-bold text-4xl sm:text-5xl text-black">30s</div>
+              <div className="text-xs font-mono uppercase tracking-wider text-neutral-500">AI Customer Reply Time</div>
             </div>
             <div className="space-y-1 border-l-2 border-black pl-4">
               <div className="font-display font-bold text-4xl sm:text-5xl text-black">24/7</div>
-              <div className="text-xs font-mono uppercase tracking-wider text-neutral-500">Automated AI Routing</div>
+              <div className="text-xs font-mono uppercase tracking-wider text-neutral-500">Automatic Lead Booking</div>
             </div>
           </div>
         </div>
@@ -205,14 +205,14 @@ export default function HomePage() {
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-black/10">
             <div>
               <span className="text-xs font-mono uppercase tracking-widest text-neutral-500 mb-2 block">
-                Capabilities & Offerings
+                How We Make You Win
               </span>
               <h2 className="font-display font-bold text-3xl sm:text-5xl text-black tracking-tight">
-                Engineered for High-Impact Outcomes.
+                Simple, Powerful Services Built for Maximum Profit.
               </h2>
             </div>
             <p className="text-neutral-600 text-sm max-w-md font-sans">
-              Every build is customized to your exact operational requirements. Starting prices indicate base scope.
+              No confusing technical jargon. Just clear solutions that get you more customers and save you dozens of hours every week.
             </p>
           </div>
 
@@ -225,23 +225,24 @@ export default function HomePage() {
                   <Layers className="w-6 h-6" />
                 </div>
                 <div className="space-y-2">
-                  <span className="font-mono text-xs text-neutral-500">01 // Web Architecture</span>
-                  <h3 className="font-display font-bold text-2xl text-black">Premium Web Experiences</h3>
+                  <span className="font-mono text-xs text-neutral-500">01 // High-Converting Websites</span>
+                  <h3 className="font-display font-bold text-2xl text-black">Premium Websites That Sell</h3>
                 </div>
                 <p className="text-sm text-neutral-600 leading-relaxed">
-                  High-converting, responsive, interactive, and 3D websites tailored for brands ready to differentiate and dominate their market.
+                  Stop losing leads to outdated templates. We build gorgeous, lightning-fast websites that make you look like the #1 choice in your city or industry.
                 </p>
                 <ul className="space-y-2.5 text-xs text-neutral-700 font-medium">
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> 3D WebGL / Silk Interactive Art</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Sub-second Core Web Vitals</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Self-hosted CMS & Lead Routing</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Looks like a multi-million-dollar brand</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Opens in under 1 second on any mobile phone</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Rank higher on Google so local clients find you first</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> You own 100% of the website forever</li>
                 </ul>
               </div>
               <div className="pt-8 mt-8 border-t border-black/10 flex items-center justify-between">
                 <span className="font-display font-bold text-xl text-black">From $800</span>
                 <Link href="#start-project">
                   <Button variant="secondary" size="sm" icon={<ArrowRight className="w-3.5 h-3.5" />}>
-                    Inquire
+                    Get Started
                   </Button>
                 </Link>
               </div>
@@ -254,23 +255,24 @@ export default function HomePage() {
                   <Cpu className="w-6 h-6 text-[#0080FF]" />
                 </div>
                 <div className="space-y-2">
-                  <span className="font-mono text-xs text-neutral-500">02 // Automation Engine</span>
-                  <h3 className="font-display font-bold text-2xl text-black">AI & Business Workflows</h3>
+                  <span className="font-mono text-xs text-neutral-500">02 // 24/7 AI Sales Assistant</span>
+                  <h3 className="font-display font-bold text-2xl text-black">AI Lead &amp; Booking Assistant</h3>
                 </div>
                 <p className="text-sm text-neutral-600 leading-relaxed">
-                  Automate lead qualification, CRM routing, client follow-ups, and operational tasks using Gemini and custom AI pipelines.
+                  Never miss another customer inquiry. Our smart AI receptionist answers questions, confirms customer budgets, and books appointments on your calendar 24/7.
                 </p>
                 <ul className="space-y-2.5 text-xs text-neutral-700 font-medium">
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> 24/7 AI Prospect Qualification</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Automated Email & CRM Pipelines</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Custom Internal Dashboards</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Answers customer questions in under 30 seconds</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Automatically books appointments into your calendar</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Sends immediate alerts straight to your phone</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Saves your staff 20+ hours of repetitive phone calls</li>
                 </ul>
               </div>
               <div className="pt-8 mt-8 border-t border-black/10 flex items-center justify-between">
                 <span className="font-display font-bold text-xl text-black">From $1,200</span>
                 <Link href="#start-project">
                   <Button variant="secondary" size="sm" icon={<ArrowRight className="w-3.5 h-3.5" />}>
-                    Inquire
+                    Get Started
                   </Button>
                 </Link>
               </div>
@@ -283,23 +285,24 @@ export default function HomePage() {
                   <Zap className="w-6 h-6" />
                 </div>
                 <div className="space-y-2">
-                  <span className="font-mono text-xs text-neutral-500">03 // Product Engineering</span>
-                  <h3 className="font-display font-bold text-2xl text-black">Custom SaaS & MVPs</h3>
+                  <span className="font-mono text-xs text-neutral-500">03 // Custom Business Software</span>
+                  <h3 className="font-display font-bold text-2xl text-black">Custom Client Portals &amp; Tools</h3>
                 </div>
                 <p className="text-sm text-neutral-600 leading-relaxed">
-                  End-to-end web applications, client portals, internal operations platforms, and SaaS MVPs ready for production deployment.
+                  Ditch messy spreadsheets and expensive monthly software rent. We build custom dashboards, client portals, and billing tools built just for your company.
                 </p>
                 <ul className="space-y-2.5 text-xs text-neutral-700 font-medium">
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Next.js 15 + PostgreSQL + Express</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Self-hosted Auth & Stripe Invoicing</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Docker VPS Deployment Ready</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Private portals for clients to check project status</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Get paid easily with automatic credit card billing</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> All your business data in one simple dashboard</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> You own the software 100% — zero monthly rental fees</li>
                 </ul>
               </div>
               <div className="pt-8 mt-8 border-t border-black/10 flex items-center justify-between">
                 <span className="font-display font-bold text-xl text-black">From $3,000</span>
                 <Link href="#start-project">
                   <Button variant="secondary" size="sm" icon={<ArrowRight className="w-3.5 h-3.5" />}>
-                    Inquire
+                    Get Started
                   </Button>
                 </Link>
               </div>
@@ -318,40 +321,40 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto space-y-16">
           <div className="space-y-4 max-w-3xl">
             <span className="text-xs font-mono uppercase tracking-widest text-neutral-500 block">
-              Methodology
+              How Simple It Is
             </span>
             <h2 className="font-display font-bold text-3xl sm:text-5xl text-black tracking-tight">
-              Deliberate, Transparent Execution.
+              4 Easy Steps to Grow Your Business.
             </h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="space-y-3 p-6 rounded-xl border border-black/10">
-              <span className="font-mono text-xs text-neutral-400 block">STEP 01</span>
-              <h4 className="font-display font-bold text-lg text-black">Discovery & Strategy</h4>
+              <span className="font-mono text-xs text-[#0080FF] font-bold block">STEP 01</span>
+              <h4 className="font-display font-bold text-lg text-black">15-Min Free Gameplan</h4>
               <p className="text-xs text-neutral-600 leading-relaxed">
-                We analyze your business model, customer friction, conversion bottlenecks, and define the technical roadmap.
+                We look at your current website and business, find where you're losing customers, and give you an exact roadmap to fix it.
               </p>
             </div>
             <div className="space-y-3 p-6 rounded-xl border border-black/10">
-              <span className="font-mono text-xs text-neutral-400 block">STEP 02</span>
-              <h4 className="font-display font-bold text-lg text-black">Experience Direction</h4>
+              <span className="font-mono text-xs text-[#0080FF] font-bold block">STEP 02</span>
+              <h4 className="font-display font-bold text-lg text-black">Interactive Preview</h4>
               <p className="text-xs text-neutral-600 leading-relaxed">
-                Design system creation, editorial typography pairing, 3D/Silk canvas art direction, and interactive prototypes.
+                You get to see and test your new website design before we build it. You approve every detail so you know exactly what you're getting.
               </p>
             </div>
             <div className="space-y-3 p-6 rounded-xl border border-black/10">
-              <span className="font-mono text-xs text-neutral-400 block">STEP 03</span>
-              <h4 className="font-display font-bold text-lg text-black">Build & Integrations</h4>
+              <span className="font-mono text-xs text-[#0080FF] font-bold block">STEP 03</span>
+              <h4 className="font-display font-bold text-lg text-black">Fast Build &amp; AI Setup</h4>
               <p className="text-xs text-neutral-600 leading-relaxed">
-                Full-stack Next.js/Express implementation, PostgreSQL schema setup, AI workflow automation, and client portal wiring.
+                We build your site, connect your calendar, hook up your payment links, and train your 24/7 AI assistant until everything runs smoothly.
               </p>
             </div>
             <div className="space-y-3 p-6 rounded-xl border border-black/10">
-              <span className="font-mono text-xs text-neutral-400 block">STEP 04</span>
-              <h4 className="font-display font-bold text-lg text-black">Launch & Iteration</h4>
+              <span className="font-mono text-xs text-[#0080FF] font-bold block">STEP 04</span>
+              <h4 className="font-display font-bold text-lg text-black">Launch &amp; Start Winning</h4>
               <p className="text-xs text-neutral-600 leading-relaxed">
-                VPS Docker deployment, SSL setup, GA4/GTM telemetry verification, and post-launch conversion monitoring.
+                Your new platform goes live. You immediately start capturing more leads, saving hours of manual work, and owning your software 100%.
               </p>
             </div>
           </div>
@@ -372,11 +375,11 @@ export default function HomePage() {
                 Investment Structure
               </span>
               <h2 className="font-display font-bold text-3xl sm:text-5xl text-black tracking-tight">
-                Flexible Engagements Built for Growth.
+                Simple, Transparent Investments That Pay for Themselves.
               </h2>
             </div>
             <p className="text-neutral-600 text-sm max-w-md font-sans">
-              Transparent starting rates. Final scope, timeline, integrations, and 3D depth determine total investment.
+              No hidden fees. No endless monthly rental bills. Just clear investments designed to bring you more customers and save your team hours every day.
             </p>
           </div>
 
@@ -386,24 +389,24 @@ export default function HomePage() {
             <Card variant="light" className="p-8 flex flex-col justify-between border border-black/15 bg-white">
               <div className="space-y-6">
                 <div>
-                  <h3 className="font-display font-bold text-2xl text-black">Strategy & Web Build</h3>
-                  <p className="text-xs text-neutral-500 mt-1">For brands requiring a high-converting digital presence.</p>
+                  <h3 className="font-display font-bold text-2xl text-black">High-Converting Website</h3>
+                  <p className="text-xs text-neutral-500 mt-1">For businesses ready to look like the #1 choice in their market.</p>
                 </div>
                 <div className="pt-4 border-t border-black/10">
                   <div className="font-display font-bold text-3xl text-black">From $800</div>
-                  <span className="text-xs text-neutral-500 font-mono">Custom project scope</span>
+                  <span className="text-xs text-neutral-500 font-mono">One-time investment</span>
                 </div>
                 <ul className="space-y-3 text-xs text-neutral-700 pt-4 border-t border-black/10">
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Bespoke High-End Design System</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Next.js 15 App Router Architecture</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Sub-second Performance & Technical SEO</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> CMS & Lead Capture Integration</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> 100% Code & Asset Transfer</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Custom Luxury Design That Builds Instant Trust</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Opens in Under 1 Second on Any Mobile Phone</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Built-in Google &amp; AI Search Optimization</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Every Lead Sent Straight to Your Phone &amp; Email</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> You Own 100% of the Website Forever</li>
                 </ul>
               </div>
               <Link href="#start-project" className="mt-8">
                 <Button variant="secondary" className="w-full justify-center">
-                  Build Your Web System
+                  Get Your Website
                 </Button>
               </Link>
             </Card>
@@ -417,29 +420,29 @@ export default function HomePage() {
                 <div className="relative z-10 space-y-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="font-display font-bold text-2xl text-white">Growth & AI Automation</h3>
-                      <p className="text-xs text-neutral-400 mt-1">For growing businesses that need intelligent workflows.</p>
+                      <h3 className="font-display font-bold text-2xl text-white">AI Sales &amp; Booking Machine</h3>
+                      <p className="text-xs text-neutral-400 mt-1">For businesses that want clients booked automatically 24/7.</p>
                     </div>
-                    <Badge variant="electric">Popular</Badge>
+                    <Badge variant="electric">Most Popular</Badge>
                   </div>
 
                   <div className="pt-4 border-t border-white/10">
                     <div className="font-display font-bold text-3xl text-white">From $1,200</div>
-                    <span className="text-xs text-[#00F0FF] font-mono">Custom automation scope</span>
+                    <span className="text-xs text-[#00F0FF] font-mono">One-time investment</span>
                   </div>
 
                   <ul className="space-y-3 text-xs text-neutral-200 pt-4 border-t border-white/10">
-                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> Everything in Web Build</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> 3D WebGL / Silk Interactive Layers</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> AI Lead Qualification & Smart Routing</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> Automated Email Follow-ups & CRM</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> Priority Support & Analytics Dashboard</li>
+                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> Everything in High-Converting Website</li>
+                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> 24/7 AI Receptionist Answers in Under 30s</li>
+                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> Automatically Qualifies Budgets &amp; Needs</li>
+                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> Direct Calendar Booking Straight Into Your Schedule</li>
+                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /> Saves Your Team 20+ Hours of Phone Calls Every Week</li>
                   </ul>
                 </div>
 
                 <Link href="#start-project" className="relative z-10 mt-8">
                   <Button variant="electric" className="w-full justify-center">
-                    Start Growth Build
+                    Get Your AI Sales Machine
                   </Button>
                 </Link>
               </Card>
@@ -449,24 +452,24 @@ export default function HomePage() {
             <Card variant="light" className="p-8 flex flex-col justify-between border border-black/15 bg-white">
               <div className="space-y-6">
                 <div>
-                  <h3 className="font-display font-bold text-2xl text-black">Custom SaaS & MVPs</h3>
-                  <p className="text-xs text-neutral-500 mt-1">For companies building proprietary platforms or tools.</p>
+                  <h3 className="font-display font-bold text-2xl text-black">Custom Client Portals &amp; Tools</h3>
+                  <p className="text-xs text-neutral-500 mt-1">For companies that want their own custom software platform.</p>
                 </div>
                 <div className="pt-4 border-t border-black/10">
                   <div className="font-display font-bold text-3xl text-black">From $3,000</div>
-                  <span className="text-xs text-neutral-500 font-mono">Full-stack platform build</span>
+                  <span className="text-xs text-neutral-500 font-mono">Complete custom platform</span>
                 </div>
                 <ul className="space-y-3 text-xs text-neutral-700 pt-4 border-t border-black/10">
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Full-Stack App (Next.js + Express + Postgres)</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Self-Hosted Auth, RBAC & 2FA</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Stripe Invoicing & Webhooks</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Client Portals & Deliverable Vaults</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Docker VPS Deployment & Backup Setup</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Private Client Portals for Project Updates &amp; Files</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Automatic Online Credit Card Billing &amp; Invoicing</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Replace 10 Expensive Monthly Software Subscriptions</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Clean, Simple Business Dashboard You Control</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> You Own 100% of the Code — Zero Monthly Rent</li>
                 </ul>
               </div>
               <Link href="#start-project" className="mt-8">
                 <Button variant="secondary" className="w-full justify-center">
-                  Discuss Custom Scope
+                  Build Your Custom Tool
                 </Button>
               </Link>
             </Card>
@@ -485,12 +488,12 @@ export default function HomePage() {
           <div className="lg:col-span-8 space-y-8">
             <span className="font-display text-6xl text-neutral-300 block leading-none select-none">“</span>
             <blockquote className="font-display font-bold text-2xl sm:text-4xl text-black leading-snug">
-              CYBERSTYLE transformed our complex offering into an unmistakable, high-converting digital brand. The 3D experience and automated routing increased our qualified client inquiries immediately.
+              CYBERSTYLE made our business look like the #1 choice in our market. Within our first week, we started getting booked appointments through our website without having to chase anyone down.
             </blockquote>
             <div className="pt-4 flex items-center justify-between border-t border-black/10">
               <div>
                 <div className="font-display font-bold text-base text-black">Franklin Miller</div>
-                <div className="text-xs font-mono text-neutral-500">Managing Director // High-Growth Enterprise</div>
+                <div className="text-xs font-mono text-neutral-500">Founder &amp; Managing Director</div>
               </div>
               <div className="flex items-center gap-3">
                 <span className="font-mono text-xs text-neutral-400">01 / 03</span>
@@ -513,7 +516,7 @@ export default function HomePage() {
                   FM
                 </div>
                 <div className="text-white font-semibold">Franklin Miller</div>
-                <div className="text-[11px] text-neutral-400">Verified Client Partner</div>
+                <div className="text-[11px] text-emerald-400 font-mono">Verified Client Partner</div>
               </div>
             </div>
           </div>
@@ -530,30 +533,30 @@ export default function HomePage() {
         <div className="max-w-4xl mx-auto space-y-12">
           <div className="text-center space-y-4">
             <span className="text-xs font-mono uppercase tracking-widest text-neutral-500 block">
-              Engineering & Scope
+              Clear Answers
             </span>
             <h2 className="font-display font-bold text-3xl sm:text-4xl text-black tracking-tight">
-              Frequently Answered Questions
+              Questions Business Owners Ask Us
             </h2>
           </div>
 
           <div className="space-y-4">
             {[
               {
-                q: 'What is the starting investment for a CYBERSTYLE website?',
-                a: 'Our premium websites start from $800. Final investment is based on scope, custom 3D/Silk interactive requirements, CMS setup, and third-party integrations.',
+                q: 'How fast will my new website start bringing in leads?',
+                a: 'Your site is built from day one to turn visitors into phone calls and bookings. Most projects go live in 2 to 3 weeks, and you will immediately notice more qualified inquiries because the site loads instantly and is crystal-clear to navigate.',
               },
               {
-                q: 'How do 3D and Silk shaders affect mobile speed and Core Web Vitals?',
-                a: 'We engineer our Three.js shaders with lazy rendering, power-preference tuning, and instant CSS static fallbacks for low-power or reduced-motion environments, maintaining 90+ Lighthouse performance.',
+                q: 'Will this work smoothly on customers’ phones?',
+                a: 'Yes, absolutely. Over 70% of your customers visit on mobile. We test every page on iPhones and Androids to ensure it opens in under 1 second without any freezing or lag.',
               },
               {
-                q: 'What does your AI & Business Automation service deliver?',
-                a: 'Starting from $1,200, we engineer custom 24/7 lead qualification pipelines, CRM workflows, automated email routing, and operational dashboards tailored to your business.',
+                q: 'How does the 24/7 AI lead assistant actually make me money?',
+                a: 'When a customer lands on your site late at night, our AI assistant responds in under 30 seconds. It answers their questions, confirms what they need, and schedules them into your calendar. You wake up to pre-sold clients ready to work with you.',
               },
               {
-                q: 'Do we own 100% of the code and deliverables?',
-                a: 'Yes. Upon final invoice completion, complete ownership, code repositories, custom design assets, and VPS Docker configurations are transferred to your company.',
+                q: 'Do I own 100% of my website, or am I locked into a monthly contract?',
+                a: 'You own 100% of everything forever. All files, code, design, and customer data belong completely to you. We never charge monthly rent to keep your own website online.',
               },
             ].map((faq, idx) => (
               <div
@@ -592,20 +595,20 @@ export default function HomePage() {
 
         <div className="relative z-10 max-w-4xl mx-auto text-center space-y-8">
           <h2 className="font-display font-extrabold text-3xl sm:text-5xl lg:text-6xl text-white leading-tight tracking-tight">
-            Have an Idea, an Old Website, or a Process Slowing You Down?
+            Ready to Stop Losing Customers to Your Competitors?
           </h2>
           <p className="text-neutral-400 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
-            Let’s build an unmistakable digital experience that moves your business forward with speed, conversion precision, and modern systems.
+            Let's build a website and AI system that turns your visitors into paying customers on autopilot. Book a quick 15-minute gameplan with us today.
           </p>
           <div className="pt-4 flex flex-wrap items-center justify-center gap-4">
-            <a href="mailto:hello@cyberstyle.net">
+            <Link href="/start-project">
               <Button variant="electric" size="lg" icon={<ArrowUpRight className="w-5 h-5" />}>
-                Start a Project with Us
+                Get Your Free 15-Min Gameplan
               </Button>
-            </a>
-            <a href="mailto:hello@cyberstyle.net">
+            </Link>
+            <a href="mailto:contact@cyberstyle.net">
               <Button variant="outline" size="lg">
-                Email Directly: hello@cyberstyle.net
+                Email Us: contact@cyberstyle.net
               </Button>
             </a>
           </div>

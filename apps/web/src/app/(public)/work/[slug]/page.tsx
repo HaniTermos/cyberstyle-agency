@@ -41,21 +41,21 @@ async function getCaseStudy(slug: string) {
   // Fallback map for local dev if API offline
   const fallbacks: Record<string, any> = {
     'nexus-logistics-ai-routing': {
-      title: 'Automated Lead Qualification & High-Conversion Web Architecture',
+      title: '24/7 AI Lead Assistant That Turns Inquiries Into Booked Calls',
       slug: 'nexus-logistics-ai-routing',
       clientName: 'Nexus Global Logistics',
-      clientIndustry: 'Logistics & Supply Chain',
-      serviceCategory: 'AI Systems & Automation',
-      summary: 'Engineered a bespoke 3D web platform paired with automated 24/7 AI quote routing and CRM synchronization.',
-      challenge: 'Fragmented inquiries and slow follow-ups were leaking high-value prospects. The client operated on an outdated legacy template with high bounce rates on mobile devices.',
-      solution: 'Replaced the legacy stack with a Next.js 15 App Router platform featuring fluid Three.js Silk canvases and crisp editorial typography. In parallel, built an Express & BullMQ worker pipeline that ingests inquiries and runs instant prompt-based qualification.',
-      results: 'Eliminated inquiry latency from 18 hours to under 30 seconds. Organic search conversions climbed over 340% within 90 days.',
+      clientIndustry: 'Logistics & Shipping',
+      serviceCategory: '24/7 AI Lead & Booking Assistant',
+      summary: 'Replaced slow manual email replies with an instant 30-second AI receptionist that qualifies leads and automatically books appointments on the team calendar.',
+      challenge: 'High-value customer inquiries were waiting up to 18 hours for a reply. In the meantime, prospective clients were contacting competitors, resulting in lost deals and frustrated customers.',
+      solution: 'We built a modern, lightning-fast website and hooked up an intelligent 24/7 AI Lead Assistant that greets every prospect in under 30 seconds, answers their questions accurately, and schedules a call on the team calendar immediately.',
+      results: 'Cut response time from 18 hours down to under 30 seconds. Inquiries converted into qualified sales calls increased by 340% within the first 90 days.',
       metrics: [
-        { value: '+340%', label: 'Qualified Inquiries' },
-        { value: '< 30s', label: 'AI Routing Latency' },
-        { value: '$1.8M', label: 'Pipeline Generated' },
+        { value: '+340%', label: 'More Booked Leads' },
+        { value: '< 30s', label: 'AI Reply Time' },
+        { value: '$1.8M', label: 'New Revenue Pipeline' },
       ],
-      techStack: ['Next.js 15', 'TypeScript', 'Node.js', 'PostgreSQL', 'Three.js', 'Docker'],
+      techStack: ['Fast Website Build', '24/7 AI Receptionist', 'Instant Calendar Booking', 'Mobile Phone Speed'],
       liveUrl: 'https://nexuslogistics.example.com',
       geoCountry: 'US',
       geoRegion: 'North America',
@@ -64,42 +64,42 @@ async function getCaseStudy(slug: string) {
       geoLongitude: -87.6298,
     },
     'apex-capital-web-experience': {
-      title: 'High-Impact Editorial Web Platform & Three.js Shader System',
+      title: 'High-Converting Website That Loads in Under 1 Second',
       slug: 'apex-capital-web-experience',
       clientName: 'Apex Capital Advisory',
       clientIndustry: 'Financial Advisory',
-      serviceCategory: 'Full-Stack Web App',
-      summary: 'Redesigned brand identity, created fluid interactive Silk visual backgrounds, and boosted conversion velocity.',
-      challenge: 'Apex needed an institutional-grade brand presence that projected digital authority while satisfying strict performance requirements for international institutional investors.',
-      solution: 'Crafted a custom dark-mode aesthetic with custom GLSL shaders, headless content architecture, and sub-second page transitions.',
-      results: 'Achieved a perfect 99/100 Core Web Vitals score on mobile while delivering a 2.4x lift in accredited investor inquiries.',
+      serviceCategory: 'High-Converting Website',
+      summary: 'Redesigned an outdated website into an ultra-fast, premium sales engine that doubled customer inquiries and looks stunning on every mobile phone.',
+      challenge: 'Apex had an old, clunky website that took over 5 seconds to open on phones. Prospective clients were bouncing before reading a single paragraph.',
+      solution: 'We built an ultra-clean, high-end website that opens in 0.6 seconds on any phone. Every page guides the visitor naturally toward booking a private consultation.',
+      results: 'Mobile phone conversions surged by 2.4x, bounce rates dropped to near zero, and the firm immediately established itself as the standout authority in its space.',
       metrics: [
-        { value: '99/100', label: 'Core Web Vitals' },
-        { value: '2.4x', label: 'Investor Inquiries' },
-        { value: '0.6s', label: 'Average LCP' },
+        { value: '< 1.0s', label: 'Instant Phone Speed' },
+        { value: '2.4x', label: 'More Booked Clients' },
+        { value: '100%', label: 'Ownership (Zero Rent)' },
       ],
-      techStack: ['Next.js 15', 'Tailwind CSS', 'GLSL Shaders', 'PostgreSQL', 'Prisma'],
+      techStack: ['Ultra-Fast Next.js', 'Mobile-First Design', 'SEO & Local Google Ranking', 'Conversion Copywriting'],
       liveUrl: 'https://apexcapital.example.com',
       geoCountry: 'US',
       geoRegion: 'East Coast',
       geoCity: 'New York, NY',
     },
     'lumina-saas-client-portal': {
-      title: 'Multi-Tenant Client Portal & Self-Hosted Billing Engine',
+      title: 'Private Client Portal That Saves 20+ Hours Every Week',
       slug: 'lumina-saas-client-portal',
       clientName: 'Lumina Digital Systems',
-      clientIndustry: 'Enterprise SaaS',
-      serviceCategory: 'Custom SaaS & Cloud',
-      summary: 'Built full-stack operations portal with Argon2id auth, Stripe hosted billing, milestone tracking, and deliverable vault.',
-      challenge: 'SaaS client was losing client transparency and wasting 20+ hours per week sending manual billing PDFs and progress emails.',
-      solution: 'Engineered a unified multi-tenant operations portal with real-time milestone reviews, Stripe checkout integrations, and encrypted deliverable storage.',
-      results: 'Reduced client management overhead by 75% and accelerated invoice settlement speed by 4.2x.',
+      clientIndustry: 'Business Services',
+      serviceCategory: 'Custom Client Portal & Tools',
+      summary: 'Built a centralized customer dashboard with automated credit card payments, project milestones, and zero monthly software subscription fees.',
+      challenge: 'The company was wasting 20+ hours every week sending manual email updates, chasing unpaid invoices, and paying thousands in monthly software subscription fees.',
+      solution: 'We created a private, custom client portal where customers log in, view their project progress in real-time, and pay securely via credit card. The client owns the system completely with zero monthly per-user fees.',
+      results: 'Invoices are now paid 4.2x faster, client management time was cut by 75%, and the company permanently cancelled 4 expensive monthly software tools.',
       metrics: [
-        { value: '4.2x', label: 'Faster Payment Settlement' },
-        { value: '-75%', label: 'Admin Overhead' },
-        { value: '100%', label: 'Deliverable Transparency' },
+        { value: '4.2x', label: 'Faster Invoice Payments' },
+        { value: '20 hrs/wk', label: 'Saved in Manual Admin' },
+        { value: '$0', label: 'Monthly Per-User Fees' },
       ],
-      techStack: ['Next.js 15', 'Express.js', 'PostgreSQL', 'Stripe', 'Argon2id', 'Redis'],
+      techStack: ['Private Client Portal', 'Instant Stripe Card Billing', 'Live Milestone Tracking', '100% Asset Ownership'],
       liveUrl: 'https://luminasystems.example.com',
       geoCountry: 'AE',
       geoRegion: 'MENA',
@@ -252,7 +252,7 @@ export default async function CaseStudyDetailPage({ params }: Props) {
                 01 // The Problem
               </span>
               <h2 className="font-display font-bold text-3xl sm:text-4xl text-black">
-                The Bottleneck & Initial Architecture Challenge
+                The Bottleneck & Lost Revenue
               </h2>
               <p className="text-neutral-700 text-base sm:text-lg leading-relaxed font-sans whitespace-pre-line">
                 {cs.challenge}
@@ -264,10 +264,10 @@ export default async function CaseStudyDetailPage({ params }: Props) {
           {cs.solution && (
             <div className="space-y-4 pt-12 border-t border-black/10">
               <span className="text-xs font-mono uppercase tracking-widest text-neutral-500">
-                02 // The Engineering Solution
+                02 // The Solution We Built
               </span>
               <h2 className="font-display font-bold text-3xl sm:text-4xl text-black">
-                Technical Execution & System Design
+                Simple, Fast & Built to Win More Clients
               </h2>
               <p className="text-neutral-700 text-base sm:text-lg leading-relaxed font-sans whitespace-pre-line">
                 {cs.solution}
@@ -279,10 +279,10 @@ export default async function CaseStudyDetailPage({ params }: Props) {
           <div className="p-8 md:p-12 rounded-3xl bg-[#08090C] text-white space-y-8">
             <div>
               <span className="text-xs font-mono uppercase tracking-widest text-[#00F0FF]">
-                03 // Measurable Outcomes
+                03 // Real Business Results
               </span>
               <h2 className="font-display font-bold text-2xl sm:text-3xl text-white mt-2">
-                Business & System Performance Results
+                Revenue Growth & Hours Saved
               </h2>
               {cs.results && (
                 <p className="text-neutral-300 text-sm sm:text-base mt-4 font-sans leading-relaxed whitespace-pre-line">
@@ -323,10 +323,10 @@ export default async function CaseStudyDetailPage({ params }: Props) {
             )}
           </div>
 
-          {/* Tech Stack & Live Links */}
+          {/* Deliverables & Live Links */}
           <div className="pt-12 border-t border-black/10 space-y-6">
             <span className="text-xs font-mono uppercase tracking-widest text-neutral-500">
-              04 // Architectural Stack
+              04 // What We Delivered
             </span>
 
             <div className="flex flex-wrap gap-2">
@@ -349,7 +349,7 @@ export default async function CaseStudyDetailPage({ params }: Props) {
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-black text-white font-mono text-xs hover:bg-neutral-800 transition-colors"
                 >
                   <ExternalLink className="w-4 h-4 text-[#00F0FF]" />
-                  Visit Live Production Platform
+                  Visit Live Client Platform
                 </a>
               </div>
             )}
@@ -358,15 +358,15 @@ export default async function CaseStudyDetailPage({ params }: Props) {
           {/* CTA Box */}
           <div className="pt-12 border-t border-black/10 text-center space-y-6">
             <h3 className="font-display font-bold text-2xl sm:text-3xl text-black">
-              Ready to engineer your next digital platform?
+              Ready to get results like this for your business?
             </h3>
             <p className="text-neutral-600 text-sm max-w-md mx-auto">
-              We design, build, and deploy high-performance websites, AI pipelines, and custom SaaS portals.
+              We design websites that sell, 24/7 AI assistants that book leads in 30 seconds, and custom portals that eliminate monthly software bills.
             </p>
             <div>
               <Link href="/start-project">
                 <Button variant="electric" size="lg" icon={<ArrowUpRight className="w-5 h-5" />}>
-                  Start a Project
+                  Get Your Free 15-Min Gameplan
                 </Button>
               </Link>
             </div>

@@ -93,7 +93,7 @@ export function Header() {
         <div className="hidden lg:flex items-center gap-4">
           <Link href="/start-project">
             <Button variant="primary" size="sm" icon={<ArrowUpRight className="w-4 h-4" />}>
-              Start a Project
+              Get Free Gameplan
             </Button>
           </Link>
         </div>

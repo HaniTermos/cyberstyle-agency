@@ -18,9 +18,9 @@ export default function ContactPage() {
   return (
     <div className="min-h-screen bg-black text-white">
       <PageBanner
-        badgeText="Direct Inquiries"
-        title="Get in Touch with CYBERSTYLE"
-        description="Whether you have an immediate project, need an architecture review, or want to discuss AI automation, we respond promptly."
+        badgeText="Fast Direct Contact"
+        title="Let’s Talk About Growing Your Business."
+        description="Have questions about building a new website, setting up a 24/7 AI assistant, or replacing expensive monthly software? We reply fast."
       />
 
       <section className="py-24 px-6 bg-[#08090C]">
@@ -28,10 +28,10 @@ export default function ContactPage() {
           {/* Left Column: Direct Info & Operational Presence */}
           <div className="lg:col-span-5 space-y-8">
             <div className="space-y-4">
-              <span className="text-xs font-mono uppercase tracking-widest text-[#00F0FF]">Direct Contact</span>
-              <h2 className="font-display font-bold text-3xl text-white">Let’s connect directly.</h2>
+              <span className="text-xs font-mono uppercase tracking-widest text-[#00F0FF]">We Are Here to Help</span>
+              <h2 className="font-display font-bold text-3xl text-white">Direct, honest communication.</h2>
               <p className="text-sm text-neutral-400 leading-relaxed font-sans">
-                For rapid inquiries, client communications, or RFP proposals, reach our leadership team at our primary inbox.
+                Skip the complicated agency bureaucracy and long waiting times. Reach out directly and let’s talk about how to get your business more paying customers.
               </p>
             </div>
 
@@ -44,12 +44,22 @@ export default function ContactPage() {
               </div>
               <div className="flex items-start gap-3 text-xs font-mono text-neutral-400">
                 <Globe className="w-4 h-4 text-neutral-400 shrink-0 mt-0.5" />
-                <span>Markets: USA (EST) • Canada (EST) • Middle East (AST)</span>
+                <span>Markets Served: United States • Canada • Middle East • Worldwide</span>
               </div>
               <div className="flex items-start gap-3 text-xs font-mono text-neutral-400">
                 <Clock className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span>Response SLA: Within 24 Business Hours</span>
+                <span>Fast Reply Guarantee: Within a few hours</span>
               </div>
+            </div>
+
+            <div className="p-6 rounded-2xl bg-[#00F0FF]/5 border border-[#00F0FF]/20 space-y-3">
+              <h4 className="font-display font-bold text-base text-white">Have a specific project in mind?</h4>
+              <p className="text-xs text-neutral-300 leading-relaxed font-sans">
+                If you already know your budget and timeline, fill out our quick 2-minute project form to receive a preliminary price and gameplan.
+              </p>
+              <a href="/start-project" className="inline-flex items-center gap-1.5 text-xs font-mono text-[#00F0FF] hover:underline font-bold">
+                Start a Project Form <ArrowUpRight className="w-3.5 h-3.5" />
+              </a>
             </div>
           </div>
 
@@ -59,9 +69,9 @@ export default function ContactPage() {
               {submitted ? (
                 <div className="text-center py-12 space-y-4">
                   <CheckCircle2 className="w-12 h-12 text-[#00F0FF] mx-auto" />
-                  <h3 className="font-display font-bold text-2xl text-white">Message Dispatched</h3>
-                  <p className="text-sm text-neutral-400 max-w-md mx-auto">
-                    Thank you for reaching out. We have logged your submission and will get back to you shortly.
+                  <h3 className="font-display font-bold text-2xl text-white">Message Received!</h3>
+                  <p className="text-sm text-neutral-300 max-w-md mx-auto">
+                    Thank you for reaching out. We have received your message and our team will get back to you promptly—usually within a couple of hours.
                   </p>
                 </div>
               ) : (
@@ -97,7 +107,7 @@ export default function ContactPage() {
                       type="text"
                       value={formData.subject}
                       onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                      placeholder="Project Inquiry / General Question"
+                      placeholder="New Website / 24/7 AI Assistant / Quick Question"
                       className="w-full px-4 py-3 rounded-xl bg-black/60 border border-white/10 text-white placeholder-neutral-600 focus:outline-none focus:border-[#00F0FF] text-sm"
                     />
                   </div>
@@ -108,7 +118,7 @@ export default function ContactPage() {
                       rows={4}
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                      placeholder="How can CYBERSTYLE help your organization?"
+                      placeholder="Tell us about your business, what you want to achieve, or any questions you have..."
                       className="w-full px-4 py-3 rounded-xl bg-black/60 border border-white/10 text-white placeholder-neutral-600 focus:outline-none focus:border-[#00F0FF] text-sm"
                     />
                   </div>

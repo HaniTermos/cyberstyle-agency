@@ -95,9 +95,9 @@ export default function StartProjectPage() {
   return (
     <div className="min-h-screen bg-black text-white">
       <PageBanner
-        badgeText="Project Discovery"
-        title="Start a Project with CYBERSTYLE"
-        description="Tell us about your brand, current bottlenecks, and goals. We evaluate every inquiry within 24 business hours."
+        badgeText="Free 15-Minute Gameplan"
+        title="Tell Us What You Need. We’ll Handle the Rest."
+        description="Fill out this quick 2-minute form. We’ll review your business, prepare a custom gameplan, and give you an upfront price with zero sales pressure."
       />
 
       <section className="py-24 px-6 bg-[#08090C]">
@@ -108,10 +108,10 @@ export default function StartProjectPage() {
                 <CheckCircle2 className="w-8 h-8" />
               </div>
               <h2 className="font-display font-bold text-3xl sm:text-4xl text-white">
-                Inquiry Received Successfully.
+                We Received Your Project Details!
               </h2>
               <p className="text-neutral-300 max-w-lg mx-auto leading-relaxed">
-                Thank you for reaching out to CYBERSTYLE LLC. Our strategy team is reviewing your project details. We will send a confirmation and preliminary assessment to <span className="text-[#00F0FF] font-semibold">{formData.email}</span> shortly.
+                Thank you for reaching out to CYBERSTYLE. We are reviewing your business details right now and will send your custom growth gameplan to <span className="text-[#00F0FF] font-semibold">{formData.email}</span> within a few hours.
               </p>
               <div className="pt-4">
                 <Button variant="outline" onClick={() => setIsSuccess(false)}>
@@ -249,10 +249,10 @@ export default function StartProjectPage() {
                       onChange={handleChange}
                       className="w-full px-4 py-3 rounded-xl bg-black/60 border border-white/10 text-white focus:outline-none focus:border-[#00F0FF] text-sm cursor-pointer"
                     >
-                      <option value="premium-web">Premium Web Experience (From $800)</option>
-                      <option value="ai-automation">AI & Workflow Automation (From $1,200)</option>
-                      <option value="custom-saas">Custom SaaS / MVP Build (From $3,000)</option>
-                      <option value="other">Full-Scale Digital Transformation</option>
+                      <option value="premium-web">High-Converting Website (From $800)</option>
+                      <option value="ai-automation">24/7 AI Lead & Booking Assistant (From $1,200)</option>
+                      <option value="custom-saas">Custom Client Portal & Tools (From $3,000)</option>
+                      <option value="other">Complete Growth Machine (Website + AI Assistant)</option>
                     </select>
                   </div>
                   <div>
@@ -281,7 +281,7 @@ export default function StartProjectPage() {
                       onChange={handleChange}
                       className="w-full px-4 py-3 rounded-xl bg-black/60 border border-white/10 text-white focus:outline-none focus:border-[#00F0FF] text-sm cursor-pointer"
                     >
-                      <option value="1-2 weeks">1–2 Weeks (Urgent)</option>
+                      <option value="1-2 weeks">1–2 Weeks (Fast Track)</option>
                       <option value="2-4 weeks">2–4 Weeks (Standard)</option>
                       <option value="1-2 months">1–2 Months</option>
                       <option value="Flexible">Flexible</option>
@@ -293,7 +293,7 @@ export default function StartProjectPage() {
               {/* 3. Goals & Requirements */}
               <div className="space-y-6 p-8 rounded-3xl bg-[#0F121A] border border-white/10">
                 <h3 className="font-display font-bold text-xl text-white flex items-center gap-2">
-                  <span className="text-xs font-mono text-[#00F0FF]">03</span> Project Objectives
+                  <span className="text-xs font-mono text-[#00F0FF]">03</span> What You Want to Achieve
                 </h3>
                 <div className="space-y-4">
                   <div>
@@ -306,7 +306,7 @@ export default function StartProjectPage() {
                       rows={3}
                       value={formData.projectGoals}
                       onChange={handleChange}
-                      placeholder="e.g. Increase qualified lead conversion, establish a modern brand identity, automate quote requests."
+                      placeholder="e.g. Turn more visitors into paying customers, book appointments automatically 24/7, look like the top authority in my industry."
                       className="w-full px-4 py-3 rounded-xl bg-black/60 border border-white/10 text-white placeholder-neutral-600 focus:outline-none focus:border-[#00F0FF] text-sm"
                     />
                   </div>
@@ -319,7 +319,7 @@ export default function StartProjectPage() {
                       rows={2}
                       value={formData.currentChallenges}
                       onChange={handleChange}
-                      placeholder="e.g. Old website is slow on mobile, manual email replies take too long, low conversion rate."
+                      placeholder="e.g. Website takes too long to load on phones, leads message at night and we reply too late, paying too much in monthly software fees."
                       className="w-full px-4 py-3 rounded-xl bg-black/60 border border-white/10 text-white placeholder-neutral-600 focus:outline-none focus:border-[#00F0FF] text-sm"
                     />
                   </div>
@@ -359,7 +359,7 @@ export default function StartProjectPage() {
                     )
                   }
                 >
-                  {isSubmitting ? 'Transmitting Details...' : 'Submit Project Request'}
+                  {isSubmitting ? 'Sending Details...' : 'Get My Free Gameplan & Price Estimate'}
                 </Button>
               </div>
             </form>

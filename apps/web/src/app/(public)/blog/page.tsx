@@ -6,9 +6,9 @@ import { PageBanner } from '@/components/layout/PageBanner';
 import { Card } from '@/components/ui/Card';
 
 export const metadata: Metadata = {
-  title: 'Engineering Insights & Architectural Essays | CYBERSTYLE',
+  title: 'Growth Playbooks & Smart Business Guides | CYBERSTYLE',
   description:
-    'Technical essays on high-conversion web architecture, Three.js shaders, AI workflow automation, and custom SaaS engineering.',
+    'Practical, no-fluff guides on turning website visitors into paying clients, booking leads 24/7 with AI, and eliminating monthly software bills.',
   alternates: {
     canonical: 'https://cyberstyle.agency/blog',
   },
@@ -29,21 +29,21 @@ interface BlogPostSummary {
 const fallbackPosts: BlogPostSummary[] = [
   {
     id: 'post-1',
-    slug: 'engineering-sub-second-3d-web-experiences',
-    title: 'Engineering Sub-Second 3D Web Experiences with Next.js and Three.js',
-    excerpt: 'How we achieve 90+ Lighthouse Core Web Vitals while running complex WebGL shader canvases on high-conversion agency websites.',
-    category: 'Web Architecture',
+    slug: 'why-fast-websites-turn-visitors-into-paying-clients',
+    title: 'Why Fast Websites Turn 3x More Visitors Into Paying Clients',
+    excerpt: 'Most business websites lose over half their mobile visitors before the page even loads. Here is how instant phone speed directly drives more calls and sales.',
+    category: 'Website Growth',
     readingTimeMinutes: 4,
     publishedDate: 'Aug 2026',
-    authorName: 'CYBERSTYLE Core',
+    authorName: 'Growth Strategy Team',
     geoCity: 'San Francisco, CA',
   },
   {
     id: 'post-2',
-    slug: 'ai-lead-qualification-architecture',
-    title: 'Building 24/7 AI Lead Qualification Pipelines with Node.js and BullMQ',
-    excerpt: 'A practical breakdown of how automated scoring and prompt routing turns cold website visitors into booked client calls in under 30 seconds.',
-    category: 'AI & Automation',
+    slug: 'how-24-7-ai-assistants-stop-lost-leads',
+    title: 'How a 24/7 AI Receptionist Stops Leads From Going to Competitors',
+    excerpt: 'When an interested customer contacts your business, every minute of delay cuts your closing rate in half. Here is how replying in 30 seconds doubles your bookings.',
+    category: '24/7 AI Automation',
     readingTimeMinutes: 5,
     publishedDate: 'Jul 2026',
     authorName: 'AI Systems Team',
@@ -51,13 +51,13 @@ const fallbackPosts: BlogPostSummary[] = [
   },
   {
     id: 'post-3',
-    slug: 'self-hosted-auth-vs-third-party-saas',
-    title: 'Why We Build Custom SaaS Platforms with Self-Hosted Argon2id Auth',
-    excerpt: 'Eliminating expensive per-user pricing jumps, securing tenant boundaries, and ensuring 100% data sovereignty on Linux VPS deployments.',
-    category: 'Product Engineering',
+    slug: 'why-owning-your-custom-tools-saves-thousands',
+    title: 'Stop Paying Software Rent: Why Owning Your Custom Tools Saves Thousands',
+    excerpt: 'Tired of monthly per-user software fees eating away your profits? Here is why smart businesses build once and own 100% of their private client tools forever.',
+    category: 'Business Efficiency',
     readingTimeMinutes: 6,
     publishedDate: 'Jun 2026',
-    authorName: 'SecOps Team',
+    authorName: 'Client Systems Team',
     geoCity: 'Toronto, ON',
   },
 ];
@@ -98,9 +98,9 @@ export default async function BlogIndexPage() {
   return (
     <div className="min-h-screen bg-black text-white font-sans">
       <PageBanner
-        badgeText="Technical Insights"
-        title="Architecture, AI & Conversion Systems"
-        description="Essays and technical teardowns from the CYBERSTYLE engineering team on high-performance web systems and AI workflows."
+        badgeText="Growth Playbooks"
+        title="Practical Guides to Win More Customers & Save Time."
+        description="Proven strategies on building high-converting websites, booking leads around the clock with AI, and eliminating expensive software subscriptions."
       />
 
       <section className="py-24 px-6 bg-[#08090C]">
