@@ -1,111 +1,108 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ArrowUpRight, Star, ShieldCheck } from 'lucide-react';
+import { ArrowUpRight, ShieldCheck, Clock, Code2, MessageSquare, CheckCircle2 } from 'lucide-react';
 import { PageBanner } from '@/components/layout/PageBanner';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import {
+  OWNERSHIP_DISCLOSURE,
+  ONGOING_COSTS_DISCLOSURE,
+  SUPPORT_DISCLOSURE,
+  CTA_LABELS,
+} from '@/lib/constants/brand';
 
 export const metadata: Metadata = {
-  title: 'Client Reviews & 5-Star Results | CYBERSTYLE',
+  title: 'Client Project Standards & Delivery Approach // CYBERSTYLE',
   description:
-    'Read verified reviews from business owners who grew their revenue, booked more leads, and automated their operations with CYBERSTYLE.',
+    'Explore how CYBERSTYLE manages web engineering and automation projects: transparent scopes, private staging previews, and complete code handoff.',
 };
 
-interface ReviewItem {
-  id: string;
-  clientName: string;
-  clientTitle: string;
-  companyName: string;
-  quote: string;
-  fullReview: string;
-  rating: number;
-}
-
-const verifiedReviews: ReviewItem[] = [
-  {
-    id: 'rev-1',
-    clientName: 'Franklin Miller',
-    clientTitle: 'Managing Director',
-    companyName: 'Apex Capital Advisory',
-    quote: 'Our new website loads in under 1 second on mobile phones and looks world-class. Inbound client bookings doubled almost immediately.',
-    fullReview: 'We needed a clean, trustworthy website that made prospective high-ticket clients want to work with us immediately. CYBERSTYLE delivered beyond expectations. The site opens instantly on any phone, looks incredible, and our consultation bookings surged right after launch.',
-    rating: 5,
-  },
-  {
-    id: 'rev-2',
-    clientName: 'Elena Rostova',
-    clientTitle: 'Head of Operations',
-    companyName: 'Nexus Logistics Global',
-    quote: 'The 24/7 AI Assistant replies to leads in under 30 seconds and books calls directly on our calendar. It saves our team 15+ hours every week.',
-    fullReview: 'Before CYBERSTYLE, we were losing leads because manual email replies took hours. Their AI assistant now answers customer questions accurately 24 hours a day, qualifies their budget, and schedules the call for our team while we sleep.',
-    rating: 5,
-  },
-  {
-    id: 'rev-3',
-    clientName: 'Marcus Vance',
-    clientTitle: 'Founder & CEO',
-    companyName: 'Lumina Digital Systems',
-    quote: 'We replaced 4 expensive monthly software subscriptions with one private dashboard. We own 100% of it forever with zero monthly rent.',
-    fullReview: 'CYBERSTYLE built a custom client portal where our customers can view project updates and pay invoices with credit cards in seconds. We cut 20 hours a week of manual admin and cancelled thousands in recurring monthly software bills.',
-    rating: 5,
-  },
-];
-
 export default function ReviewsPage() {
+  const standards = [
+    {
+      icon: Clock,
+      title: 'Fixed Scope & Clear Milestones',
+      desc: 'Before writing any code, we document all deliverables, timeline targets, and acceptance criteria in your project agreement so expectations are aligned.',
+    },
+    {
+      icon: Code2,
+      title: 'Interactive Staging Environments',
+      desc: 'You receive access to a private staging URL to test layouts, review copy, and experience features on your own devices prior to launch.',
+    },
+    {
+      icon: ShieldCheck,
+      title: 'Complete Deliverable Handoff',
+      desc: `${OWNERSHIP_DISCLOSURE} All custom code repositories, assets, and deployment guides are transferred to your team upon completion.`,
+    },
+    {
+      icon: MessageSquare,
+      title: 'Direct Engineer Communication',
+      desc: 'You communicate directly with the builders executing your project. Questions and requests are handled promptly without layers of account management.',
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-black text-white">
       <PageBanner
-        badgeText="Real 5-Star Feedback"
-        title="What Business Owners Say About Working With Us."
-        description="Real feedback from company founders, directors, and business owners who turned their websites into revenue-generating sales engines."
+        badgeText="Project Commitments"
+        title="How CYBERSTYLE Approaches Client Projects."
+        description="We believe in honest communication, verifiable deliverables, and transparent processes without fabricated marketing testimonials."
       />
 
       <section className="py-24 px-6 bg-[#08090C]">
         <div className="max-w-7xl mx-auto space-y-16">
-          {/* Moderation Transparency Strip */}
-          <div className="p-4 rounded-xl bg-white/5 border border-white/10 flex items-center gap-3 text-xs font-mono text-neutral-400 max-w-2xl mx-auto text-center justify-center">
-            <ShieldCheck className="w-4 h-4 text-[#00F0FF]" />
-            <span>100% Verified Real Client Reviews & Documented Business Outcomes</span>
+          {/* Policy & Confidentiality Notice */}
+          <div className="p-6 rounded-2xl bg-white/5 border border-white/10 max-w-3xl mx-auto text-xs text-neutral-300 leading-relaxed space-y-2">
+            <div className="flex items-center gap-2 text-[#00F0FF] font-mono uppercase tracking-wider font-semibold">
+              <ShieldCheck className="w-4 h-4" />
+              <span>Our Policy on Client Confidentiality &amp; Reviews</span>
+            </div>
+            <p>
+              Many of our client projects involve proprietary internal tools, trade operations, or confidential business workflows protected under non-disclosure agreements. We do not fabricate testimonials, invent client logos, or publish unverified star ratings.
+            </p>
+            <p>
+              To evaluate our capabilities, explore our interactive system demonstrations on the <Link href="/work" className="text-[#00F0FF] underline underline-offset-2">Work page</Link> or schedule an introductory call to review real code specimens and technical architecture.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {verifiedReviews.map((rev) => (
-              <Card key={rev.id} variant="dark" className="p-8 md:p-10 space-y-6 bg-[#0E1118] border border-white/10 flex flex-col justify-between">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-1 text-[#00F0FF]">
-                    {[...Array(rev.rating)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-current" />
-                    ))}
+          {/* Delivery Standards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {standards.map((std, idx) => {
+              const Icon = std.icon;
+              return (
+                <Card key={idx} variant="dark" className="p-8 md:p-10 space-y-4 bg-[#0E1118] border border-white/10">
+                  <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-[#00F0FF]">
+                    <Icon className="w-5 h-5" />
                   </div>
-                  <blockquote className="font-display font-bold text-xl text-white leading-snug">
-                    “{rev.quote}”
-                  </blockquote>
+                  <h3 className="font-display font-bold text-xl text-white">
+                    {std.title}
+                  </h3>
                   <p className="text-sm text-neutral-400 leading-relaxed font-sans">
-                    {rev.fullReview}
+                    {std.desc}
                   </p>
-                </div>
-
-                <div className="pt-6 border-t border-white/10 flex items-center justify-between text-xs font-mono">
-                  <div>
-                    <div className="text-white font-semibold">{rev.clientName}</div>
-                    <div className="text-neutral-500">{rev.clientTitle} // {rev.companyName}</div>
-                  </div>
-                  <span className="text-emerald-400">Verified Client</span>
-                </div>
-              </Card>
-            ))}
+                </Card>
+              );
+            })}
           </div>
 
-          <div className="pt-12 text-center space-y-4">
-            <h3 className="font-display font-bold text-2xl text-white">Ready to get 5-star results for your business?</h3>
+          {/* Project Disclosures Banner */}
+          <div className="p-6 rounded-2xl bg-black border border-white/10 space-y-2 text-xs text-neutral-400">
+            <p><strong>Ongoing Infrastructure:</strong> {ONGOING_COSTS_DISCLOSURE}</p>
+            <p><strong>Optional Maintenance:</strong> {SUPPORT_DISCLOSURE}</p>
+          </div>
+
+          <div className="pt-8 text-center space-y-4">
+            <h3 className="font-display font-bold text-2xl text-white">
+              Ready to discuss your project requirements?
+            </h3>
             <p className="text-sm text-neutral-400 max-w-md mx-auto">
-              Book a quick 15-minute gameplan call to see how we can help you win more customers.
+              Schedule an introductory call with our team to review your goals, scope, and timeline.
             </p>
             <div>
               <Link href="/start-project">
                 <Button variant="electric" size="lg" icon={<ArrowUpRight className="w-5 h-5" />}>
-                  Get Your Free 15-Min Gameplan
+                  {CTA_LABELS.primary}
                 </Button>
               </Link>
             </div>

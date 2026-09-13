@@ -1,10 +1,19 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { ChevronDown, HelpCircle, ArrowUpRight } from 'lucide-react';
 import { PageBanner } from '@/components/layout/PageBanner';
 import { Button } from '@/components/ui/Button';
 import { SectionGradient } from '@/components/ui/SectionGradient';
+import {
+  SERVICES,
+  OWNERSHIP_DISCLOSURE,
+  ONGOING_COSTS_DISCLOSURE,
+  AI_LIMITATIONS_DISCLOSURE,
+  SUPPORT_DISCLOSURE,
+  CTA_LABELS,
+} from '@/lib/constants/brand';
 
 interface FaqItem {
   q: string;
@@ -14,44 +23,44 @@ interface FaqItem {
 
 const faqs: FaqItem[] = [
   {
-    category: 'Pricing & Investment',
-    q: 'How much does a project with CYBERSTYLE cost?',
-    a: 'High-converting websites start from $800, 24/7 AI Lead Assistants start from $1,200, and custom business tools/client portals start from $3,000. You get a clear, flat-rate price upfront before we write a single line of code—no hidden fees, no hourly surprises, and no sudden price hikes.',
+    category: 'Build Fees & Scope',
+    q: 'How are CYBERSTYLE project fees structured?',
+    a: `Our projects are priced as fixed one-time build fees based on documented scope: ${SERVICES.web.name} starts from ${SERVICES.web.startingPrice}, ${SERVICES.ai.name} starts from ${SERVICES.ai.startingPrice}, and ${SERVICES.saas.name} starts from ${SERVICES.saas.startingPrice}. Every proposal details deliverables in writing before work begins.`,
   },
   {
-    category: 'Pricing & Investment',
-    q: 'How do payments work?',
-    a: 'We keep it simple: 50% upfront to start your project, and the remaining 50% only when you review, test, and 100% approve everything on your private preview link. You can pay securely with any major credit card via Stripe or bank transfer.',
+    category: 'Build Fees & Scope',
+    q: 'How do milestone payments work?',
+    a: 'Standard projects typically follow a 50% initial milestone payment to initiate design and architecture, with the remaining 50% due upon review, staging acceptance, and final deployment approval. Payments are processed securely via Stripe or bank transfer.',
   },
   {
-    category: 'Speed & Mobile Experience',
-    q: 'How fast will my new website load on mobile phones?',
-    a: 'In under 1 second. Most websites lose over half their customers because they take 4 to 6 seconds to open on phones. We make sure your site pops open instantly on any phone, tablet, or slow cellular connection so prospective customers never bounce away to your competitors.',
+    category: 'Performance & Engineering',
+    q: 'How do you ensure websites perform well on mobile phones?',
+    a: 'We engineer using Next.js and TypeScript, serving pre-rendered HTML and automatically optimizing image formats (WebP/AVIF). We avoid bloated third-party plugin suites to help pages load quickly and navigate smoothly across diverse mobile network connections.',
   },
   {
-    category: '24/7 AI Lead Assistant',
-    q: 'How does the 24/7 AI Assistant actually bring me more customers?',
-    a: 'Think of it as your best full-time receptionist who never sleeps, never takes a break, and responds in under 30 seconds. When an interested buyer visits your website or messages you at 10 PM on a Sunday, the AI greets them warmly, answers questions about your services accurately, collects their contact info, and books an appointment directly onto your calendar.',
+    category: 'Automation & AI',
+    q: 'What does an AI enquiry workflow do, and what are its limits?',
+    a: `An automated enquiry assistant can greet visitors, answer routine questions about your services based on approved documentation, and provide links to book consultation calls. Importantly: ${AI_LIMITATIONS_DISCLOSURE}`,
   },
   {
-    category: '100% Ownership & Zero Rent',
-    q: 'Do I really own 100% of everything forever?',
-    a: 'Yes, 100%. When we hand over your project, you own all the files, designs, databases, and assets. You are never trapped paying monthly "software rent" to keep your own website online. If you ever decide to move, everything is yours to take.',
+    category: 'Ownership & Infrastructure',
+    q: 'Do I own the code and design files once the project is finished?',
+    a: `${OWNERSHIP_DISCLOSURE} Ongoing operating costs (like domain renewal, web hosting, and third-party API usage) are billed separately by respective providers.`,
   },
   {
-    category: 'Timeline & Delivery',
-    q: 'How long does it take from our first call to launch?',
-    a: 'Most premium websites are built, reviewed, and launched in 7 to 14 days. AI lead systems take 2 to 3 weeks. We work fast with zero fluff so you can start capturing paying customers right away.',
+    category: 'Timelines & Delivery',
+    q: 'What are typical project timelines from kickoff to launch?',
+    a: 'Standard website builds typically take 2 to 4 weeks, depending on page volume and feedback turnaround. Custom web applications and multi-step automation pipelines typically require 3 to 6 weeks. Target dates are documented in your project schedule.',
   },
   {
-    category: 'Ongoing Support & Care',
-    q: 'What happens after my website or AI assistant is launched?',
-    a: 'You can either manage it yourself with zero ongoing fees, or let us handle everything for a simple $30/month VIP Care plan (daily automatic backups, security monitoring, and instant updates). You also get an easy guide so anyone on your team can make updates in seconds.',
+    category: 'Ongoing Maintenance',
+    q: 'What ongoing support or maintenance is needed after launch?',
+    a: `${SUPPORT_DISCLOSURE} You can also choose to manage hosting and updates internally with full access to your deployment repository.`,
   },
   {
     category: 'Getting Started',
-    q: 'What do I need to prepare before we get started?',
-    a: 'Nothing at all! You do not need any technical knowledge. Just tell us about your business, who your ideal customers are, and what you want to achieve. We handle all the design, copywriting guidance, setup, and launch for you.',
+    q: 'What information should we prepare before our first call?',
+    a: 'It is helpful to have an idea of your primary business goals, your existing website URL (if applicable), key features you require, and a rough target timeline. We will guide you through the technical scoping questions during our call.',
   },
 ];
 
@@ -59,11 +68,11 @@ export default function FaqPage() {
   const [activeIdx, setActiveIdx] = useState<number | null>(null);
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white font-sans">
       <PageBanner
-        badgeText="Common Questions"
-        title="Everything You Need to Know."
-        description="Clear, honest answers about pricing, speed, 24/7 AI assistants, and 100% asset ownership—no confusing technical jargon."
+        badgeText="Common Inquiries"
+        title="Frequently Asked Questions."
+        description="Clear, honest answers regarding pricing, code ownership, AI workflows, and project timelines—explained in plain English."
       />
 
       {/* Atmospheric Black-to-White Scrim Gradient */}
@@ -101,19 +110,19 @@ export default function FaqPage() {
           ))}
 
           <div className="pt-12 text-center space-y-4">
-            <h3 className="font-display font-bold text-2xl text-black">Ready to grow your business?</h3>
+            <h3 className="font-display font-bold text-2xl text-black">Have a specific question not listed here?</h3>
             <p className="text-sm text-neutral-600 max-w-md mx-auto">
-              Book a quick, zero-pressure 15-minute Gameplan Call or email us anytime.
+              Reach out to our team directly or schedule an introductory project call.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
-              <a href="/start-project">
+              <Link href="/start-project">
                 <Button variant="electric" size="md" icon={<ArrowUpRight className="w-4 h-4" />}>
-                  Get Your Free Gameplan
+                  {CTA_LABELS.primary}
                 </Button>
-              </a>
-              <a href="mailto:hello@cyberstyle.net">
+              </Link>
+              <a href="mailto:contact@cyberstyle.net">
                 <Button variant="secondary" size="md">
-                  Email Us: hello@cyberstyle.net
+                  Email: contact@cyberstyle.net
                 </Button>
               </a>
             </div>

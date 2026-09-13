@@ -9,190 +9,165 @@ import {
   Cpu,
   Layers,
   Zap,
-  MapPin,
+  Info,
   ExternalLink,
-  Quote,
 } from 'lucide-react';
 import { PageBanner } from '@/components/layout/PageBanner';
-import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { SectionGradient } from '@/components/ui/SectionGradient';
+import { CONCEPT_DEMO_DISCLAIMER, CTA_LABELS } from '@/lib/constants/brand';
 
 interface Props {
   params: Promise<{ slug: string }>;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+interface ConceptDetail {
+  slug: string;
+  title: string;
+  conceptType: string;
+  industry: string;
+  serviceCategory: string;
+  summary: string;
+  challenge: string;
+  solution: string;
+  architectureHighlights: { title: string; desc: string }[];
+  deliverables: string[];
+}
 
-async function getCaseStudy(slug: string) {
-  try {
-    // Try api/v1 or api directly
-    const res = await fetch(`http://localhost:4000/api/case-studies/${slug}`, {
-      next: { revalidate: 30 },
-    });
-    if (res.ok) {
-      const json = await res.json();
-      return json?.data?.caseStudy || null;
-    }
-  } catch (err) {
-    console.warn(`[getCaseStudy] Server fetch notice for ${slug}:`, err);
-  }
+const conceptsData: Record<string, ConceptDetail> = {
+  'logistics-lead-routing-concept': {
+    slug: 'logistics-lead-routing-concept',
+    title: 'Automated Enquiry Intake & Dispatch Architecture',
+    conceptType: 'Interactive Automation Prototype',
+    industry: 'Logistics & Supply Chain',
+    serviceCategory: 'AI & Enquiry Automation Workflows',
+    summary:
+      'A prototype intake system designed to process complex freight requests, categorize volume specifications, and route qualified enquiries directly to dispatcher calendars.',
+    challenge:
+      'High-volume service businesses often experience significant delays when manually reviewing unstructured emails and web forms. When prospects must wait hours for an initial response, they frequently look to other providers.',
+    solution:
+      'We designed an automated workflow prototype featuring structured form validation, AI-assisted enquiry categorization based on explicit criteria, and automated calendar scheduling links for qualified requests.',
+    architectureHighlights: [
+      { title: 'Intake Pipeline', desc: 'Pre-validates shipment weight, destination, and timeline constraints.' },
+      { title: 'Guardrail Filtering', desc: 'Rules-based filters ensure unusual or out-of-scope inquiries are flagged for immediate human review.' },
+      { title: 'Calendar Sync', desc: 'Automates calendar invitations and syncs meeting reminders to email.' },
+    ],
+    deliverables: [
+      'Next.js responsive enquiry intake form',
+      'Webhook integration with calendar scheduling',
+      'Defined fallback triggers for human review',
+      'Standardized structured lead notification email',
+    ],
+  },
+  'professional-services-web-concept': {
+    slug: 'professional-services-web-concept',
+    title: 'Responsive Multi-Page Advisory Web Platform',
+    conceptType: 'Web Architecture Demonstration',
+    industry: 'B2B Professional Services',
+    serviceCategory: 'High-Performing Websites',
+    summary:
+      'A modern web architecture demonstration featuring semantic SEO hierarchies, optimized responsive layouts, and friction-free consultation booking paths.',
+    challenge:
+      'Many consulting and advisory firms maintain legacy websites with unoptimized imagery, complex navigation menus, and slow loading times on mobile devices, discouraging prospective clients from reaching out.',
+    solution:
+      'We architected a streamlined, content-first web experience using Next.js App Router, compressed assets, clean semantic typography, and structured Schema.org metadata to maximize clarity and readability.',
+    architectureHighlights: [
+      { title: 'Semantic SEO', desc: 'Clean heading hierarchy and schema tags for clear search engine indexing.' },
+      { title: 'Mobile Optimization', desc: 'Tested across diverse viewport sizes for smooth touch navigation.' },
+      { title: 'Conversion Paths', desc: 'Prominent consultation request buttons positioned across all primary views.' },
+    ],
+    deliverables: [
+      'Multi-page Next.js & TypeScript architecture',
+      'Accessible WCAG-compliant color contrast',
+      'Technical SEO & OpenGraph meta configuration',
+      'Direct form submission with honeypot security',
+    ],
+  },
+  'operations-portal-concept': {
+    slug: 'operations-portal-concept',
+    title: 'Operations Dashboard & Client Milestone Portal',
+    conceptType: 'Software Architecture Prototype',
+    industry: 'Business Operations',
+    serviceCategory: 'Custom Digital Systems & MVPs',
+    summary:
+      'A centralized dashboard prototype showcasing role-based user authentication, mock Stripe payment integration, and real-time deliverable tracking.',
+    challenge:
+      'Growing service agencies frequently juggle project files across fragmented email threads, spreadsheet trackers, and separate invoicing tools, creating administrative friction.',
+    solution:
+      'We prototyped a unified web application that centralizes milestone progress tracking, document distribution, and card billing in one dashboard without monthly per-user licensing fees.',
+    architectureHighlights: [
+      { title: 'Role-Based Access', desc: 'Distinct interface views for client reviewers and internal administrators.' },
+      { title: 'Payment Integration', desc: 'Pre-configured webhook listeners for Stripe payment confirmations.' },
+      { title: 'Relational Schema', desc: 'PostgreSQL database modeling for projects, milestones, and audit trails.' },
+    ],
+    deliverables: [
+      'Secure session authentication architecture',
+      'Interactive client project progress view',
+      'Administrative milestone creation interface',
+      'Stripe mock checkout and invoice display',
+    ],
+  },
+};
 
-  // Fallback map for local dev if API offline
-  const fallbacks: Record<string, any> = {
-    'nexus-logistics-ai-routing': {
-      title: '24/7 AI Lead Assistant That Turns Inquiries Into Booked Calls',
-      slug: 'nexus-logistics-ai-routing',
-      clientName: 'Nexus Global Logistics',
-      clientIndustry: 'Logistics & Shipping',
-      serviceCategory: '24/7 AI Lead & Booking Assistant',
-      summary: 'Replaced slow manual email replies with an instant 30-second AI receptionist that qualifies leads and automatically books appointments on the team calendar.',
-      challenge: 'High-value customer inquiries were waiting up to 18 hours for a reply. In the meantime, prospective clients were contacting competitors, resulting in lost deals and frustrated customers.',
-      solution: 'We built a modern, lightning-fast website and hooked up an intelligent 24/7 AI Lead Assistant that greets every prospect in under 30 seconds, answers their questions accurately, and schedules a call on the team calendar immediately.',
-      results: 'Cut response time from 18 hours down to under 30 seconds. Inquiries converted into qualified sales calls increased by 340% within the first 90 days.',
-      metrics: [
-        { value: '+340%', label: 'More Booked Leads' },
-        { value: '< 30s', label: 'AI Reply Time' },
-        { value: '$1.8M', label: 'New Revenue Pipeline' },
-      ],
-      techStack: ['Fast Website Build', '24/7 AI Receptionist', 'Instant Calendar Booking', 'Mobile Phone Speed'],
-      liveUrl: 'https://nexuslogistics.example.com',
-      geoCountry: 'US',
-      geoRegion: 'North America',
-      geoCity: 'Chicago, IL',
-      geoLatitude: 41.8781,
-      geoLongitude: -87.6298,
-    },
-    'apex-capital-web-experience': {
-      title: 'High-Converting Website That Loads in Under 1 Second',
-      slug: 'apex-capital-web-experience',
-      clientName: 'Apex Capital Advisory',
-      clientIndustry: 'Financial Advisory',
-      serviceCategory: 'High-Converting Website',
-      summary: 'Redesigned an outdated website into an ultra-fast, premium sales engine that doubled customer inquiries and looks stunning on every mobile phone.',
-      challenge: 'Apex had an old, clunky website that took over 5 seconds to open on phones. Prospective clients were bouncing before reading a single paragraph.',
-      solution: 'We built an ultra-clean, high-end website that opens in 0.6 seconds on any phone. Every page guides the visitor naturally toward booking a private consultation.',
-      results: 'Mobile phone conversions surged by 2.4x, bounce rates dropped to near zero, and the firm immediately established itself as the standout authority in its space.',
-      metrics: [
-        { value: '< 1.0s', label: 'Instant Phone Speed' },
-        { value: '2.4x', label: 'More Booked Clients' },
-        { value: '100%', label: 'Ownership (Zero Rent)' },
-      ],
-      techStack: ['Ultra-Fast Next.js', 'Mobile-First Design', 'SEO & Local Google Ranking', 'Conversion Copywriting'],
-      liveUrl: 'https://apexcapital.example.com',
-      geoCountry: 'US',
-      geoRegion: 'East Coast',
-      geoCity: 'New York, NY',
-    },
-    'lumina-saas-client-portal': {
-      title: 'Private Client Portal That Saves 20+ Hours Every Week',
-      slug: 'lumina-saas-client-portal',
-      clientName: 'Lumina Digital Systems',
-      clientIndustry: 'Business Services',
-      serviceCategory: 'Custom Client Portal & Tools',
-      summary: 'Built a centralized customer dashboard with automated credit card payments, project milestones, and zero monthly software subscription fees.',
-      challenge: 'The company was wasting 20+ hours every week sending manual email updates, chasing unpaid invoices, and paying thousands in monthly software subscription fees.',
-      solution: 'We created a private, custom client portal where customers log in, view their project progress in real-time, and pay securely via credit card. The client owns the system completely with zero monthly per-user fees.',
-      results: 'Invoices are now paid 4.2x faster, client management time was cut by 75%, and the company permanently cancelled 4 expensive monthly software tools.',
-      metrics: [
-        { value: '4.2x', label: 'Faster Invoice Payments' },
-        { value: '20 hrs/wk', label: 'Saved in Manual Admin' },
-        { value: '$0', label: 'Monthly Per-User Fees' },
-      ],
-      techStack: ['Private Client Portal', 'Instant Stripe Card Billing', 'Live Milestone Tracking', '100% Asset Ownership'],
-      liveUrl: 'https://luminasystems.example.com',
-      geoCountry: 'AE',
-      geoRegion: 'MENA',
-      geoCity: 'Dubai',
-    },
-  };
+// Aliases for backward compatibility
+const aliasMap: Record<string, string> = {
+  'nexus-logistics-ai-routing': 'logistics-lead-routing-concept',
+  'apex-capital-web-experience': 'professional-services-web-concept',
+  'lumina-saas-client-portal': 'operations-portal-concept',
+};
 
-  return fallbacks[slug] || null;
+async function getConcept(slug: string): Promise<ConceptDetail | null> {
+  const targetSlug = aliasMap[slug] || slug;
+  return conceptsData[targetSlug] || null;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const cs = await getCaseStudy(slug);
+  const concept = await getConcept(slug);
 
-  if (!cs) {
-    const formatted = slug.replace(/-/g, ' ').toUpperCase();
+  if (!concept) {
     return {
-      title: `${formatted} | Case Study | CYBERSTYLE`,
-      description: `Case study specimen for ${slug}.`,
+      title: 'Concept Demonstration // CYBERSTYLE',
+      description: 'Engineering demonstration and architecture specimen.',
     };
   }
 
-  const title = cs.seoTitle || `${cs.title} | Case Study | CYBERSTYLE`;
-  const description = cs.seoDescription || cs.summary;
-  const canonical = cs.canonicalUrl || `https://cyberstyle.agency/work/${cs.slug}`;
-
   return {
-    title,
-    description,
-    keywords: cs.keywords || [cs.clientIndustry, cs.serviceCategory, 'Agency Case Study'],
+    title: `${concept.title} // Engineering Concept`,
+    description: concept.summary,
     alternates: {
-      canonical,
-    },
-    openGraph: {
-      title,
-      description,
-      url: canonical,
-      siteName: 'CYBERSTYLE Agency',
-      type: 'article',
-      images: cs.ogImage ? [{ url: cs.ogImage }] : undefined,
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
+      canonical: `https://cyberstyle.net/work/${concept.slug}`,
     },
   };
 }
 
 export default async function CaseStudyDetailPage({ params }: Props) {
   const { slug } = await params;
-  const cs = await getCaseStudy(slug);
+  const concept = await getConcept(slug);
 
-  if (!cs) {
+  if (!concept) {
     notFound();
   }
 
-  const metricsList = Array.isArray(cs.metrics) ? cs.metrics : [];
-
-  // JSON-LD Schema for SEO and Geo targeting
+  // Truthful JSON-LD Schema: TechArticle explaining an engineering design specimen
   const jsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'CreativeWork',
-    headline: cs.title,
-    description: cs.summary,
-    provider: {
+    '@type': 'TechArticle',
+    headline: concept.title,
+    description: concept.summary,
+    author: {
       '@type': 'Organization',
-      name: 'CYBERSTYLE Agency',
-      url: 'https://cyberstyle.agency',
+      name: 'CYBERSTYLE',
+      url: 'https://cyberstyle.net',
     },
     about: {
-      '@type': 'Organization',
-      name: cs.clientName,
+      '@type': 'Thing',
+      name: concept.industry,
     },
-    spatialCoverage: cs.geoCountry || cs.geoCity ? {
-      '@type': 'Place',
-      name: cs.geoCity || cs.geoRegion || cs.geoCountry,
-      address: {
-        '@type': 'PostalAddress',
-        addressLocality: cs.geoCity,
-        addressCountry: cs.geoCountry,
-      },
-      geo: cs.geoLatitude && cs.geoLongitude ? {
-        '@type': 'GeoCoordinates',
-        latitude: cs.geoLatitude,
-        longitude: cs.geoLongitude,
-      } : undefined,
-    } : undefined,
   };
 
   return (
     <div className="min-h-screen bg-black text-white font-sans">
-      {/* JSON-LD Script */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -204,37 +179,44 @@ export default async function CaseStudyDetailPage({ params }: Props) {
           href="/work"
           className="inline-flex items-center gap-2 text-xs font-mono text-neutral-400 hover:text-[#00F0FF] transition-colors"
         >
-          <ArrowLeft className="w-4 h-4" /> Back to Case Studies
+          <ArrowLeft className="w-4 h-4" /> Back to System Demonstrations
         </Link>
       </div>
 
       <PageBanner
-        badgeText="Case Study Specimen"
-        title={cs.title}
-        description={cs.summary}
+        badgeText={concept.conceptType}
+        title={concept.title}
+        description={concept.summary}
       />
+
+      {/* Prominent Concept Disclaimer Banner */}
+      <section className="bg-[#0B0E14] border-y border-white/10 py-4 px-6">
+        <div className="max-w-7xl mx-auto flex items-start gap-3 text-xs text-neutral-300 font-mono">
+          <Info className="w-4 h-4 text-[#00F0FF] shrink-0 mt-0.5" />
+          <p className="leading-relaxed">
+            <strong>Demonstration Notice:</strong> {CONCEPT_DEMO_DISCLAIMER}
+          </p>
+        </div>
+      </section>
 
       {/* Overview Metadata Strip */}
       <section className="bg-[#08090C] py-8 px-6">
         <div className="max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-6 text-xs font-mono">
           <div>
-            <span className="text-neutral-500 block mb-1">CLIENT</span>
-            <span className="text-white font-semibold text-sm">{cs.clientName}</span>
+            <span className="text-neutral-500 block mb-1">SPECIMEN TYPE</span>
+            <span className="text-white font-semibold text-sm">System Concept</span>
           </div>
           <div>
-            <span className="text-neutral-500 block mb-1">INDUSTRY</span>
-            <span className="text-white font-semibold text-sm">{cs.clientIndustry || 'Enterprise'}</span>
+            <span className="text-neutral-500 block mb-1">INDUSTRY FOCUS</span>
+            <span className="text-white font-semibold text-sm">{concept.industry}</span>
           </div>
           <div>
-            <span className="text-neutral-500 block mb-1">SERVICES</span>
-            <span className="text-[#00F0FF] font-semibold text-sm">{cs.serviceCategory}</span>
+            <span className="text-neutral-500 block mb-1">CAPABILITY</span>
+            <span className="text-[#00F0FF] font-semibold text-sm">{concept.serviceCategory}</span>
           </div>
           <div>
-            <span className="text-neutral-500 block mb-1">TARGET MARKET</span>
-            <span className="text-emerald-400 font-semibold text-sm flex items-center gap-1">
-              <MapPin className="w-3.5 h-3.5" />
-              {cs.geoCity || cs.geoRegion || cs.geoCountry || 'Global'}
-            </span>
+            <span className="text-neutral-500 block mb-1">STATUS</span>
+            <span className="text-emerald-400 font-semibold text-sm">Interactive Prototype</span>
           </div>
         </div>
       </section>
@@ -242,131 +224,88 @@ export default async function CaseStudyDetailPage({ params }: Props) {
       {/* Atmospheric Black-to-White Scrim Gradient */}
       <SectionGradient direction="black-to-white" heightClass="h-44 sm:h-60" />
 
-      {/* Case Study Narrative */}
+      {/* Concept Narrative */}
       <section className="pt-4 pb-24 px-6 bg-white text-black">
         <div className="max-w-4xl mx-auto space-y-16">
           {/* 1. The Challenge */}
-          {cs.challenge && (
-            <div className="space-y-4">
-              <span className="text-xs font-mono uppercase tracking-widest text-neutral-500">
-                01 // The Problem
-              </span>
-              <h2 className="font-display font-bold text-3xl sm:text-4xl text-black">
-                The Bottleneck & Lost Revenue
-              </h2>
-              <p className="text-neutral-700 text-base sm:text-lg leading-relaxed font-sans whitespace-pre-line">
-                {cs.challenge}
-              </p>
-            </div>
-          )}
+          <div className="space-y-4">
+            <span className="text-xs font-mono uppercase tracking-widest text-neutral-500">
+              01 // The Problem Solved
+            </span>
+            <h2 className="font-display font-bold text-3xl sm:text-4xl text-black">
+              The Operational Bottleneck
+            </h2>
+            <p className="text-neutral-700 text-base sm:text-lg leading-relaxed font-sans">
+              {concept.challenge}
+            </p>
+          </div>
 
           {/* 2. The Solution */}
-          {cs.solution && (
-            <div className="space-y-4 pt-12 border-t border-black/10">
-              <span className="text-xs font-mono uppercase tracking-widest text-neutral-500">
-                02 // The Solution We Built
-              </span>
-              <h2 className="font-display font-bold text-3xl sm:text-4xl text-black">
-                Simple, Fast & Built to Win More Clients
-              </h2>
-              <p className="text-neutral-700 text-base sm:text-lg leading-relaxed font-sans whitespace-pre-line">
-                {cs.solution}
-              </p>
-            </div>
-          )}
+          <div className="space-y-4 pt-12 border-t border-black/10">
+            <span className="text-xs font-mono uppercase tracking-widest text-neutral-500">
+              02 // System Architecture
+            </span>
+            <h2 className="font-display font-bold text-3xl sm:text-4xl text-black">
+              Engineering Approach &amp; Design
+            </h2>
+            <p className="text-neutral-700 text-base sm:text-lg leading-relaxed font-sans">
+              {concept.solution}
+            </p>
+          </div>
 
-          {/* 3. The Results */}
+          {/* 3. Architecture Highlights */}
           <div className="p-8 md:p-12 rounded-3xl bg-[#08090C] text-white space-y-8">
             <div>
               <span className="text-xs font-mono uppercase tracking-widest text-[#00F0FF]">
-                03 // Real Business Results
+                03 // Technical Features
               </span>
               <h2 className="font-display font-bold text-2xl sm:text-3xl text-white mt-2">
-                Revenue Growth & Hours Saved
+                Core Architectural Highlights
               </h2>
-              {cs.results && (
-                <p className="text-neutral-300 text-sm sm:text-base mt-4 font-sans leading-relaxed whitespace-pre-line">
-                  {cs.results}
-                </p>
-              )}
             </div>
 
-            {/* Standout Impact Metric Grid */}
-            {metricsList.length > 0 && (
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-6 border-t border-white/10">
-                {metricsList.map((m: any, idx: number) => (
-                  <div key={idx} className="p-5 rounded-2xl bg-white/5 border border-white/10">
-                    <div className="font-display font-bold text-3xl sm:text-4xl text-[#00F0FF]">
-                      {m.value}
-                    </div>
-                    <div className="text-xs font-mono text-neutral-400 mt-1 uppercase tracking-wider">
-                      {m.label}
-                    </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-4 border-t border-white/10">
+              {concept.architectureHighlights.map((item, idx) => (
+                <div key={idx} className="p-5 rounded-2xl bg-white/5 border border-white/10 space-y-2">
+                  <div className="font-display font-bold text-lg text-[#00F0FF]">
+                    {item.title}
                   </div>
-                ))}
-              </div>
-            )}
-
-            {/* Testimonial Quote */}
-            {cs.testimonialQuote && (
-              <div className="p-6 rounded-2xl bg-[#00F0FF]/5 border border-[#00F0FF]/20 space-y-3">
-                <Quote className="w-6 h-6 text-[#00F0FF]" />
-                <p className="text-sm italic text-neutral-200 font-sans leading-relaxed">
-                  "{cs.testimonialQuote}"
-                </p>
-                {(cs.testimonialAuthor || cs.testimonialRole) && (
-                  <div className="text-xs font-mono text-[#00F0FF]">
-                    — {cs.testimonialAuthor} {cs.testimonialRole && `(${cs.testimonialRole})`}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Deliverables & Live Links */}
-          <div className="pt-12 border-t border-black/10 space-y-6">
-            <span className="text-xs font-mono uppercase tracking-widest text-neutral-500">
-              04 // What We Delivered
-            </span>
-
-            <div className="flex flex-wrap gap-2">
-              {(cs.techStack || []).map((tech: string, idx: number) => (
-                <span
-                  key={idx}
-                  className="px-3.5 py-1.5 rounded-full text-xs font-mono bg-neutral-100 text-neutral-800 border border-neutral-300"
-                >
-                  {tech}
-                </span>
+                  <p className="text-xs text-neutral-400 font-sans leading-relaxed">
+                    {item.desc}
+                  </p>
+                </div>
               ))}
             </div>
+          </div>
 
-            {cs.liveUrl && (
-              <div className="pt-4">
-                <a
-                  href={cs.liveUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-black text-white font-mono text-xs hover:bg-neutral-800 transition-colors"
-                >
-                  <ExternalLink className="w-4 h-4 text-[#00F0FF]" />
-                  Visit Live Client Platform
-                </a>
-              </div>
-            )}
+          {/* Deliverables */}
+          <div className="pt-12 border-t border-black/10 space-y-6">
+            <span className="text-xs font-mono uppercase tracking-widest text-neutral-500">
+              04 // Prototype Deliverables
+            </span>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {concept.deliverables.map((item, idx) => (
+                <div key={idx} className="flex items-center gap-2.5 text-xs text-neutral-700 font-medium">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>{item}</span>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* CTA Box */}
           <div className="pt-12 border-t border-black/10 text-center space-y-6">
             <h3 className="font-display font-bold text-2xl sm:text-3xl text-black">
-              Ready to get results like this for your business?
+              Interested in a Similar System for Your Company?
             </h3>
             <p className="text-neutral-600 text-sm max-w-md mx-auto">
-              We design websites that sell, 24/7 AI assistants that book leads in 30 seconds, and custom portals that eliminate monthly software bills.
+              We design custom websites, enquiry automation workflows, and tailored digital tools with defined written scope and transparent pricing.
             </p>
             <div>
               <Link href="/start-project">
                 <Button variant="electric" size="lg" icon={<ArrowUpRight className="w-5 h-5" />}>
-                  Get Your Free 15-Min Gameplan
+                  {CTA_LABELS.primary}
                 </Button>
               </Link>
             </div>

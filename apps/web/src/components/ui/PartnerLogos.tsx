@@ -2,7 +2,12 @@ import React from 'react';
 
 export function PartnerLogos({ className = '' }: { className?: string }) {
   return (
-    <div className={`w-full py-8 px-6 bg-black ${className}`}>
+    <div className={`w-full py-8 px-6 bg-black border-t border-white/5 ${className}`}>
+      <div className="max-w-7xl mx-auto text-center mb-6">
+        <span className="text-xs font-mono uppercase tracking-widest text-neutral-400">
+          Tools &amp; Platforms We Integrate With
+        </span>
+      </div>
       <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-center sm:justify-between gap-8 sm:gap-12 opacity-70 hover:opacity-100 transition-opacity duration-300">
         {/* GitHub */}
         <div className="flex items-center gap-2.5 text-neutral-300 hover:text-white transition-colors">

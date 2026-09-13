@@ -1,109 +1,119 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ArrowUpRight, CheckCircle2, Zap, Server, ShieldCheck, Database } from 'lucide-react';
+import { ArrowUpRight, CheckCircle2, Zap, Server, ShieldCheck, Database, Check, Wrench } from 'lucide-react';
 import { PageBanner } from '@/components/layout/PageBanner';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { SectionGradient } from '@/components/ui/SectionGradient';
+import {
+  SERVICES,
+  OWNERSHIP_DISCLOSURE,
+  ONGOING_COSTS_DISCLOSURE,
+  CTA_LABELS,
+} from '@/lib/constants/brand';
 
 export const metadata: Metadata = {
-  title: 'Custom Business Software & Client Portals // CYBERSTYLE',
+  title: 'Custom Web Applications, Client Portals & MVPs // CYBERSTYLE',
   description:
-    'Custom software, client portals, and automated business tools tailored to your exact workflows. You own 100% of the code with zero monthly software rent. Starting from $3,000.',
+    'Tailored web applications, client dashboards, and custom internal tools engineered with Next.js, Node.js, and PostgreSQL.',
 };
 
 export default function CustomSaaSServicePage() {
   const deliverables = [
-    'Private Client Portals: Give clients their own login to view project progress, approve milestones, and download deliverables.',
-    'Automatic Credit Card Invoicing: Integrated Stripe payments, subscriptions, and instant digital receipts sent to customers.',
-    'Everything in One Simple Dashboard: Replace 5 messy software subscriptions with one clean tool tailored to your exact team.',
-    'Zero Monthly Per-User Fees: Stop paying $30/month per employee to SaaS companies. Your platform is yours forever.',
-    'Bank-Grade Data Security: Encrypted user logins, phone verification codes, and total privacy for all company records.',
-    'Automatic Nightly Backups: Your customer data is backed up safely every night so you never have to worry about data loss.',
-    '100% Code & Asset Ownership: Once finished, all software files and code belong entirely to you with zero vendor lock-in.',
-    'Flawless Phone & Computer Access: Fast, responsive access for your team on iPhones, Androids, iPads, and office desktops.',
+    'Client Portals: Dedicated login areas for clients to review milestones, documents, and project status.',
+    'Payment & Invoicing Integration: Configured with Stripe or selected gateway for secure card processing.',
+    'Custom Business Dashboards: Focused interfaces that organize your operational data clearly.',
+    'No Per-Seat Agency Licensing: You own the application code without recurring per-user software licensing from us.',
+    'Modern Security Architecture: Role-based authorization, encrypted session handling, and HTTPS enforcement.',
+    'Automated Database Backups: Backup routines configured to preserve transactional data on schedule.',
+    'Full Codebase Handoff: Source repositories, database schemas, and documentation delivered upon project completion.',
+    'Responsive Desktop & Mobile Views: Optimized layouts for phones, tablets, and office workstations.',
   ];
 
   const faqs = [
     {
-      q: 'What is included in a $3,000 Custom Software build?',
-      a: 'You get a complete, working software platform tailored to your business: secure client logins, automatic credit card invoicing with Stripe, custom dashboards, customer management, and deployment ready for real customers.',
+      q: 'What is included in a custom application build?',
+      a: 'We build a production-ready application tailored to your specifications: user authentication, secure database schema (PostgreSQL), admin management views, payment gateway integration, and server deployment scripts.',
     },
     {
-      q: 'Why should I build custom software instead of paying for existing tools?',
-      a: 'Most software tools charge expensive monthly fees per user and force you to change how your business operates to fit their templates. Custom software fits your exact workflow, saves your team 20+ hours a week, and saves you tens of thousands in recurring software rent over time.',
+      q: 'How does custom software differ from SaaS subscriptions?',
+      a: 'Subscription software often requires your business to adapt its workflows to their rigid templates and charges increasing monthly fees as you add users. Custom applications are built around your exact operational rules and you retain ownership of the software codebase.',
     },
     {
-      q: 'Do you help us maintain and update the software after launch?',
-      a: 'Yes! We offer an optional $30/month peace-of-mind care plan that covers 24/7 uptime monitoring, server security patches, nightly encrypted backups, and rapid technical support whenever you need it.',
+      q: 'What ongoing infrastructure costs will I need to pay?',
+      a: `${ONGOING_COSTS_DISCLOSURE} You pay these directly to infrastructure providers like Hostinger, AWS, or Supabase.`,
+    },
+    {
+      q: 'Do I own the software code once delivered?',
+      a: `${OWNERSHIP_DISCLOSURE} All custom code, database migrations, and design assets are transferred to your company.`,
     },
   ];
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white selection:bg-cyan-500 selection:text-black">
       <PageBanner
-        badgeText="Service // 03"
-        title="Custom Business Software & Client Portals"
-        description="Stop paying monthly rent for software that doesn't fit your business. We build custom client portals, billing dashboards, and automated tools that you own 100% forever. Starting from $3,000."
+        badgeText="SERVICE // 03"
+        title={SERVICES.saas.name}
+        description={SERVICES.saas.description}
       />
 
       <section className="py-24 px-6 bg-[#08090C]">
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
           <div className="lg:col-span-7 space-y-8">
             <div className="space-y-4">
-              <span className="text-xs font-mono uppercase tracking-widest text-[#00F0FF]">Custom Business Tools</span>
+              <span className="text-xs font-mono uppercase tracking-widest text-[#00F0FF]">Custom Systems</span>
               <h2 className="font-display font-bold text-3xl sm:text-4xl text-white">
-                Off-the-shelf software rarely fits how you work. We build tools you actually own.
+                Software built around how your business actually functions.
               </h2>
             </div>
             <p className="text-neutral-300 text-base sm:text-lg leading-relaxed">
-              When standard tools slow down your team or force you into expensive monthly fees, custom software creates an unfair competitive advantage. We build clean, fast, secure software tailored to your exact business.
+              When pre-packaged software fails to support your workflows or charges excessive recurring seat fees, custom digital tools offer a focused alternative. We build responsive, database-backed web applications tailored to your requirements.
             </p>
 
-            {/* Plain-English Non-Technical Collaboration Workflow */}
+            {/* Workflow */}
             <div className="pt-6 border-t border-white/10 space-y-4">
-              <span className="text-xs font-mono uppercase tracking-widest text-[#00F0FF]">How We Work Together</span>
+              <span className="text-xs font-mono uppercase tracking-widest text-[#00F0FF]">Delivery Process</span>
               <h3 className="font-display font-bold text-2xl text-white">
-                Step-by-Step Delivery Without the Technical Confusion
+                Structured Engineering Milestones
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-4 rounded-xl bg-white/[0.03] border border-white/10 space-y-2">
                   <div className="w-6 h-6 rounded-md bg-[#00F0FF]/10 text-[#00F0FF] text-xs font-mono flex items-center justify-center font-bold">1</div>
-                  <h4 className="text-sm font-semibold text-white">Discovery &amp; Blueprint</h4>
+                  <h4 className="text-sm font-semibold text-white">Architecture &amp; Scope</h4>
                   <p className="text-xs text-neutral-400 leading-relaxed">
-                    We map out what your team and clients need, define simple screens, and create a clear milestone schedule before writing code.
+                    We define data models, user roles, screen flows, and written acceptance criteria before starting code.
                   </p>
                 </div>
 
                 <div className="p-4 rounded-xl bg-white/[0.03] border border-white/10 space-y-2">
                   <div className="w-6 h-6 rounded-md bg-[#00F0FF]/10 text-[#00F0FF] text-xs font-mono flex items-center justify-center font-bold">2</div>
-                  <h4 className="text-sm font-semibold text-white">Interactive Prototype</h4>
+                  <h4 className="text-sm font-semibold text-white">Interactive Preview</h4>
                   <p className="text-xs text-neutral-400 leading-relaxed">
-                    You click through a live preview of your software in a private sandbox. You test features as they are finished and give direct feedback.
+                    You review interactive UI components and test features on a private staging server as milestones complete.
                   </p>
                 </div>
 
                 <div className="p-4 rounded-xl bg-white/[0.03] border border-white/10 space-y-2">
                   <div className="w-6 h-6 rounded-md bg-[#00F0FF]/10 text-[#00F0FF] text-xs font-mono flex items-center justify-center font-bold">3</div>
-                  <h4 className="text-sm font-semibold text-white">Security &amp; Payment Setup</h4>
+                  <h4 className="text-sm font-semibold text-white">Database &amp; Payments</h4>
                   <p className="text-xs text-neutral-400 leading-relaxed">
-                    We connect your credit card billing with Stripe, set up bank-level security, and configure automated nightly database backups.
+                    We configure relational database schemas, secure session management, and payment gateway webhooks.
                   </p>
                 </div>
 
                 <div className="p-4 rounded-xl bg-white/[0.03] border border-white/10 space-y-2">
                   <div className="w-6 h-6 rounded-md bg-[#00F0FF]/10 text-[#00F0FF] text-xs font-mono flex items-center justify-center font-bold">4</div>
-                  <h4 className="text-sm font-semibold text-white">Launch &amp; 100% Handover</h4>
+                  <h4 className="text-sm font-semibold text-white">Deployment &amp; Handoff</h4>
                   <p className="text-xs text-neutral-400 leading-relaxed">
-                    Your platform goes live on your dedicated server. You receive 100% intellectual property ownership, source files, and a simple video guide.
+                    We deploy to your production server, transfer complete Git repositories, and deliver documentation.
                   </p>
                 </div>
               </div>
             </div>
 
             <div className="pt-6 border-t border-white/10 space-y-4">
-              <h3 className="font-display font-bold text-xl text-white">What’s Included in Your Build</h3>
+              <h3 className="font-display font-bold text-xl text-white">What’s Included in the Build</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {deliverables.map((item, idx) => (
                   <div key={idx} className="flex items-start gap-2.5 text-xs text-neutral-300">
@@ -118,32 +128,36 @@ export default function CustomSaaSServicePage() {
           <div className="lg:col-span-5 space-y-6">
             <Card variant="highlight" className="p-8 space-y-6 sticky top-28 bg-[#0C0F17]">
               <div>
-                <span className="text-xs font-mono text-[#00F0FF] uppercase tracking-wider">Investment Framework</span>
-                <div className="font-display font-bold text-4xl text-white mt-1">From $3,000</div>
-                <p className="text-xs text-neutral-400 mt-2">
-                  Complete custom software build covering user logins, customer management, Stripe billing, and server deployment.
+                <span className="text-xs font-mono text-[#00F0FF] uppercase tracking-wider">PROJECT INVESTMENT</span>
+                <div className="font-display font-bold text-4xl text-white mt-1">{SERVICES.saas.startingPrice}</div>
+                <p className="text-xs text-neutral-400 mt-2 leading-relaxed">
+                  One-time build fee covering user authentication, database design, dashboard interfaces, and payment integrations.
                 </p>
               </div>
 
               <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-2 text-xs font-mono text-neutral-300">
-                <div className="flex justify-between"><span>Delivery Timeline:</span><span className="text-white">3–6 Weeks</span></div>
-                <div className="flex justify-between"><span>Code Ownership:</span><span className="text-[#00F0FF] font-bold">100% Yours Forever</span></div>
-                <div className="flex justify-between"><span>Monthly User Rent:</span><span className="text-emerald-400 font-bold">$0 / Month</span></div>
+                <div className="flex justify-between"><span>Delivery Timeline:</span><span className="text-white">3–6 Weeks Typical</span></div>
+                <div className="flex justify-between"><span>Code Ownership:</span><span className="text-[#00F0FF] font-bold">Full Handoff</span></div>
+                <div className="flex justify-between"><span>Agency Software Rent:</span><span className="text-emerald-400 font-bold">$0</span></div>
               </div>
+
+              <p className="text-[11px] text-neutral-400 font-mono">
+                {ONGOING_COSTS_DISCLOSURE}
+              </p>
 
               <Link href="/start-project">
                 <Button variant="electric" size="lg" className="w-full justify-center" icon={<ArrowUpRight className="w-5 h-5" />}>
-                  Start Your Custom Software Build
+                  {CTA_LABELS.primary}
                 </Button>
               </Link>
             </Card>
 
-            {/* $30/month Essential Maintenance & Support Plan */}
+            {/* Optional Maintenance */}
             <div className="p-6 rounded-2xl bg-white/[0.02] border border-[#00F0FF]/30 space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-mono text-[#00F0FF] uppercase tracking-wider">Peace-of-Mind Care</span>
+                <span className="text-xs font-mono text-[#00F0FF] uppercase tracking-wider">OPTIONAL MAINTENANCE</span>
                 <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-[#00F0FF]/10 text-[#00F0FF] border border-[#00F0FF]/20">
-                  Optional Add-on
+                  CANCEL ANYTIME
                 </span>
               </div>
               <div className="flex items-baseline gap-2">
@@ -151,37 +165,31 @@ export default function CustomSaaSServicePage() {
                 <span className="text-xs text-neutral-400 font-mono">/ month</span>
               </div>
               <p className="text-xs text-neutral-400 leading-relaxed">
-                Keep your SaaS secure, updated, and fast. Includes security patching, automated encrypted database backups, uptime monitoring, and priority technical assistance.
+                Ongoing technical oversight to keep your application operational, patched, and backed up.
               </p>
               <ul className="space-y-1.5 text-xs text-neutral-300">
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-[#00F0FF] shrink-0" />
-                  <span>Nightly encrypted database backups</span>
+                  <Check className="w-3.5 h-3.5 text-[#00F0FF] shrink-0" />
+                  <span>Scheduled database backups and restore testing</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-[#00F0FF] shrink-0" />
-                  <span>Software security patches & dependency updates</span>
+                  <Check className="w-3.5 h-3.5 text-[#00F0FF] shrink-0" />
+                  <span>Dependency updates &amp; security patches</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-[#00F0FF] shrink-0" />
-                  <span>24/7 uptime monitoring & rapid recovery</span>
+                  <Check className="w-3.5 h-3.5 text-[#00F0FF] shrink-0" />
+                  <span>Uptime monitoring and error alert logging</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-[#00F0FF] shrink-0" />
-                  <span>Priority email support for questions and fixes</span>
+                  <Check className="w-3.5 h-3.5 text-[#00F0FF] shrink-0" />
+                  <span>Priority technical response for platform inquiries</span>
                 </li>
               </ul>
-              <Link href="/start-project?plan=saas-maintenance">
-                <Button variant="outline" size="sm" className="w-full justify-center text-xs mt-2">
-                  Add Maintenance to Project
-                </Button>
-              </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Atmospheric Black-to-White Scrim Gradient */}
       <SectionGradient direction="black-to-white" heightClass="h-44 sm:h-60" />
 
       <section className="pt-4 pb-24 px-6 bg-white text-black">
@@ -189,7 +197,7 @@ export default function CustomSaaSServicePage() {
           <div className="space-y-4">
             <span className="text-xs font-mono uppercase tracking-widest text-neutral-500">Frequently Asked</span>
             <h2 className="font-display font-bold text-3xl sm:text-4xl text-black">
-              Questions About Custom SaaS
+              Questions About Custom Software
             </h2>
           </div>
 
@@ -204,7 +212,6 @@ export default function CustomSaaSServicePage() {
         </div>
       </section>
 
-      {/* Atmospheric White-to-Black Scrim Gradient */}
       <SectionGradient direction="white-to-black" heightClass="h-44 sm:h-60" />
     </div>
   );

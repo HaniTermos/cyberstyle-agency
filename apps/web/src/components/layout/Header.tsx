@@ -93,7 +93,7 @@ export function Header() {
         <div className="hidden lg:flex items-center gap-4">
           <Link href="/start-project">
             <Button variant="primary" size="sm" icon={<ArrowUpRight className="w-4 h-4" />}>
-              Get Free Gameplan
+              Request a Project Call
             </Button>
           </Link>
         </div>
@@ -133,7 +133,7 @@ export function Header() {
           <div className="pt-6 border-t border-white/10 flex flex-col gap-4">
             <Link href="/start-project" onClick={() => setMobileMenuOpen(false)}>
               <Button variant="electric" size="lg" className="w-full justify-center">
-                Start a Project
+                Request a Project Call
               </Button>
             </Link>
           </div>

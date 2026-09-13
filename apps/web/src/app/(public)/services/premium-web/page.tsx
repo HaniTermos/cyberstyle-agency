@@ -12,52 +12,58 @@ import {
   Globe2,
   Smartphone,
   Server,
-  HelpCircle,
   Clock,
   Check,
-  Wrench
+  Wrench,
 } from 'lucide-react';
 import { PageBanner } from '@/components/layout/PageBanner';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { SectionGradient } from '@/components/ui/SectionGradient';
+import {
+  SERVICES,
+  OWNERSHIP_DISCLOSURE,
+  ONGOING_COSTS_DISCLOSURE,
+  SUPPORT_DISCLOSURE,
+  CTA_LABELS,
+} from '@/lib/constants/brand';
 
 export const metadata: Metadata = {
-  title: 'Premium Web Development, SEO & 3D Experiences // CYBERSTYLE',
+  title: 'Web Engineering, Technical SEO & Responsive Design // CYBERSTYLE',
   description:
-    'Custom high-speed websites with Google SEO, AI GEO optimization, and modern interactive designs. Starting from $800 with $30/month maintenance.',
+    'Custom websites built with Next.js and TypeScript, optimized for search engines, mobile devices, and fast user interaction.',
 };
 
 export default function PremiumWebServicePage() {
   const plainEnglishDeliverables = [
     {
-      title: 'Google SEO (Search Engine Optimization)',
-      desc: 'We optimize your website’s code, keywords, and meta tags so your business appears at the top of Google searches when people look for your services.',
+      title: 'Technical Search Engine Optimization (SEO)',
+      desc: 'We structure semantic HTML, heading hierarchies, OpenGraph tags, and XML sitemaps to ensure search engines can properly index your content.',
       icon: Search,
     },
     {
-      title: 'AI GEO (Generative Engine Optimization)',
-      desc: 'We structure your content so AI assistants (like ChatGPT, Perplexity, Claude, and Gemini) recommend your business to users asking questions online.',
+      title: 'Generative Engine Optimization (GEO)',
+      desc: 'We format your structured data (Schema.org JSON-LD) so AI-driven answer engines can understand and cite your business accurately.',
       icon: Globe2,
     },
     {
-      title: 'Blazing Fast Page Speeds',
-      desc: 'Your pages load in under 1.2 seconds, ensuring visitors never bounce away and Google rewards your site with higher rankings.',
+      title: 'Performance & Fast Asset Loading',
+      desc: 'We compress media, eliminate unused scripts, and use modern server-side rendering to help pages load efficiently on all connections.',
       icon: Zap,
     },
     {
-      title: 'Flawless Mobile & Tablet Design',
-      desc: 'Designed custom for iPhones, Androids, iPads, and desktop screens so every visitor gets a smooth, premium experience.',
+      title: 'Responsive Mobile & Desktop Layouts',
+      desc: 'Tested thoroughly across iPhones, Androids, tablets, and desktop displays to ensure smooth navigation and readable typography.',
       icon: Smartphone,
     },
     {
-      title: 'Zero-Code Content Management',
-      desc: 'You get a clean, self-hosted dashboard where you can easily update text, images, and news anytime without writing any code or paying monthly CMS fees.',
+      title: 'Modular Content Management',
+      desc: 'We configure clean content structures or headless dashboards so your team can easily update copy and images without touching code.',
       icon: Layers,
     },
     {
-      title: 'Bulletproof Security & Protection',
-      desc: 'Equipped with SSL security certificates, firewall defense, and automated backups so your website is safe from hackers 24/7.',
+      title: 'Modern Security Standards & SSL',
+      desc: 'Configured with HTTPS SSL certificates, secure response headers, and reliable deployment protections.',
       icon: ShieldCheck,
     },
   ];
@@ -66,41 +72,41 @@ export default function PremiumWebServicePage() {
     {
       step: '01',
       title: 'Discovery & Plain-English Strategy',
-      desc: 'We hold a kickoff conversation to understand your business goals, target clients, and design tastes. No confusing technical talk—just clear objectives.',
+      desc: 'We review your business goals, target audience, and functional requirements. Every deliverable is clearly outlined in writing.',
     },
     {
       step: '02',
       title: 'Interactive Design & Preview',
-      desc: 'You review visual prototypes and layouts of your site before any code is finalized. You give feedback, and we refine until you love it.',
+      desc: 'You review visual prototypes and layouts before code is finalized, ensuring layout and copy align with your brand.',
     },
     {
       step: '03',
-      title: 'Speed, Security & SEO Engineering',
-      desc: 'We build your high-speed site, embed Google SEO & AI GEO tags, and test rigorously across all phones, tablets, and computers.',
+      title: 'Engineering & Device Testing',
+      desc: 'We build your website using Next.js and TypeScript, integrate contact forms, and test across multiple screen sizes.',
     },
     {
       step: '04',
-      title: 'Live Launch & Simple Video Walkthrough',
-      desc: 'We connect your domain, run live health checks, and provide a short, simple video walkthrough showing you how to update anything in minutes.',
+      title: 'Live Deployment & Code Handoff',
+      desc: 'We configure DNS settings, launch to your hosting provider, hand over source code repositories, and provide a walkthrough.',
     },
   ];
 
   const faqs = [
     {
       q: 'What is the difference between SEO and GEO?',
-      a: 'SEO (Search Engine Optimization) ensures your site ranks on traditional search engines like Google and Bing. GEO (Generative Engine Optimization) structures your content with schema data and clear facts so AI search engines like ChatGPT, Perplexity, and Gemini cite and recommend your business when users ask AI for recommendations.',
+      a: 'SEO focuses on traditional search engine discovery (such as Google and Bing) via clean HTML, metadata, and crawlable structure. GEO (Generative Engine Optimization) adds schema markup and factual entity data to help LLM-based search tools like ChatGPT, Perplexity, and Gemini cite your business when answering queries.',
     },
     {
-      q: 'What is the $30/month Maintenance & Support package?',
-      a: 'For only $30/month, our engineering team handles all server updates, security patches, 24/7 uptime monitoring, weekly automated backups, and minor text/photo updates. It gives you 100% peace of mind with zero contract—you can cancel anytime.',
+      q: 'What does the optional $30/month Maintenance & Support package cover?',
+      a: `${SUPPORT_DISCLOSURE} It is completely optional—you may host and manage the site independently if you prefer.`,
     },
     {
-      q: 'Will 3D effects slow down mobile phones?',
-      a: 'No. We use adaptive graphics that automatically adjust performance depending on the device. On mobile phones and low-battery settings, your website remains ultra-fast with zero lag.',
+      q: 'Will visual animations or shaders affect performance on mobile phones?',
+      a: 'We use adaptive rendering that scales back particle and shader intensity on mobile screens and devices with reduced-motion preferences, prioritizing quick loading and battery efficiency.',
     },
     {
-      q: 'Do I own my website and code 100%?',
-      a: 'Yes, absolutely. Once final delivery is complete, 100% of the code, domain ownership, and design assets belong to you. We never lock you in.',
+      q: 'Do I own my website and code once finished?',
+      a: `${OWNERSHIP_DISCLOSURE} Domain registration and ongoing hosting services are paid directly to your selected third-party providers.`,
     },
   ];
 
@@ -108,8 +114,8 @@ export default function PremiumWebServicePage() {
     <div className="min-h-screen bg-black text-white selection:bg-cyan-500 selection:text-black font-sans">
       <PageBanner
         badgeText="SERVICE // 01"
-        title="Premium Web Development & AI Search Visibility"
-        description="We build fast, visually unforgettable websites that convert visitors into paying clients—optimized for Google SEO, AI recommendations, and mobile devices."
+        title={SERVICES.web.name}
+        description={SERVICES.web.description}
       />
 
       {/* Main Section */}
@@ -123,10 +129,10 @@ export default function PremiumWebServicePage() {
                 WHY IT MATTERS
               </span>
               <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-white">
-                A website should be an automated sales asset, not just an online business card.
+                A business website should make your services easy to understand and simple to engage.
               </h2>
               <p className="text-zinc-300 text-sm sm:text-base leading-relaxed">
-                Most websites look like generic templates, load slowly on phones, and never show up when people search for services. We engineer bespoke platforms that capture attention with modern interactive design, rank on Google, and get recommended by AI tools.
+                Most web visitors make a decision within seconds. We engineer websites that present your value clearly, look sharp across devices, and guide qualified prospective clients directly to your booking or contact forms.
               </p>
             </div>
 
@@ -134,7 +140,7 @@ export default function PremiumWebServicePage() {
             <div className="space-y-4 pt-4 border-t border-zinc-800">
               <h3 className="text-xl font-bold text-white flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-cyan-400" />
-                <span>What’s Included (In Plain English)</span>
+                <span>What’s Included in the Build</span>
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -156,14 +162,14 @@ export default function PremiumWebServicePage() {
               </div>
             </div>
 
-            {/* Clear Non-Technical Workflow */}
+            {/* Non-Technical Workflow */}
             <div className="space-y-4 pt-6 border-t border-zinc-800">
               <h3 className="text-xl font-bold text-white flex items-center gap-2">
                 <Clock className="w-5 h-5 text-cyan-400" />
-                <span>How We Work Together (Step-by-Step)</span>
+                <span>How We Deliver Your Project</span>
               </h3>
               <p className="text-xs text-zinc-400">
-                You will always know exactly what stage your project is in without any confusion.
+                Every milestone is agreed in writing so you have complete visibility throughout development.
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
@@ -189,33 +195,37 @@ export default function PremiumWebServicePage() {
             <Card variant="highlight" className="p-8 space-y-6 bg-[#0C0E17] border-cyan-500/30 shadow-[0_10px_35px_rgba(0,0,0,0.6)]">
               <div>
                 <span className="text-xs font-mono text-cyan-400 uppercase tracking-wider">PROJECT INVESTMENT</span>
-                <div className="text-4xl font-bold text-white mt-1">From $800</div>
+                <div className="text-4xl font-bold text-white mt-1">{SERVICES.web.startingPrice}</div>
                 <p className="text-xs text-zinc-400 mt-2 leading-relaxed">
-                  Complete design, build, Google SEO setup, AI GEO tags, mobile optimization, and cloud deployment.
+                  One-time build fee covering custom design, Next.js engineering, technical SEO, and production deployment.
                 </p>
               </div>
 
               <div className="p-4 rounded-xl bg-zinc-950 border border-zinc-800 space-y-2 text-xs font-mono text-zinc-300">
-                <div className="flex justify-between"><span>Delivery Time:</span><span className="text-cyan-400 font-bold">1–3 Weeks</span></div>
-                <div className="flex justify-between"><span>Google & AI SEO:</span><span className="text-emerald-400 font-bold">Included</span></div>
-                <div className="flex justify-between"><span>Ownership:</span><span className="text-white font-bold">100% Client Owned</span></div>
+                <div className="flex justify-between"><span>Typical Delivery:</span><span className="text-cyan-400 font-bold">2–4 Weeks</span></div>
+                <div className="flex justify-between"><span>Search Optimization:</span><span className="text-emerald-400 font-bold">SEO &amp; GEO Included</span></div>
+                <div className="flex justify-between"><span>Code Deliverables:</span><span className="text-white font-bold">Complete Repository</span></div>
               </div>
+
+              <p className="text-[11px] text-zinc-400 font-mono">
+                {ONGOING_COSTS_DISCLOSURE}
+              </p>
 
               <Link href="/start-project" className="block">
                 <Button variant="electric" size="lg" className="w-full justify-center gap-2 bg-cyan-500 hover:bg-cyan-400 text-black font-bold">
-                  <span>Start This Project</span>
+                  <span>{CTA_LABELS.primary}</span>
                   <ArrowUpRight className="w-4 h-4" />
                 </Button>
               </Link>
             </Card>
 
-            {/* Dedicated $30/Month Maintenance & Support Card */}
+            {/* Optional Maintenance & Support Card */}
             <div className="p-6 rounded-2xl bg-[#0C0E17] border border-cyan-500/20 space-y-4 shadow-[0_8px_25px_rgba(0,0,0,0.5)]">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Wrench className="w-4 h-4 text-cyan-400" />
                   <span className="text-xs font-mono uppercase tracking-wider text-cyan-400 font-bold">
-                    MAINTENANCE & SUPPORT
+                    OPTIONAL MAINTENANCE
                   </span>
                 </div>
                 <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
@@ -224,32 +234,28 @@ export default function PremiumWebServicePage() {
               </div>
 
               <div>
-                <div className="text-2xl font-bold text-white">$30 <span className="text-xs text-zinc-400 font-normal">/ month only</span></div>
+                <div className="text-2xl font-bold text-white">$30 <span className="text-xs text-zinc-400 font-normal">/ month</span></div>
                 <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
-                  Carefree ongoing upkeep. We keep your website fast, safe, and up to date every single day.
+                  Carefree ongoing upkeep so your site remains secure, updated, and monitored.
                 </p>
               </div>
 
               <ul className="space-y-2 text-xs text-zinc-300">
                 <li className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-                  <span>24/7 Website Uptime & SSL Monitoring</span>
+                  <span>Uptime monitoring &amp; automated alerts</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-                  <span>Weekly Automated Cloud Backups</span>
+                  <span>Periodic automated website backups</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-                  <span>Security Patches & Server Upgrades</span>
+                  <span>Security patches &amp; framework updates</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-                  <span>Minor Text, Photo & Contact Info Updates</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-                  <span>Direct Priority Email & Portal Support</span>
+                  <span>Minor text, contact, and image updates</span>
                 </li>
               </ul>
             </div>
@@ -265,7 +271,7 @@ export default function PremiumWebServicePage() {
       <section className="pt-4 pb-24 px-6 bg-white text-black">
         <div className="max-w-4xl mx-auto space-y-10">
           <div className="space-y-2">
-            <span className="text-xs font-mono uppercase tracking-widest text-neutral-500">PLAIN QUESTIONS & ANSWERS</span>
+            <span className="text-xs font-mono uppercase tracking-widest text-neutral-500">PLAIN QUESTIONS &amp; ANSWERS</span>
             <h2 className="text-3xl sm:text-4xl font-bold text-black tracking-tight">
               Frequently Asked Questions
             </h2>

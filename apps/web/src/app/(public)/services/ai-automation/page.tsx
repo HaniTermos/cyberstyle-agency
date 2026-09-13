@@ -14,49 +14,56 @@ import {
   Wrench,
   MessageSquare,
   BarChart3,
-  MailCheck
+  MailCheck,
 } from 'lucide-react';
 import { PageBanner } from '@/components/layout/PageBanner';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { SectionGradient } from '@/components/ui/SectionGradient';
+import {
+  SERVICES,
+  AI_LIMITATIONS_DISCLOSURE,
+  ONGOING_COSTS_DISCLOSURE,
+  OWNERSHIP_DISCLOSURE,
+  CTA_LABELS,
+} from '@/lib/constants/brand';
 
 export const metadata: Metadata = {
-  title: 'AI & Business Automation Systems // CYBERSTYLE',
+  title: 'AI & Enquiry Automation Workflows // CYBERSTYLE',
   description:
-    'Custom AI systems that respond to client inquiries in seconds, qualify leads 24/7, and eliminate repetitive work. From $1,200 with $30/mo maintenance.',
+    'Custom AI automation pipelines for lead pre-qualification, customer inquiry triage, and calendar scheduling with defined guardrails.',
 };
 
 export default function AIAutomationServicePage() {
   const plainEnglishDeliverables = [
     {
-      title: '24/7 Instant Lead Responses',
-      desc: 'When an inquiry arrives, AI immediately reads it, scores the customer’s budget, and prepares an intelligent reply in under 30 seconds.',
+      title: 'Automated Enquiry Triage',
+      desc: 'When an inquiry arrives, the workflow categorizes the request, checks project criteria, and routes details to your team.',
       icon: Zap,
     },
     {
-      title: 'Automated CRM & Customer Logging',
-      desc: 'Customer contact details, requests, and conversation history are automatically saved into your database without any manual copy-pasting.',
+      title: 'CRM & Customer Logging',
+      desc: 'Contact details, requested services, and submission timestamps are structured and synchronized into your CRM or database.',
       icon: BarChart3,
     },
     {
-      title: 'Smart Email & Follow-Up Drafter',
-      desc: 'Drafts personalized email follow-ups for your sales team so you can close deals faster with zero writer’s block.',
+      title: 'Calendar & Meeting Scheduling',
+      desc: 'Direct calendar integration allows qualified prospects to schedule consultation calls without repetitive back-and-forth emails.',
       icon: MailCheck,
     },
     {
-      title: 'Instant Team Notifications',
-      desc: 'Sends instant alerts directly to your phone, Slack, or email as soon as a high-value customer reaches out.',
+      title: 'Team Alerts & Notifications',
+      desc: 'Receive immediate alerts via email, Slack, or webhook notifications whenever a qualified inquiry is submitted.',
       icon: MessageSquare,
     },
     {
-      title: 'Secure & Private Customer Data',
-      desc: 'Your business secrets and customer contacts are completely private and encrypted. Your data is never used to train public models.',
+      title: 'Data Privacy & Configuration Guardrails',
+      desc: 'We configure strict system prompts and instructions so the assistant stays on topic and escalates sensitive questions to humans.',
       icon: ShieldCheck,
     },
     {
-      title: 'Zero High Monthly Software Subscriptions',
-      desc: 'Runs on your own system. You avoid paying hundreds of dollars in recurring software fees every month.',
+      title: 'Modular API Architecture',
+      desc: 'Connected to your preferred model provider (OpenAI, Anthropic, or Google) using your own API credentials without proprietary lock-in.',
       icon: Bot,
     },
   ];
@@ -64,38 +71,42 @@ export default function AIAutomationServicePage() {
   const workflows = [
     {
       step: '01',
-      title: 'Inquiry & Bottleneck Discovery',
-      desc: 'We talk about the repetitive tasks slowing your business down—answering common questions, sorting emails, or entering data.',
+      title: 'Requirements & Workflow Discovery',
+      desc: 'We identify your primary inquiry channels, common customer questions, and define where automation provides genuine efficiency.',
     },
     {
       step: '02',
-      title: 'Custom Automation Architecture',
-      desc: 'We design the exact workflow steps and AI rules to handle customer interactions accurately in your business voice.',
+      title: 'Prompt Design & Guardrail Setup',
+      desc: 'We draft the system prompt using your actual FAQs, pricing guidelines, and tone-of-voice rules, specifying escalation criteria.',
     },
     {
       step: '03',
-      title: 'Building & Test Runs',
-      desc: 'We build the automation pipeline and test with mock inquiries to guarantee that responses are accurate, polite, and fast.',
+      title: 'Integration & Staging Test Runs',
+      desc: 'We build the pipeline, integrate calendar or email tools, and run test inquiries to verify accurate responses.',
     },
     {
       step: '04',
-      title: 'Go-Live & Team Training',
-      desc: 'We activate the system live, connect your email/CRM, and give your team a simple video showing how everything operates effortlessly.',
+      title: 'Live Activation & Team Walkthrough',
+      desc: 'We activate the workflow in your live environment, test live alerts, and provide simple operational documentation.',
     },
   ];
 
   const faqs = [
     {
-      q: 'Will the AI sound robotic or make mistakes?',
-      a: 'No. We train your custom AI prompt with your exact company guidelines, FAQs, pricing rules, and preferred tone of voice. If a customer question is too sensitive or complex, it instantly flags the lead for human review.',
+      q: 'Will the AI make mistakes or give incorrect advice?',
+      a: `${AI_LIMITATIONS_DISCLOSURE} We configure fallback mechanisms so when the assistant detects ambiguous, out-of-scope, or sensitive requests, it directs the visitor to human staff.`,
     },
     {
-      q: 'What is the $30/month Maintenance & Support package for AI?',
-      a: 'For only $30/month, we monitor your AI queues 24/7, maintain background servers, update prompt instructions as your services change, and handle bug fixes with priority response.',
+      q: 'Are ongoing AI model fees included in the build price?',
+      a: 'The build fee covers engineering, prompt configuration, testing, and integration. Third-party model providers (e.g. OpenAI, Anthropic, or Google) charge modest usage fees based on token consumption (typically a few cents per conversation), which you pay directly to the provider via your own API account.',
     },
     {
-      q: 'Do I need technical skills to manage this?',
-      a: 'Not at all. You interact with leads normally through your email inbox, customer portal, or phone. The AI does the heavy lifting in the background.',
+      q: 'Do I need programming knowledge to manage this?',
+      a: 'No. You manage appointments and customer requests through your standard email inbox, CRM, or calendar app. We provide clear documentation showing how to adjust prompt instructions as your offerings change.',
+    },
+    {
+      q: 'Do I own the custom automation code and prompts?',
+      a: `${OWNERSHIP_DISCLOSURE} All workflow scripts, system prompts, and configuration files are transferred to your team.`,
     },
   ];
 
@@ -103,8 +114,8 @@ export default function AIAutomationServicePage() {
     <div className="min-h-screen bg-black text-white selection:bg-cyan-500 selection:text-black font-sans">
       <PageBanner
         badgeText="SERVICE // 02"
-        title="AI & Business Automation Systems"
-        description="Eliminate manual bottlenecks. We engineer custom 24/7 AI systems that qualify incoming prospects, update your database, and draft responses in seconds."
+        title={SERVICES.ai.name}
+        description={SERVICES.ai.description}
       />
 
       <section className="py-20 px-6 bg-[#080A10]">
@@ -117,10 +128,10 @@ export default function AIAutomationServicePage() {
                 WHY IT MATTERS
               </span>
               <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-white">
-                Responding in 5 minutes versus 5 hours makes the difference between winning and losing a client.
+                Fast, clear replies keep prospective clients engaged when they are ready to buy.
               </h2>
               <p className="text-zinc-300 text-sm sm:text-base leading-relaxed">
-                When prospective buyers reach out, they want answers immediately. Our custom AI automation workflows qualify prospects, categorize their budget, and prepare your response within seconds—keeping your sales pipeline moving 24 hours a day.
+                When prospective clients reach out with questions, long response delays often mean they move on to another provider. Our automated enquiry workflows help answer initial questions, gather key project details, and book consultations directly into your calendar.
               </p>
             </div>
 
@@ -128,7 +139,7 @@ export default function AIAutomationServicePage() {
             <div className="space-y-4 pt-4 border-t border-zinc-800">
               <h3 className="text-xl font-bold text-white flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-cyan-400" />
-                <span>What’s Included (In Plain English)</span>
+                <span>What’s Included in the Build</span>
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -154,10 +165,10 @@ export default function AIAutomationServicePage() {
             <div className="space-y-4 pt-6 border-t border-zinc-800">
               <h3 className="text-xl font-bold text-white flex items-center gap-2">
                 <Clock className="w-5 h-5 text-cyan-400" />
-                <span>How We Work Together (Step-by-Step)</span>
+                <span>How We Build Your System</span>
               </h3>
               <p className="text-xs text-zinc-400">
-                A simple, stress-free process where we configure and test everything for you.
+                A structured process with thorough testing before any workflow touches real visitors.
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
@@ -182,33 +193,37 @@ export default function AIAutomationServicePage() {
             <Card variant="highlight" className="p-8 space-y-6 bg-[#0C0E17] border-cyan-500/30 shadow-[0_10px_35px_rgba(0,0,0,0.6)]">
               <div>
                 <span className="text-xs font-mono text-cyan-400 uppercase tracking-wider">PROJECT INVESTMENT</span>
-                <div className="text-4xl font-bold text-white mt-1">From $1,200</div>
+                <div className="text-4xl font-bold text-white mt-1">{SERVICES.ai.startingPrice}</div>
                 <p className="text-xs text-zinc-400 mt-2 leading-relaxed">
-                  Includes AI prompt engineering, database hooks, email trigger setup, and end-to-end testing.
+                  One-time build fee including prompt engineering, system guardrails, calendar webhook integration, and test suite.
                 </p>
               </div>
 
               <div className="p-4 rounded-xl bg-zinc-950 border border-zinc-800 space-y-2 text-xs font-mono text-zinc-300">
-                <div className="flex justify-between"><span>Setup Time:</span><span className="text-cyan-400 font-bold">1–2 Weeks</span></div>
-                <div className="flex justify-between"><span>Engine:</span><span className="text-emerald-400 font-bold">Self-Hosted</span></div>
-                <div className="flex justify-between"><span>Recurring SaaS:</span><span className="text-white font-bold">$0 Third-Party</span></div>
+                <div className="flex justify-between"><span>Setup Timeline:</span><span className="text-cyan-400 font-bold">1–3 Weeks</span></div>
+                <div className="flex justify-between"><span>Architecture:</span><span className="text-emerald-400 font-bold">Direct API Integration</span></div>
+                <div className="flex justify-between"><span>Prompt Ownership:</span><span className="text-white font-bold">Full Handoff</span></div>
+              </div>
+
+              <div className="p-3 rounded-lg bg-white/5 border border-white/10 text-[11px] text-zinc-400 space-y-1">
+                <p><strong>Note on Usage Fees:</strong> Model token costs and third-party calendar or SMS tools are billed directly by respective providers based on your actual volume.</p>
               </div>
 
               <Link href="/start-project" className="block">
                 <Button variant="electric" size="lg" className="w-full justify-center gap-2 bg-cyan-500 hover:bg-cyan-400 text-black font-bold">
-                  <span>Start AI Automation Build</span>
+                  <span>{CTA_LABELS.primary}</span>
                   <ArrowUpRight className="w-4 h-4" />
                 </Button>
               </Link>
             </Card>
 
-            {/* $30/Mo Maintenance Card */}
+            {/* Maintenance Card */}
             <div className="p-6 rounded-2xl bg-[#0C0E17] border border-cyan-500/20 space-y-4 shadow-[0_8px_25px_rgba(0,0,0,0.5)]">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Wrench className="w-4 h-4 text-cyan-400" />
                   <span className="text-xs font-mono uppercase tracking-wider text-cyan-400 font-bold">
-                    MAINTENANCE & SUPPORT
+                    OPTIONAL ONGOING SUPPORT
                   </span>
                 </div>
                 <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
@@ -217,28 +232,28 @@ export default function AIAutomationServicePage() {
               </div>
 
               <div>
-                <div className="text-2xl font-bold text-white">$30 <span className="text-xs text-zinc-400 font-normal">/ month only</span></div>
+                <div className="text-2xl font-bold text-white">$30 <span className="text-xs text-zinc-400 font-normal">/ month</span></div>
                 <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
-                  Peace of mind support for your AI workers, queue health, and continuous prompt refinements.
+                  Support for prompt refinement, error log reviews, and webhook connection checks.
                 </p>
               </div>
 
               <ul className="space-y-2 text-xs text-zinc-300">
                 <li className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-                  <span>24/7 Queue & Worker Uptime Monitoring</span>
+                  <span>Webhook &amp; queue connectivity checks</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-                  <span>Monthly Prompt Tuning & Model Accuracy Updates</span>
+                  <span>Prompt refinements as your offerings evolve</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-                  <span>Database Health & Automated Error Retries</span>
+                  <span>Error log audits and integration troubleshooting</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-                  <span>Priority Email & Emergency Patch Support</span>
+                  <span>Email support for configuration questions</span>
                 </li>
               </ul>
             </div>
@@ -252,7 +267,7 @@ export default function AIAutomationServicePage() {
       <section className="pt-4 pb-24 px-6 bg-white text-black">
         <div className="max-w-4xl mx-auto space-y-10">
           <div className="space-y-2">
-            <span className="text-xs font-mono uppercase tracking-widest text-neutral-500">PLAIN QUESTIONS & ANSWERS</span>
+            <span className="text-xs font-mono uppercase tracking-widest text-neutral-500">PLAIN QUESTIONS &amp; ANSWERS</span>
             <h2 className="text-3xl sm:text-4xl font-bold text-black tracking-tight">
               Frequently Asked Questions
             </h2>
