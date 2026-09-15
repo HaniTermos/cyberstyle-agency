@@ -238,7 +238,7 @@ OUTPUT JSON FORMAT:
       where: { workspaceId, active: true },
     });
 
-    const snapshots = [];
+    const snapshots: any[] = [];
 
     for (const kw of keywords) {
       // Simulate organic rank movement (-2 to +3 improvement)

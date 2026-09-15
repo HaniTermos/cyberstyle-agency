@@ -204,8 +204,8 @@ router.post('/leads/import', async (req: AuthenticatedRequest, res: Response, ne
       return;
     }
 
-    const createdLeads = [];
-    const skippedLeads = [];
+    const createdLeads: any[] = [];
+    const skippedLeads: any[] = [];
 
     for (const item of leadsList) {
       const name = item.name || item.businessName || 'Local Business';

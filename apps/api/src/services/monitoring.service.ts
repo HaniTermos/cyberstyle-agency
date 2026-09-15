@@ -84,7 +84,7 @@ export class MonitoringService {
    * Processes an inbound webhook event from changedetection.io or custom health worker
    */
   static async processChangeEvent(event: WebhookChangeEvent) {
-    let watch = null;
+    let watch: any = null;
 
     if (event.watchId) {
       watch = await prisma.monitoringWatch.findUnique({ where: { id: event.watchId } });

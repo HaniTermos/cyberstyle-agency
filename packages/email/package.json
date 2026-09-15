@@ -9,11 +9,10 @@
     "dev": "tsc --watch"
   },
   "dependencies": {
-    "nodemailer": "^6.10.1"
+    "nodemailer": "^9.1.1"
   },
   "devDependencies": {
     "@cyberstyle/config": "file:../config",
-    "@types/nodemailer": "^6.4.17",
     "typescript": "^5.7.3"
   }
 }

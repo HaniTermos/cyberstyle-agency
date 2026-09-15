@@ -176,7 +176,7 @@ router.post('/leads/scraper-sync', async (req: Request, res: Response, next: Nex
       return;
     }
 
-    const syncedResults = [];
+    const syncedResults: any[] = [];
 
     for (const item of leadsList) {
       const name = item.name || item.company || 'Unnamed Business';
