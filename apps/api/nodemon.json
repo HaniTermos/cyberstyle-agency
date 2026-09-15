@@ -3,7 +3,7 @@
   "ext": "ts,json",
   "ignore": ["src/**/*.spec.ts", "dist", "node_modules"],
   "execMap": {
-    "ts": "npx ts-node"
+    "ts": "ts-node"
   },
-  "exec": "npx ts-node src/index.ts"
+  "exec": "ts-node src/index.ts"
 }

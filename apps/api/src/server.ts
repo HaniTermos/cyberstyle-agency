@@ -38,9 +38,9 @@ export function createServer() {
   }));
 
   // CORS Configuration
-  const allowedOrigins = env.CORS_ORIGINS.split(',').map((o) => o.trim());
+  const allowedOrigins = env.CORS_ORIGINS.split(',').map((o: string) => o.trim());
   app.use(cors({
-    origin: (origin, callback) => {
+    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
       if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
         callback(null, true);
       } else {

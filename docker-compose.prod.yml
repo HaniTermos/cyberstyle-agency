@@ -16,6 +16,15 @@ services:
       NEXT_PUBLIC_API_URL: https://cyberstyle.net/api
     networks:
       - cyberstyle_network
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.agency-web.rule=Host(`${DOMAIN:-cyberstyle.net}`, `www.${DOMAIN:-cyberstyle.net}`)"
+      - "traefik.http.routers.agency-web.entrypoints=web,websecure"
+      - "traefik.http.routers.agency-web.tls.certresolver=${CERT_RESOLVER:-letsencrypt}"
+      - "traefik.http.routers.agency-web.priority=10"
+      - "traefik.http.services.agency-web.loadbalancer.server.port=3000"
     depends_on:
       - api
 
@@ -37,6 +46,15 @@ services:
       SESSION_SECRET: ${SESSION_SECRET}
     networks:
       - cyberstyle_network
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.agency-api.rule=(Host(`${DOMAIN:-cyberstyle.net}`, `www.${DOMAIN:-cyberstyle.net}`) && PathPrefix(`/api`)) || Host(`api.${DOMAIN:-cyberstyle.net}`)"
+      - "traefik.http.routers.agency-api.entrypoints=web,websecure"
+      - "traefik.http.routers.agency-api.tls.certresolver=${CERT_RESOLVER:-letsencrypt}"
+      - "traefik.http.routers.agency-api.priority=100"
+      - "traefik.http.services.agency-api.loadbalancer.server.port=4000"
     depends_on:
       postgres:
         condition: service_healthy
@@ -107,9 +125,11 @@ services:
       - cyberstyle_network
 
   # ----------------------------------------------------------------------------
-  # Nginx Reverse Proxy with TLS & Gzip
+  # Nginx Reverse Proxy (Alternative fallback if not using Traefik)
   # ----------------------------------------------------------------------------
   nginx:
+    profiles:
+      - nginx
     image: nginx:alpine
     container_name: cyberstyle_nginx
     restart: always
@@ -133,3 +153,5 @@ volumes:
 networks:
   cyberstyle_network:
     driver: bridge
+  proxy:
+    external: true

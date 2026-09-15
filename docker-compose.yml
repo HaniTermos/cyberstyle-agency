@@ -76,6 +76,14 @@ services:
         condition: service_healthy
     networks:
       - cyberstyle_network
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.cyberstyle-api.rule=PathPrefix(`/api`)"
+      - "traefik.http.routers.cyberstyle-api.entrypoints=web"
+      - "traefik.http.routers.cyberstyle-api.priority=100"
+      - "traefik.http.services.cyberstyle-api.loadbalancer.server.port=4000"
 
   # ----------------------------------------------------------------------------
   # 4. Next.js App Router Web Frontend & Portal
@@ -105,6 +113,14 @@ services:
         condition: service_started
     networks:
       - cyberstyle_network
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.cyberstyle-web.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.cyberstyle-web.entrypoints=web"
+      - "traefik.http.routers.cyberstyle-web.priority=10"
+      - "traefik.http.services.cyberstyle-web.loadbalancer.server.port=3000"
 
 volumes:
   postgres_data:
@@ -115,3 +131,5 @@ volumes:
 networks:
   cyberstyle_network:
     driver: bridge
+  proxy:
+    external: true
