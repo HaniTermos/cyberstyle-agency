@@ -1,6 +1,7 @@
 import { Router, Response, NextFunction } from 'express';
 import { prisma } from '../config/db';
 import { requireAuth, requireRole, AuthenticatedRequest } from '../middleware/auth.middleware';
+import { standardLimiter } from '../middleware/rateLimiter';
 import { logAudit, verifyAuditChain, exportAuditLogsToCsv } from '../utils/auditLogger';
 import {
   UserRole,
@@ -2289,7 +2290,7 @@ router.put('/users/:id/role', async (req: AuthenticatedRequest, res: Response, n
 // 14. TAMPER-EVIDENT AUDIT LOG TRAIL & CSV EXPORT
 // ==============================================================================
 
-router.get('/audit-logs', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+router.get('/audit-logs', standardLimiter, async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
     const { format, organizationId, entityType, limit = '100' } = req.query;
 

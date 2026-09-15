@@ -1,5 +1,6 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { FileSecurityService } from '../services/file-security.service';
+import { standardLimiter } from '../middleware/rateLimiter';
 import fs from 'fs';
 
 const router = Router();
@@ -8,7 +9,7 @@ const router = Router();
  * @route   GET /api/files/download/:token
  * @desc    Authorized, expiring signed download endpoint for files
  */
-router.get('/download/:token', async (req: Request, res: Response, next: NextFunction) => {
+router.get('/download/:token', standardLimiter, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { token } = req.params;
 

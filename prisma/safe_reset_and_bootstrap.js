@@ -131,7 +131,7 @@ async function main() {
   console.log('🎉 SAFE RESET & BOOTSTRAP COMPLETE');
   console.log('============================================================');
   console.log(`✅ Administrator created: ${haniAdmin.email} (${haniAdmin.name})`);
-  console.log(`🔑 Initial Password: ${haniPasswordPlain}`);
+  console.log('🔑 Initial Password: [CONFIGURED IN ENVIRONMENT / SECURE CREDENTIAL]');
   console.log(`🛡️ Role: ${haniAdmin.role}`);
   console.log(`📚 Database FAQs Preserved: ${finalFaqCount} (Untouched)`);
   console.log(`💼 Database Case Studies Preserved: ${finalCaseStudyCount} (Untouched)`);

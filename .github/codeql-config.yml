@@ -1,0 +1,7 @@
+name: "CYBERSTYLE CodeQL Config"
+
+paths-ignore:
+  - 'scratch/**'
+  - 'security-report/**'
+  - 'dist/**'
+  - '.next/**'

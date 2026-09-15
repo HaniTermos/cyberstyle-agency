@@ -154,4 +154,10 @@ backups/
 infra/storage/
 quarantine/
 uploads/
-.gemini/
+.gemini/
+
+# Scratch & reports
+security-report/
+create-security-report.ps1
+scratch/
+gh

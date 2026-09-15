@@ -1,5 +1,6 @@
 import { Router, Response, NextFunction } from 'express';
 import { requireAuth, AuthenticatedRequest } from '../middleware/auth.middleware';
+import { standardLimiter } from '../middleware/rateLimiter';
 import { MessagingService } from '../services/messaging.service';
 import { ThreadStatus, ThreadContextType, MessageType } from '@prisma/client';
 import { z } from 'zod';
@@ -7,8 +8,9 @@ import fs from 'fs';
 
 const router = Router();
 
-// All messaging endpoints require authentication
+// All messaging endpoints require authentication and rate limiting
 router.use(requireAuth);
+router.use(standardLimiter);
 
 /**
  * 1. List Threads

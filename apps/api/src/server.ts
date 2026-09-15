@@ -31,14 +31,23 @@ export function createServer() {
   app.use('/uploads', express.static(uploadsPath));
   app.use('/uploads/clean', express.static(cleanUploadsPath));
 
+  // CORS Configuration
+  const allowedOrigins = env.CORS_ORIGINS.split(',').map((o: string) => o.trim());
+
   // Security Headers with Helmet
   app.use(helmet({
-    contentSecurityPolicy: false,
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
+        connectSrc: ["'self'", ...allowedOrigins],
+      },
+    },
     crossOriginEmbedderPolicy: false,
   }));
 
-  // CORS Configuration
-  const allowedOrigins = env.CORS_ORIGINS.split(',').map((o: string) => o.trim());
   app.use(cors({
     origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
       if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {

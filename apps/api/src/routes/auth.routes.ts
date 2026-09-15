@@ -352,7 +352,7 @@ router.post('/2fa/setup', requireAuth, async (req: AuthenticatedRequest, res: Re
 /**
  * @route   POST /api/auth/2fa/confirm
  */
-router.post('/2fa/confirm', requireAuth, async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+router.post('/2fa/confirm', strictAuthLimiter, requireAuth, async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
     const { code } = z.object({ code: z.string().min(6) }).parse(req.body);
 

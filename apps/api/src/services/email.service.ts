@@ -342,6 +342,29 @@ export class EmailService {
   }
 
   /**
+   * Safely strip HTML tags to produce plain text without incomplete multi-character sanitization vulnerabilities
+   */
+  public static extractPlainText(html: string): string {
+    if (!html) return '';
+    let text = html;
+    let prev = '';
+    // Iteratively strip HTML tags until fixed point to prevent nested tag injection
+    while (prev !== text) {
+      prev = text;
+      text = text.replace(/<[^<>]+>/g, ' ');
+    }
+    return text
+      .replace(/&nbsp;/gi, ' ')
+      .replace(/&amp;/gi, '&')
+      .replace(/&lt;/gi, '<')
+      .replace(/&gt;/gi, '>')
+      .replace(/&quot;/gi, '"')
+      .replace(/&#39;/gi, "'")
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  /**
    * Sends an email with full threading and DB tracking
    */
   public static async sendMail(options: EmailDispatchOptions): Promise<{
@@ -368,13 +391,16 @@ export class EmailService {
         });
       }
 
+      const plainText = options.text || this.extractPlainText(options.html);
+      const snippet = this.extractPlainText(options.html).substring(0, 160);
+
       // In SMTP or Gmail mode:
       const info = await transporter.sendMail({
         from: fromAddress,
         to: options.to,
         subject: options.subject,
         html: finalHtml,
-        text: options.text || options.html.replace(/<[^>]*>/g, ''),
+        text: plainText,
         inReplyTo: options.inReplyTo,
       });
 
@@ -386,7 +412,7 @@ export class EmailService {
         const thread = await prisma.emailThread.create({
           data: {
             subject: options.subject,
-            snippet: options.html.replace(/<[^>]*>/g, '').substring(0, 160),
+            snippet,
             participants: [options.to, fromAddress],
             relatedType: options.relatedType || 'GENERAL',
             relatedId: options.relatedId,
@@ -399,7 +425,7 @@ export class EmailService {
           where: { id: threadId },
           data: {
             lastMessageAt: new Date(),
-            snippet: options.html.replace(/<[^>]*>/g, '').substring(0, 160),
+            snippet,
           },
         });
       }
@@ -414,7 +440,7 @@ export class EmailService {
           to: options.to,
           subject: options.subject,
           body: options.html,
-          snippet: options.html.replace(/<[^>]*>/g, '').substring(0, 160),
+          snippet,
           direction: 'outbound',
           status: 'SENT',
           transport: transportMode,

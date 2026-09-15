@@ -23,7 +23,7 @@ export class SeoService {
    * Creates or returns an SEO Workspace for a client domain
    */
   static async getOrCreateSeoWorkspace(organizationId: string, domain: string, locale = 'en-US') {
-    const cleanDomain = domain.replace(/^https?:\/\//, '').replace(/\/.*$/, '').toLowerCase();
+    const cleanDomain = domain.replace(/^https?:\/\//, '').split('/')[0]?.toLowerCase() || '';
 
     let workspace = await prisma.seoWorkspace.findFirst({
       where: {

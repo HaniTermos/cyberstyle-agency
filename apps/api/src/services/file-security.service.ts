@@ -198,8 +198,12 @@ export class FileSecurityService {
 
     // Compute SHA-256 checksum
     const checksum = crypto.createHash('sha256').update(input.buffer).digest('hex');
-    const storageKey = `quarantine_${Date.now()}_${checksum.slice(0, 12)}_${validation.sanitizedFilename}`;
-    const quarantinePath = path.join(this.quarantineDir, storageKey);
+    const sanitizedName = path.basename(validation.sanitizedFilename).replace(/[^a-zA-Z0-9._-]/g, '_');
+    const storageKey = `quarantine_${Date.now()}_${checksum.slice(0, 12)}_${sanitizedName}`;
+    const quarantinePath = path.resolve(this.quarantineDir, storageKey);
+    if (!quarantinePath.startsWith(path.resolve(this.quarantineDir))) {
+      throw new Error('Path traversal detected');
+    }
 
     // Save to quarantine directory
     await fs.writeFile(quarantinePath, input.buffer);
@@ -339,8 +343,11 @@ export class FileSecurityService {
       if (!version) return;
 
       if (newState === ScanState.CLEAN) {
-        const cleanKey = `clean_${version.storageKey.replace(/^quarantine_/, '')}`;
-        const cleanPath = path.join(this.cleanDir, cleanKey);
+        const cleanKey = `clean_${path.basename(version.storageKey).replace(/^quarantine_/, '')}`;
+        const cleanPath = path.resolve(this.cleanDir, cleanKey);
+        if (!cleanPath.startsWith(path.resolve(this.cleanDir))) {
+          throw new Error('Path traversal detected');
+        }
         await fs.rename(filePath, cleanPath).catch(() => {});
 
         await prisma.fileVersion.update({
@@ -360,8 +367,11 @@ export class FileSecurityService {
           },
         });
       } else {
-        const rejectedKey = `rejected_${version.storageKey.replace(/^quarantine_/, '')}`;
-        const rejectedPath = path.join(this.rejectedDir, rejectedKey);
+        const rejectedKey = `rejected_${path.basename(version.storageKey).replace(/^quarantine_/, '')}`;
+        const rejectedPath = path.resolve(this.rejectedDir, rejectedKey);
+        if (!rejectedPath.startsWith(path.resolve(this.rejectedDir))) {
+          throw new Error('Path traversal detected');
+        }
         await fs.rename(filePath, rejectedPath).catch(() => {});
 
         await prisma.fileVersion.update({

@@ -210,7 +210,8 @@ router.post('/leads/import', async (req: AuthenticatedRequest, res: Response, ne
     for (const item of leadsList) {
       const name = item.name || item.businessName || 'Local Business';
       const company = item.company || item.businessName || name;
-      const email = item.email || `contact@${(item.website || 'prospect').replace(/^https?:\/\//, '').replace(/\/.*$/, '') || 'localbusiness.com'}`;
+      const rawHost = (item.website || 'prospect').replace(/^https?:\/\//, '').split('/')[0] || 'localbusiness.com';
+      const email = item.email || `contact@${rawHost}`;
       const phone = item.phone || null;
       const mapsUrl = item.mapsUrl || null;
 
