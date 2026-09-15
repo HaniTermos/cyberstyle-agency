@@ -2,6 +2,8 @@ import { Router, Response, NextFunction } from 'express';
 import { prisma } from '../config/db';
 import { requireAuth, requireOrgBoundary, AuthenticatedRequest } from '../middleware/auth.middleware';
 import { logAudit } from '../utils/auditLogger';
+import { FileSecurityService } from '../services/file-security.service';
+import { ScanState, FileFolder, FileVisibility } from '@prisma/client';
 import { z } from 'zod';
 
 const router = Router();
@@ -328,6 +330,118 @@ router.get('/reports/:id/pdf', requireOrgBoundary, async (req: AuthenticatedRequ
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `inline; filename="report_${report.period.toLowerCase().replace(/\s+/g, '_')}.pdf"`);
     res.send(buffer);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ==============================================================================
+// PHASE 3 SECURE CLIENT FILES & DELIVERABLES
+// ==============================================================================
+
+/**
+ * @route   GET /api/portal/files
+ * @desc    Get client-visible, virus-scanned CLEAN deliverables for client organization
+ */
+router.get('/files', requireOrgBoundary, async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const orgId = req.user.clientProfile?.organizationId;
+    if (!orgId) {
+      res.status(403).json({ status: 'error', code: 'NO_ORG_PROFILE', message: 'Client organization profile missing' });
+      return;
+    }
+
+    const { folder, projectId, search } = req.query;
+
+    const files = await prisma.fileAsset.findMany({
+      where: {
+        organizationId: orgId,
+        visibility: FileVisibility.CLIENT_VISIBLE,
+        isDeleted: false,
+        // Strict Security: Only expose files whose latest version is CLEAN
+        versions: {
+          some: {
+            scanState: ScanState.CLEAN,
+          },
+        },
+        ...(folder ? { folder: folder as FileFolder } : {}),
+        ...(projectId ? { projectId: String(projectId) } : {}),
+        ...(search ? { filename: { contains: String(search), mode: 'insensitive' } } : {}),
+      },
+      include: {
+        project: { select: { id: true, name: true } },
+        versions: {
+          where: { scanState: ScanState.CLEAN },
+          orderBy: { versionNumber: 'desc' },
+          take: 3,
+        },
+        uploader: { select: { id: true, name: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    res.status(200).json({
+      status: 'success',
+      data: files,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * @route   POST /api/portal/files/:id/signed-url
+ * @desc    Generate expiring signed download link for client file
+ */
+router.post('/files/:id/signed-url', requireOrgBoundary, async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const orgId = req.user.clientProfile?.organizationId;
+    const { id } = req.params;
+
+    const file = await prisma.fileAsset.findFirst({
+      where: {
+        id,
+        organizationId: orgId,
+        visibility: FileVisibility.CLIENT_VISIBLE,
+        isDeleted: false,
+      },
+      include: {
+        versions: {
+          where: { scanState: ScanState.CLEAN },
+          orderBy: { versionNumber: 'desc' },
+          take: 1,
+        },
+      },
+    });
+
+    if (!file || file.versions.length === 0) {
+      res.status(404).json({
+        status: 'error',
+        code: 'FILE_NOT_FOUND',
+        message: 'File not found, quarantined, or undergoing security scanning.',
+      });
+      return;
+    }
+
+    const token = FileSecurityService.generateSignedDownloadToken(file.id, file.versions[0]?.id);
+    const signedUrl = `/api/v1/files/download/${token}`;
+
+    await FileSecurityService.logFileAccess({
+      fileAssetId: file.id,
+      fileVersionId: file.versions[0]?.id,
+      userId: req.user.id,
+      action: 'VIEW',
+      req,
+    });
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        signedUrl,
+        filename: file.filename,
+        expiresInSeconds: 300,
+      },
+    });
   } catch (error) {
     next(error);
   }

@@ -13,26 +13,106 @@ import {
   ShieldCheck,
   AlertCircle,
   Activity,
-  Cpu,
   Clock,
   ArrowRight,
-  Plus
+  CheckCircle2,
+  FileText,
+  AlertTriangle,
+  RefreshCw,
 } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
 
+interface DashboardData {
+  kpis: {
+    newLeads7Days: number;
+    newLeads30Days: number;
+    leadsNeedingFollowUpCount: number;
+    proposalsPendingDecision: number;
+    activeProjectsCount: number;
+    invoicesNeedingAttentionCount: number;
+    unreadClientMessagesCount: number;
+  };
+  leadsNeedingFollowUp: Array<{
+    id: string;
+    name: string;
+    email: string;
+    company: string | null;
+    serviceNeeded: string;
+    stage: string;
+    nextFollowUpAt: string | null;
+    createdAt: string;
+  }>;
+  recentLeads: Array<{
+    id: string;
+    name: string;
+    email: string;
+    company: string | null;
+    serviceNeeded: string;
+    stage: string;
+    createdAt: string;
+  }>;
+  activeProjects: Array<{
+    id: string;
+    name: string;
+    slug: string;
+    status: string;
+    organizationName: string;
+    totalMilestones: number;
+    completedMilestones: number;
+    milestoneProgress: string;
+    percent: number;
+  }>;
+  invoicesNeedingAttention: Array<{
+    id: string;
+    invoiceNumber: string;
+    totalAmount: number | string;
+    amountDue: number | string;
+    status: string;
+    dueDate: string;
+    organization: {
+      id: string;
+      name: string;
+    };
+  }>;
+  recentAuditLogs: Array<{
+    id: string;
+    action: string;
+    entityType: string;
+    createdAt: string;
+    user?: { name?: string | null; email: string } | null;
+  }>;
+}
+
 export default function AdminDashboardPage() {
-  const [stats, setStats] = useState({
-    pipelineValue: 85000,
-    recordedRevenue: 48500,
-    activeLeads: 12,
-    activeProjects: 4,
-    openInvoices: 3,
-    unreadMessages: 1,
-  });
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchDashboard = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await apiRequest<DashboardData>('/api/v1/admin/dashboard');
+      if (res.data) {
+        setData(res.data);
+      }
+    } catch (err: any) {
+      console.error('Failed to load dashboard metrics:', err);
+      setError(err.message || 'Unable to connect to live administrative database.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDashboard();
+  }, []);
+
+  const kpis = data?.kpis;
 
   return (
     <div className="space-y-8 font-sans text-zinc-100">
-      {/* Top Banner & Dev Mode Transparency Strip */}
+      {/* Header & Status Indicator */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-6 border-b border-zinc-800/80">
         <div>
           <div className="flex items-center gap-3 mb-1">
@@ -41,60 +121,80 @@ export default function AdminDashboardPage() {
               Executive Command Center
             </h1>
             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-[#00F0FF]/10 text-[#00F0FF] border border-[#00F0FF]/30 shadow-[0_0_10px_rgba(0,240,255,0.2)]">
-              CYBERSTYLE_OS v4.0
+              LIVE DATA
             </span>
           </div>
           <p className="text-xs text-zinc-400">
-            Realtime operations, AI lead scoring telemetry, Stripe invoice monitoring, and direct client communications.
+            Realtime database telemetry: verified leads, milestone progression, attention invoices, and client threads.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[11px] font-mono font-medium">
-            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-            <span>DEVELOPMENT DATA ACTIVE</span>
-          </div>
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-[#00F0FF] text-[11px] font-mono">
+          <button
+            onClick={fetchDashboard}
+            disabled={loading}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-[#00F0FF]/40 text-xs font-mono text-zinc-300 transition-colors disabled:opacity-50"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-[#00F0FF]' : ''}`} />
+            <span>Refresh Telemetry</span>
+          </button>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[11px] font-mono">
             <ShieldCheck className="w-3.5 h-3.5" />
-            <span>PAYMENTS: TEST MODE</span>
+            <span>DATABASE CONNECTED</span>
           </div>
         </div>
       </div>
 
-      {/* KPI Metric Cards */}
+      {error && (
+        <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-xs flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 flex-shrink-0 text-red-400" />
+          <div className="flex-1">
+            <p className="font-semibold">Failed to query operational data</p>
+            <p className="font-mono text-[11px] text-red-400/80">{error}</p>
+          </div>
+          <button
+            onClick={fetchDashboard}
+            className="px-3 py-1 bg-red-500/20 hover:bg-red-500/30 rounded text-[11px] font-mono transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
+      {/* Real KPI Metrics Bar */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {/* Pipeline Value */}
+        {/* New Leads (7d / 30d) */}
         <div className="p-5 rounded-2xl bg-[#07090E] border border-zinc-800/80 space-y-3 relative overflow-hidden group hover:border-[#00F0FF]/40 transition-all">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-mono uppercase tracking-wider text-zinc-400 font-medium">Pipeline Value</span>
+            <span className="text-xs font-mono uppercase tracking-wider text-zinc-400 font-medium">New Leads</span>
             <div className="w-8 h-8 rounded-xl bg-[#00F0FF]/10 text-[#00F0FF] flex items-center justify-center">
-              <TrendingUp className="w-4 h-4" />
+              <Users className="w-4 h-4" />
             </div>
           </div>
           <div>
             <div className="text-2xl font-bold text-white tracking-tight font-display">
-              ${stats.pipelineValue.toLocaleString()}
+              {loading ? '—' : kpis?.newLeads7Days ?? 0}
             </div>
             <p className="text-[10px] font-mono text-zinc-500 mt-1">
-              Development Seed Data • 12 Active Inbound Leads
+              Last 7 days • {loading ? '—' : kpis?.newLeads30Days ?? 0} in past 30 days
             </p>
           </div>
         </div>
 
-        {/* Revenue Recorded */}
-        <div className="p-5 rounded-2xl bg-[#07090E] border border-zinc-800/80 space-y-3 relative overflow-hidden group hover:border-emerald-500/40 transition-all">
+        {/* Leads Needing Follow-up */}
+        <div className="p-5 rounded-2xl bg-[#07090E] border border-zinc-800/80 space-y-3 relative overflow-hidden group hover:border-amber-500/40 transition-all">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-mono uppercase tracking-wider text-zinc-400 font-medium">Recorded Revenue</span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
-              <Receipt className="w-4 h-4" />
+            <span className="text-xs font-mono uppercase tracking-wider text-zinc-400 font-medium">Needs Follow-Up</span>
+            <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center">
+              <Clock className="w-4 h-4" />
             </div>
           </div>
           <div>
             <div className="text-2xl font-bold text-white tracking-tight font-display">
-              ${stats.recordedRevenue.toLocaleString()}
+              {loading ? '—' : kpis?.leadsNeedingFollowUpCount ?? 0}
             </div>
             <p className="text-[10px] font-mono text-zinc-500 mt-1">
-              Stripe Test Invoices Settled
+              Overdue or pending prospect outreach
             </p>
           </div>
         </div>
@@ -109,162 +209,122 @@ export default function AdminDashboardPage() {
           </div>
           <div>
             <div className="text-2xl font-bold text-white tracking-tight font-display">
-              {stats.activeProjects} Builds
+              {loading ? '—' : kpis?.activeProjectsCount ?? 0}
             </div>
             <p className="text-[10px] font-mono text-zinc-500 mt-1">
-              Acme, Vortex AI, Nexus Health
+              Live projects in production delivery
             </p>
           </div>
         </div>
 
-        {/* Client Communications */}
-        <div className="p-5 rounded-2xl bg-[#07090E] border border-zinc-800/80 space-y-3 relative overflow-hidden group hover:border-[#00F0FF]/40 transition-all">
+        {/* Attention Invoices */}
+        <div className="p-5 rounded-2xl bg-[#07090E] border border-zinc-800/80 space-y-3 relative overflow-hidden group hover:border-red-500/40 transition-all">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-mono uppercase tracking-wider text-zinc-400 font-medium">Live Messaging</span>
-            <div className="w-8 h-8 rounded-xl bg-[#00F0FF]/10 text-[#00F0FF] flex items-center justify-center">
-              <MessageSquare className="w-4 h-4" />
+            <span className="text-xs font-mono uppercase tracking-wider text-zinc-400 font-medium">Invoices Needing Action</span>
+            <div className="w-8 h-8 rounded-xl bg-red-500/10 text-red-400 flex items-center justify-center">
+              <Receipt className="w-4 h-4" />
             </div>
           </div>
           <div>
-            <div className="text-2xl font-bold text-white tracking-tight font-display flex items-center gap-2">
-              Phase 4 Active
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+            <div className="text-2xl font-bold text-white tracking-tight font-display">
+              {loading ? '—' : kpis?.invoicesNeedingAttentionCount ?? 0}
             </div>
             <p className="text-[10px] font-mono text-zinc-500 mt-1">
-              Encrypted Client Thread Mesh
+              Due, overdue, or disputed invoices
             </p>
           </div>
         </div>
       </div>
 
-      {/* Main Split Grid: Quick Actions & Live Queues */}
+      {/* Main Grid: Leads & Active Client Builds */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Column (8 cols): Recent Pipeline Leads & AI Status */}
+        {/* Left Column (8 cols): Leads & Active Builds */}
         <div className="lg:col-span-8 space-y-6">
+          {/* Leads Needing Follow-up / Pipeline */}
           <div className="p-6 rounded-2xl bg-[#07090E] border border-zinc-800/80 space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-sm font-bold text-white flex items-center gap-2">
-                  <Users className="w-4 h-4 text-[#00F0FF]" />
-                  Inbound Leads & AI Intelligence Workspace
+                  <Clock className="w-4 h-4 text-amber-400" />
+                  Leads Requiring Immediate Follow-Up
                 </h2>
                 <p className="text-[11px] font-mono text-zinc-500 mt-0.5">
-                  Automated Gemini 3.7 Flash lead qualification & proposal generation
+                  Overdue follow-up dates or pending inquiries
                 </p>
               </div>
               <Link
                 href="/admin/leads"
                 className="text-xs font-mono text-[#00F0FF] hover:underline flex items-center gap-1"
               >
-                <span>View Full Pipeline</span>
+                <span>View All Leads</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs font-sans">
-                <thead>
-                  <tr className="border-b border-zinc-800 text-zinc-500 font-mono text-[10px] uppercase tracking-wider">
-                    <th className="pb-3 font-semibold">Prospect</th>
-                    <th className="pb-3 font-semibold">Service</th>
-                    <th className="pb-3 font-semibold">AI Fit Score</th>
-                    <th className="pb-3 font-semibold">Stage</th>
-                    <th className="pb-3 font-semibold text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-zinc-800/50">
-                  <tr className="hover:bg-zinc-900/30">
-                    <td className="py-3.5">
-                      <div className="font-semibold text-white">David Harrison</div>
-                      <div className="text-[10px] font-mono text-zinc-500">Apex Capital Advisory</div>
-                    </td>
-                    <td className="py-3.5 font-mono text-zinc-300">Custom SaaS</td>
-                    <td className="py-3.5 font-mono">
-                      <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold">
-                        94 / 100
-                      </span>
-                    </td>
-                    <td className="py-3.5">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">
-                        QUALIFIED
-                      </span>
-                    </td>
-                    <td className="py-3.5 text-right">
-                      <Link
-                        href="/admin/leads"
-                        className="px-3 py-1 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-[#00F0FF] text-[#00F0FF] text-[11px] font-mono transition-colors"
-                      >
-                        Draft SOW
-                      </Link>
-                    </td>
-                  </tr>
-
-                  <tr className="hover:bg-zinc-900/30">
-                    <td className="py-3.5">
-                      <div className="font-semibold text-white">Sarah Jenkins</div>
-                      <div className="text-[10px] font-mono text-zinc-500">Aura Biotech</div>
-                    </td>
-                    <td className="py-3.5 font-mono text-zinc-300">Premium 3D Web</td>
-                    <td className="py-3.5 font-mono">
-                      <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold">
-                        88 / 100
-                      </span>
-                    </td>
-                    <td className="py-3.5">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-amber-500/10 text-amber-300 border border-amber-500/30">
-                        PROPOSAL_DRAFT
-                      </span>
-                    </td>
-                    <td className="py-3.5 text-right">
-                      <Link
-                        href="/admin/proposals"
-                        className="px-3 py-1 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-[#00F0FF] text-[#00F0FF] text-[11px] font-mono transition-colors"
-                      >
-                        Review SOW
-                      </Link>
-                    </td>
-                  </tr>
-
-                  <tr className="hover:bg-zinc-900/30">
-                    <td className="py-3.5">
-                      <div className="font-semibold text-white">Marcus Vance</div>
-                      <div className="text-[10px] font-mono text-zinc-500">Vance Logistics</div>
-                    </td>
-                    <td className="py-3.5 font-mono text-zinc-300">AI Automation</td>
-                    <td className="py-3.5 font-mono">
-                      <span className="px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 text-[10px] font-bold">
-                        81 / 100
-                      </span>
-                    </td>
-                    <td className="py-3.5">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-zinc-800 text-zinc-300">
-                        NEW_INBOUND
-                      </span>
-                    </td>
-                    <td className="py-3.5 text-right">
-                      <Link
-                        href="/admin/leads"
-                        className="px-3 py-1 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-[#00F0FF] text-[#00F0FF] text-[11px] font-mono transition-colors"
-                      >
-                        Score Lead
-                      </Link>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+            {loading ? (
+              <div className="py-12 text-center text-xs font-mono text-zinc-500 animate-pulse">
+                Querying lead pipeline...
+              </div>
+            ) : !data?.leadsNeedingFollowUp || data.leadsNeedingFollowUp.length === 0 ? (
+              <div className="p-8 text-center rounded-xl bg-zinc-900/30 border border-zinc-800/50 space-y-2">
+                <CheckCircle2 className="w-6 h-6 text-emerald-400 mx-auto" />
+                <p className="text-xs font-semibold text-white">All Leads Up to Date</p>
+                <p className="text-[11px] text-zinc-500 font-mono">
+                  No prospects currently exceed their scheduled follow-up window.
+                </p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs font-sans">
+                  <thead>
+                    <tr className="border-b border-zinc-800 text-zinc-500 font-mono text-[10px] uppercase tracking-wider">
+                      <th className="pb-3 font-semibold">Prospect</th>
+                      <th className="pb-3 font-semibold">Service Needed</th>
+                      <th className="pb-3 font-semibold">Stage</th>
+                      <th className="pb-3 font-semibold text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-800/50">
+                    {data.leadsNeedingFollowUp.map((lead) => (
+                      <tr key={lead.id} className="hover:bg-zinc-900/30">
+                        <td className="py-3.5">
+                          <div className="font-semibold text-white">{lead.name}</div>
+                          <div className="text-[10px] font-mono text-zinc-500">
+                            {lead.company || lead.email}
+                          </div>
+                        </td>
+                        <td className="py-3.5 font-mono text-zinc-300">{lead.serviceNeeded}</td>
+                        <td className="py-3.5">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-amber-500/10 text-amber-300 border border-amber-500/30">
+                            {lead.stage}
+                          </span>
+                        </td>
+                        <td className="py-3.5 text-right">
+                          <Link
+                            href={`/admin/leads?id=${lead.id}`}
+                            className="px-3 py-1 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-[#00F0FF] text-[#00F0FF] text-[11px] font-mono transition-colors"
+                          >
+                            Follow Up
+                          </Link>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
 
-          {/* Active Client Builds Card */}
+          {/* Active Client Builds with Honest Milestone Counts */}
           <div className="p-6 rounded-2xl bg-[#07090E] border border-zinc-800/80 space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-sm font-bold text-white flex items-center gap-2">
                   <Briefcase className="w-4 h-4 text-[#00F0FF]" />
-                  Active Client Builds & Milestones
+                  Active Client Builds & Real Milestone Counts
                 </h2>
                 <p className="text-[11px] font-mono text-zinc-500 mt-0.5">
-                  Milestone execution and staging deploy environments
+                  Milestone execution verified from database tasks and deliveries
                 </p>
               </div>
               <Link
@@ -276,55 +336,104 @@ export default function AdminDashboardPage() {
               </Link>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-white">Acme Modernization</span>
-                  <span className="text-[9px] font-mono bg-cyan-500/10 text-cyan-300 px-1.5 py-0.5 rounded">
-                    M4 REVIEW
-                  </span>
-                </div>
-                <div className="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden">
-                  <div className="bg-[#00F0FF] h-full w-4/5" />
-                </div>
-                <p className="text-[10px] font-mono text-zinc-400">80% Complete • Staging Live</p>
+            {loading ? (
+              <div className="py-12 text-center text-xs font-mono text-zinc-500 animate-pulse">
+                Loading project milestones...
               </div>
-
-              <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-white">Vortex AI Platform</span>
-                  <span className="text-[9px] font-mono bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded">
-                    M2 SPRINT
-                  </span>
-                </div>
-                <div className="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden">
-                  <div className="bg-emerald-400 h-full w-2/5" />
-                </div>
-                <p className="text-[10px] font-mono text-zinc-400">40% Complete • API Integration</p>
+            ) : !data?.activeProjects || data.activeProjects.length === 0 ? (
+              <div className="p-8 text-center rounded-xl bg-zinc-900/30 border border-zinc-800/50 space-y-2">
+                <Briefcase className="w-6 h-6 text-zinc-500 mx-auto" />
+                <p className="text-xs font-semibold text-white">No Active Client Builds</p>
+                <p className="text-[11px] text-zinc-500 font-mono">
+                  There are currently no projects in discovery, design, or development stages.
+                </p>
               </div>
-
-              <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-white">Nexus Health Portal</span>
-                  <span className="text-[9px] font-mono bg-purple-500/10 text-purple-300 px-1.5 py-0.5 rounded">
-                    DISCOVERY
-                  </span>
-                </div>
-                <div className="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden">
-                  <div className="bg-purple-400 h-full w-1/5" />
-                </div>
-                <p className="text-[10px] font-mono text-zinc-400">20% Complete • Schema Finalized</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {data.activeProjects.map((proj) => (
+                  <div key={proj.id} className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-white">{proj.name}</span>
+                      <span className="text-[9px] font-mono bg-cyan-500/10 text-cyan-300 px-1.5 py-0.5 rounded border border-cyan-500/20">
+                        {proj.status}
+                      </span>
+                    </div>
+                    <div className="text-[11px] font-mono text-zinc-400">
+                      Client: <span className="text-white">{proj.organizationName}</span>
+                    </div>
+                    <div className="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden">
+                      <div
+                        className="bg-[#00F0FF] h-full transition-all duration-500"
+                        style={{ width: `${proj.percent}%` }}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between text-[10px] font-mono text-zinc-400">
+                      <span>{proj.milestoneProgress}</span>
+                      <span>{proj.percent}%</span>
+                    </div>
+                  </div>
+                ))}
               </div>
-            </div>
+            )}
           </div>
         </div>
 
-        {/* Right Column (4 cols): Quick Operations & Messaging */}
+        {/* Right Column (4 cols): Invoices Needing Attention & Audit Logs */}
         <div className="lg:col-span-4 space-y-6">
-          {/* Quick Launchpad */}
+          {/* Invoices Needing Attention */}
+          <div className="p-6 rounded-2xl bg-[#07090E] border border-zinc-800/80 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
+                <Receipt className="w-4 h-4 text-amber-400" />
+                Attention Invoices
+              </h2>
+              <Link href="/admin/invoices" className="text-[11px] font-mono text-[#00F0FF] hover:underline">
+                View All
+              </Link>
+            </div>
+
+            {loading ? (
+              <div className="py-8 text-center text-xs font-mono text-zinc-500 animate-pulse">
+                Checking invoices...
+              </div>
+            ) : !data?.invoicesNeedingAttention || data.invoicesNeedingAttention.length === 0 ? (
+              <div className="p-6 text-center rounded-xl bg-zinc-900/30 border border-zinc-800/50 space-y-1">
+                <CheckCircle2 className="w-5 h-5 text-emerald-400 mx-auto" />
+                <p className="text-xs font-semibold text-white">Billing Current</p>
+                <p className="text-[10px] text-zinc-500 font-mono">
+                  No invoices are currently overdue or disputed.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                {data.invoicesNeedingAttention.map((inv) => (
+                  <Link
+                    key={inv.id}
+                    href={`/admin/invoices?id=${inv.id}`}
+                    className="block p-3 rounded-xl bg-zinc-900/60 border border-zinc-800 hover:border-amber-500/40 transition-colors"
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-semibold text-white font-mono">{inv.invoiceNumber}</span>
+                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/30">
+                        {inv.status}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-[11px] font-mono text-zinc-400">
+                      <span>{inv.organization.name}</span>
+                      <span className="text-white font-semibold">
+                        ${Number(inv.amountDue).toLocaleString()}
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Operational Shortcuts */}
           <div className="p-6 rounded-2xl bg-[#07090E] border border-zinc-800/80 space-y-4">
             <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-400">
-              Operational Shortcuts
+              Operational Navigation
             </h2>
 
             <div className="space-y-2">
@@ -337,8 +446,10 @@ export default function AdminDashboardPage() {
                     <MessageSquare className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="text-xs font-semibold">Client Live Messaging</p>
-                    <p className="text-[10px] font-mono text-zinc-500">Live chat & internal notes</p>
+                    <p className="text-xs font-semibold">Client Communications</p>
+                    <p className="text-[10px] font-mono text-zinc-500">
+                      {kpis?.unreadClientMessagesCount ?? 0} active client messages
+                    </p>
                   </div>
                 </div>
                 <ArrowUpRight className="w-4 h-4 text-zinc-500 group-hover:text-[#00F0FF] transition-colors" />
@@ -350,72 +461,33 @@ export default function AdminDashboardPage() {
               >
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
-                    <Sparkles className="w-4 h-4" />
+                    <FileText className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="text-xs font-semibold">AI SOW Generator</p>
-                    <p className="text-[10px] font-mono text-zinc-500">Draft proposals & Loom scripts</p>
+                    <p className="text-xs font-semibold">Versioned Proposals</p>
+                    <p className="text-[10px] font-mono text-zinc-500">
+                      {kpis?.proposalsPendingDecision ?? 0} pending client decision
+                    </p>
                   </div>
                 </div>
                 <ArrowUpRight className="w-4 h-4 text-zinc-500 group-hover:text-emerald-400 transition-colors" />
               </Link>
 
               <Link
-                href="/admin/invoices"
+                href="/admin/audit-logs"
                 className="flex items-center justify-between p-3 rounded-xl bg-zinc-900/80 border border-zinc-800 hover:border-[#00F0FF]/50 text-xs font-medium text-white transition-all group"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center">
-                    <Receipt className="w-4 h-4" />
+                  <div className="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center">
+                    <ShieldCheck className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="text-xs font-semibold">Stripe Invoices & Retainers</p>
-                    <p className="text-[10px] font-mono text-zinc-500">Payment tracking & PDF exports</p>
+                    <p className="text-xs font-semibold">Audit Logs & Chain</p>
+                    <p className="text-[10px] font-mono text-zinc-500">Cryptographic hash verification</p>
                   </div>
                 </div>
-                <ArrowUpRight className="w-4 h-4 text-zinc-500 group-hover:text-amber-400 transition-colors" />
+                <ArrowUpRight className="w-4 h-4 text-zinc-500 group-hover:text-purple-400 transition-colors" />
               </Link>
-            </div>
-          </div>
-
-          {/* System Telemetry */}
-          <div className="p-6 rounded-2xl bg-[#07090E] border border-zinc-800/80 space-y-4">
-            <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-400">
-              Infrastructure Status
-            </h2>
-
-            <div className="space-y-3 font-mono text-xs">
-              <div className="flex items-center justify-between pb-2 border-b border-zinc-800">
-                <span className="text-zinc-400">PostgreSQL Database</span>
-                <span className="text-emerald-400 flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                  ONLINE (Port 5432)
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between pb-2 border-b border-zinc-800">
-                <span className="text-zinc-400">Core Express API</span>
-                <span className="text-emerald-400 flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                  READY (Port 4000)
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between pb-2 border-b border-zinc-800">
-                <span className="text-zinc-400">Stripe Billing Engine</span>
-                <span className="text-cyan-400 flex items-center gap-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  TEST MODE
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span className="text-zinc-400">AI Engine</span>
-                <span className="text-[#00F0FF] flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  GEMINI 3.7 FLASH
-                </span>
-              </div>
             </div>
           </div>
         </div>

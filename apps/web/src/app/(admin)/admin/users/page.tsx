@@ -41,15 +41,35 @@ export default function AdminUsersPage() {
 
   const fetchUsers = async () => {
     setLoading(true);
-    const res = await apiRequest('/admin/users');
-    if (res.success && res.data) {
-      setUsers(res.data);
+    try {
+      const res = await apiRequest('/admin/users');
+      if (res.success && res.data) {
+        const userList = Array.isArray(res.data)
+          ? res.data
+          : Array.isArray((res.data as any).users)
+          ? (res.data as any).users
+          : [];
+        setUsers(userList);
+      } else {
+        setUsers([]);
+      }
+      const clientRes = await apiRequest('/admin/clients');
+      if (clientRes.success && clientRes.data) {
+        const clientList = Array.isArray(clientRes.data)
+          ? clientRes.data
+          : Array.isArray((clientRes.data as any).clients)
+          ? (clientRes.data as any).clients
+          : [];
+        setClients(clientList);
+      } else {
+        setClients([]);
+      }
+    } catch {
+      setUsers([]);
+      setClients([]);
+    } finally {
+      setLoading(false);
     }
-    const clientRes = await apiRequest('/admin/clients');
-    if (clientRes.success && clientRes.data) {
-      setClients(clientRes.data);
-    }
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -114,7 +134,9 @@ export default function AdminUsersPage() {
     }
   };
 
-  const filteredUsers = users.filter((u) => {
+  const safeUsers = Array.isArray(users) ? users : [];
+
+  const filteredUsers = safeUsers.filter((u) => {
     if (activeTab === 'ADMINS') {
       return u.role === 'ADMIN' || u.role === 'SUPER_ADMIN';
     }
@@ -130,9 +152,9 @@ export default function AdminUsersPage() {
             <span className="text-[11px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
               ACCESS CONTROL
             </span>
-            <span className="text-[11px] font-mono text-zinc-500">ROLE-BASED PERMISSIONS & ENCLAVES</span>
+            <span className="text-[11px] font-mono text-zinc-500">ROLE-BASED PERMISSIONS &amp; ENCLAVES</span>
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Identity & User Management</h1>
+          <h1 className="text-2xl font-bold text-white tracking-tight">Identity &amp; User Management</h1>
         </div>
 
         <div className="flex items-center gap-3">
@@ -176,7 +198,7 @@ export default function AdminUsersPage() {
           }`}
         >
           <ShieldCheck className="w-4 h-4" />
-          <span>Team Administrators ({users.filter((u) => u.role !== 'CLIENT').length})</span>
+          <span>Team Administrators ({safeUsers.filter((u) => u.role !== 'CLIENT').length})</span>
         </button>
 
         <button
@@ -188,7 +210,7 @@ export default function AdminUsersPage() {
           }`}
         >
           <Building2 className="w-4 h-4" />
-          <span>Client Portal Users ({users.filter((u) => u.role === 'CLIENT').length})</span>
+          <span>Client Portal Users ({safeUsers.filter((u) => u.role === 'CLIENT').length})</span>
         </button>
       </div>
 

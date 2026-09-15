@@ -314,8 +314,8 @@ export default function PortalLoginPage() {
           <div className="mt-6 pt-5 border-t border-zinc-800/80 text-center">
             <p className="text-[11px] font-mono text-zinc-500">
               Need access? Inquire with your CYBERSTYLE Account Lead or email{' '}
-              <a href="mailto:contact@cyberstyle.net" className="text-cyan-400 hover:underline">
-                contact@cyberstyle.net
+              <a href="mailto:info@cyberstyle.net" className="text-cyan-400 hover:underline">
+                info@cyberstyle.net
               </a>
             </p>
           </div>

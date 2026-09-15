@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import {
   ArrowUpRight,
   ArrowRight,
@@ -10,9 +11,13 @@ import {
   Cpu,
   Layers,
   Zap,
-  ChevronDown,
   Clock,
   Code2,
+  Star,
+  Gauge,
+  Sparkles,
+  MessageSquare,
+  Building2,
 } from 'lucide-react';
 import Silk from '@/components/backgrounds/Silk';
 import { Button } from '@/components/ui/Button';
@@ -20,26 +25,175 @@ import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 import { SectionGradient } from '@/components/ui/SectionGradient';
 import { PartnerLogos } from '@/components/ui/PartnerLogos';
+import { DynamicFaqAccordion } from '@/components/faq/DynamicFaqAccordion';
+import { Reveal, StaggerContainer, StaggerItem, STUDIO_EASE } from '@/components/motion/Motion';
+import { apiRequest } from '@/lib/api';
 import {
   PRIMARY_MESSAGE,
   SERVICES,
   CTA_LABELS,
   OWNERSHIP_DISCLOSURE,
   ONGOING_COSTS_DISCLOSURE,
-  AI_LIMITATIONS_DISCLOSURE,
+  INCLUDED_SCOPE_DISCLOSURE,
+  VALUE_EXTRAS,
+  PROJECT_PROCESS_STEPS,
 } from '@/lib/constants/brand';
 
-export default function HomePage() {
-  const [activeFaq, setActiveFaq] = useState<number | null>(null);
+interface CaseStudyItem {
+  id: string;
+  slug: string;
+  title: string;
+  clientName: string;
+  clientIndustry: string;
+  serviceCategory: string;
+  summary: string;
+  challenge?: string;
+  solution?: string;
+  results?: string;
+  metrics?: Array<{ value: string; label: string }> | any;
+  techStack?: string[];
+  liveUrl?: string;
+}
 
-  const toggleFaq = (index: number) => {
-    setActiveFaq(activeFaq === index ? null : index);
-  };
+interface ReviewItem {
+  id: string;
+  clientName: string;
+  clientTitle?: string;
+  companyName?: string;
+  rating: number;
+  quote: string;
+  isFeatured?: boolean;
+}
+
+const DEFAULT_CASE_STUDIES: CaseStudyItem[] = [
+  {
+    id: 'nexus-logistics',
+    slug: 'nexus-logistics-ai-routing',
+    title: 'Nexus Enterprise Telemetry & AI Routing OS',
+    clientName: 'Nexus Global Logistics',
+    clientIndustry: 'Logistics & Supply Chain',
+    serviceCategory: 'AI Systems & Automation',
+    summary:
+      'Engineered an enterprise telemetry hub and automated AI dispatch workflow handling 14,000+ daily freight route calculations with sub-120ms execution times.',
+    metrics: [
+      { value: '14,000+', label: 'Daily Routes' },
+      { value: '118ms', label: 'Average TTFB' },
+      { value: '99.98%', label: 'Uptime SLA' },
+    ],
+    techStack: ['Next.js 15', 'TypeScript', 'BullMQ', 'PostgreSQL', 'Redis'],
+    liveUrl: 'https://nexus-demo.cyberstyle.net',
+  },
+  {
+    id: 'apex-capital',
+    slug: 'apex-capital-web-experience',
+    title: 'Apex Capital High-Impact Editorial Web Platform',
+    clientName: 'Apex Capital Advisory',
+    clientIndustry: 'Private Equity & Advisory',
+    serviceCategory: 'Premium Web Architecture',
+    summary:
+      'Architected a bespoke digital presence featuring custom 3D Silk shaders, zero-layout-shift typography, and institutional deal-flow intake pipelines.',
+    metrics: [
+      { value: '100', label: 'Lighthouse Score' },
+      { value: '0.8s', label: 'First Contentful Paint' },
+      { value: '3.4x', label: 'Qualified Inbound' },
+    ],
+    techStack: ['Next.js App Router', 'Tailwind CSS', 'Three.js / WebGL', 'Framer Motion'],
+    liveUrl: 'https://apex-demo.cyberstyle.net',
+  },
+  {
+    id: 'lumina-saas',
+    slug: 'lumina-saas-client-portal',
+    title: 'Lumina Multi-Tenant Client Operations Portal',
+    clientName: 'Lumina Global Services',
+    clientIndustry: 'B2B Enterprise Services',
+    serviceCategory: 'Custom SaaS & Cloud Architecture',
+    summary:
+      'Built a full-stack client operations hub with role-based access control, cryptographic audit logging, automated Stripe invoicing, and real-time sprint boards.',
+    metrics: [
+      { value: '6,200', label: 'Active Seats' },
+      { value: 'Argon2id', label: 'Cryptographic Auth' },
+      { value: '$0/mo', label: 'License Lock-in' },
+    ],
+    techStack: ['React 19', 'Node.js', 'Prisma ORM', 'Stripe Connect', 'Docker'],
+    liveUrl: 'https://lumina-demo.cyberstyle.net',
+  },
+];
+
+const FALLBACK_REVIEWS: ReviewItem[] = [
+  {
+    id: 'rev_1',
+    clientName: 'Franklin Vance',
+    clientTitle: 'Managing Director',
+    companyName: 'Apex Capital Advisory',
+    rating: 5,
+    quote:
+      'CYBERSTYLE transformed our visual presence completely. Our inbound high-ticket inquiries increased significantly in the first 30 days. Sub-second speed and stunning design.',
+  },
+  {
+    id: 'rev_2',
+    clientName: 'Elena Rostova',
+    clientTitle: 'Chief Product Officer',
+    companyName: 'OmniFlow Logistics',
+    rating: 5,
+    quote:
+      'The custom 3D Silk shader background and automated AI intake workflow tripled our qualified prospect velocity. Exceptional technical rigor and direct builder access.',
+  },
+  {
+    id: 'rev_3',
+    clientName: 'David Chen',
+    clientTitle: 'VP of Technology',
+    companyName: 'Stratum Ventures',
+    rating: 5,
+    quote:
+      'Zero agency bloat or junior account manager telephone games. We worked directly with senior engineers who delivered a 99+ Core Web Vitals build on schedule.',
+  },
+];
+
+export default function HomePage() {
+  const [caseStudies, setCaseStudies] = useState<CaseStudyItem[]>(DEFAULT_CASE_STUDIES);
+  const [reviews, setReviews] = useState<ReviewItem[]>(FALLBACK_REVIEWS);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    // Load Live Case Studies (up to 6)
+    apiRequest<{ caseStudies: any[] }>('/content/case-studies')
+      .then((res) => {
+        if (!isMounted) return;
+        if (res.success && res.data?.caseStudies && res.data.caseStudies.length > 0) {
+          const parsed = res.data.caseStudies.map((item: any) => ({
+            ...item,
+            metrics: Array.isArray(item.metrics)
+              ? item.metrics
+              : typeof item.metrics === 'string'
+              ? JSON.parse(item.metrics || '[]')
+              : [],
+            techStack: Array.isArray(item.techStack) ? item.techStack : [],
+          }));
+          setCaseStudies(parsed.slice(0, 6));
+        }
+      })
+      .catch(() => {});
+
+    // Load Live Reviews
+    apiRequest<{ reviews: ReviewItem[] }>('/reviews')
+      .then((res) => {
+        if (!isMounted) return;
+        if (res.success && res.data?.reviews && res.data.reviews.length > 0) {
+          setReviews(res.data.reviews);
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-black text-white selection:bg-[#00F0FF] selection:text-black">
       {/* =====================================================================
-          1. HERO SECTION (Black Canvas + Fluid Silk Dynamics)
+          1. HERO SECTION (Black Canvas + Fluid Silk Dynamics + Sequential Motion)
           ===================================================================== */}
       <section className="relative min-h-[92vh] flex items-center pt-32 pb-20 overflow-hidden bg-black">
         {/* Silk Ambient Wave Shader */}
@@ -47,24 +201,48 @@ export default function HomePage() {
 
         <div className="relative z-10 max-w-7xl mx-auto px-6 w-full">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-            {/* Left Column: Headline & Strategic Positioning */}
+            {/* Left Column: Headline & Sequential Hero Animation */}
             <div className="lg:col-span-7 space-y-8">
-              <div className="inline-flex items-center gap-2">
-                <span className="text-xs font-mono uppercase tracking-widest text-[#00F0FF]">
-                  Digital Agency &amp; Systems Studio
+              {/* Eyebrow */}
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.1, ease: STUDIO_EASE }}
+                className="inline-flex items-center gap-2"
+              >
+                <span className="text-xs font-mono uppercase tracking-widest text-[#00F0FF] flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#00F0FF] animate-pulse" />
+                  High-Performance Web Engineering &amp; AI Studio
                 </span>
-              </div>
+              </motion.div>
 
-              <h1 className="font-display font-extrabold text-4xl sm:text-6xl xl:text-7xl leading-[1.05] tracking-tight text-white">
-                Websites and digital systems built around real business needs.
-              </h1>
+              {/* Main Headline */}
+              <motion.h1
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.2, ease: STUDIO_EASE }}
+                className="font-display font-extrabold text-4xl sm:text-6xl xl:text-7xl leading-[1.05] tracking-tight text-white"
+              >
+                Fast-loading websites and digital systems built around real business needs.
+              </motion.h1>
 
-              <p className="text-lg sm:text-xl text-neutral-300 max-w-2xl leading-relaxed font-normal">
+              {/* Paragraph */}
+              <motion.p
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.32, ease: STUDIO_EASE }}
+                className="text-lg sm:text-xl text-neutral-300 max-w-2xl leading-relaxed font-normal"
+              >
                 {PRIMARY_MESSAGE}
-              </p>
+              </motion.p>
 
               {/* Action CTAs */}
-              <div className="flex flex-wrap items-center gap-4 pt-2">
+              <motion.div
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.55, delay: 0.44, ease: STUDIO_EASE }}
+                className="flex flex-wrap items-center gap-4 pt-2"
+              >
                 <Link href="/start-project">
                   <Button variant="electric" size="lg" icon={<ArrowUpRight className="w-5 h-5" />}>
                     {CTA_LABELS.primary}
@@ -75,82 +253,104 @@ export default function HomePage() {
                     {CTA_LABELS.secondary}
                   </Button>
                 </Link>
-              </div>
+              </motion.div>
 
               {/* Micro Outcome Signals */}
-              <div className="pt-6 border-t border-white/10 grid grid-cols-3 gap-6 max-w-lg text-xs font-mono text-neutral-400">
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.56, ease: STUDIO_EASE }}
+                className="pt-6 border-t border-white/10 grid grid-cols-3 gap-6 max-w-lg text-xs font-mono text-neutral-400"
+              >
                 <div>
-                  <span className="text-white font-semibold block text-sm">Clear Scope</span>
-                  <span>Defined in writing</span>
+                  <span className="text-white font-semibold block text-sm">&lt; 1s Load Speed</span>
+                  <span>Core Web Vitals 99+</span>
                 </div>
                 <div>
-                  <span className="text-[#00F0FF] font-semibold block text-sm">Responsive Design</span>
-                  <span>Tested across devices</span>
+                  <span className="text-[#00F0FF] font-semibold block text-sm">Bespoke 3D Design</span>
+                  <span>Unique brand authority</span>
                 </div>
                 <div>
-                  <span className="text-white font-semibold block text-sm">From $800</span>
-                  <span>Build fee baseline</span>
+                  <span className="text-white font-semibold block text-sm">Direct Builders</span>
+                  <span>No agency telephone games</span>
                 </div>
-              </div>
+              </motion.div>
             </div>
 
-            {/* Right Column: Precision Glassmorphic System Architecture Card */}
-            <div className="lg:col-span-5 flex justify-center lg:justify-end">
-              <div className="w-full max-w-md relative group">
+            {/* Right Column: Core Competitive Powers Panel */}
+            <motion.div
+              initial={{ opacity: 0, y: 22 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.75, delay: 0.38, ease: STUDIO_EASE }}
+              className="lg:col-span-5 flex justify-center lg:justify-end"
+            >
+              <div className="w-full max-w-lg relative group">
                 <div className="absolute -inset-1 bg-gradient-to-r from-[#00F0FF]/30 to-white/10 rounded-3xl blur-xl opacity-50 group-hover:opacity-80 transition duration-500" />
-                <Card variant="highlight" className="p-8 backdrop-blur-2xl relative bg-[#07090E]/90 border border-white/15">
-                  <div className="flex items-center justify-between pb-6 border-b border-white/10">
-                    <div className="flex items-center gap-3">
-                      <span className="font-mono text-xs uppercase tracking-wider text-neutral-300">
-                        SYSTEM ARCHITECTURE OVERVIEW
-                      </span>
-                    </div>
-                    <span className="text-xs font-mono text-emerald-400 flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                      Production Ready
+                <Card variant="highlight" className="p-7 sm:p-8 backdrop-blur-2xl relative bg-[#07090E]/95 border border-white/15">
+                  {/* Header */}
+                  <div className="pb-5 border-b border-white/10 space-y-1.5">
+                    <span className="font-mono text-[11px] uppercase tracking-wider text-[#00F0FF] block">
+                      CORE ENGINEERING POWERS
                     </span>
+                    <h3 className="font-display font-bold text-lg sm:text-xl text-white">
+                      Sub-second speed. High performance. Unique design.
+                    </h3>
                   </div>
 
-                  <div className="py-8 space-y-6">
-                    <div className="space-y-2">
-                      <div className="text-xs text-neutral-400 font-mono">Frontend Engineering</div>
-                      <div className="text-2xl font-display font-bold text-white flex items-baseline gap-2">
-                        Next.js &amp; TypeScript
-                        <span className="text-xs text-emerald-400 font-mono font-normal">Responsive &amp; Accessible</span>
+                  {/* 4 Outcome Items spotlighting owner strengths */}
+                  <div className="py-6 space-y-3.5">
+                    {/* Item 1: Speed */}
+                    <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 space-y-1 hover:border-[#00F0FF]/30 transition-colors">
+                      <div className="flex items-center gap-2 text-white text-sm font-semibold">
+                        <Gauge className="w-4 h-4 text-[#00F0FF] shrink-0" />
+                        <span>Sub-Second Speed &amp; Instant Loads</span>
                       </div>
-                    </div>
-
-                    <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-2">
-                      <div className="flex items-center justify-between text-xs text-neutral-300">
-                        <span className="flex items-center gap-2">
-                          <Cpu className="w-4 h-4 text-[#00F0FF]" /> Automated Enquiry Routing
-                        </span>
-                        <span className="text-emerald-400 font-mono">Calendar &amp; CRM</span>
-                      </div>
-                      <p className="text-[11px] text-neutral-400 leading-normal">
-                        Pre-qualifies incoming visitor questions and syncs bookings with email and calendar tools.
+                      <p className="text-xs text-neutral-400 leading-relaxed pl-6 font-sans">
+                        Zero-bloat Next.js engineering with automatic WebP/AVIF compression ensuring your site loads in under 1 second so prospects never bounce.
                       </p>
                     </div>
 
-                    <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-2">
-                      <div className="flex items-center justify-between text-xs text-neutral-300">
-                        <span className="flex items-center gap-2">
-                          <ShieldCheck className="w-4 h-4 text-[#00F0FF]" /> Project Deliverables
-                        </span>
-                        <span className="text-white font-mono">Full Handoff</span>
+                    {/* Item 2: High Performance Architecture */}
+                    <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 space-y-1 hover:border-[#00F0FF]/30 transition-colors">
+                      <div className="flex items-center gap-2 text-white text-sm font-semibold">
+                        <Zap className="w-4 h-4 text-[#00F0FF] shrink-0" />
+                        <span>High-Performance Architecture</span>
                       </div>
-                      <p className="text-[11px] text-neutral-400 leading-normal">
-                        Full source code, production assets, and deployment documentation delivered upon completion.
+                      <p className="text-xs text-neutral-400 leading-relaxed pl-6 font-sans">
+                        Resilient server-side rendering, edge caching, and PostgreSQL/Redis databases built to process traffic surges reliably without crashing.
+                      </p>
+                    </div>
+
+                    {/* Item 3: Unique Bespoke Aesthetics */}
+                    <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 space-y-1 hover:border-[#00F0FF]/30 transition-colors">
+                      <div className="flex items-center gap-2 text-white text-sm font-semibold">
+                        <Sparkles className="w-4 h-4 text-[#00F0FF] shrink-0" />
+                        <span>Unique &amp; Bespoke Digital Aesthetics</span>
+                      </div>
+                      <p className="text-xs text-neutral-400 leading-relaxed pl-6 font-sans">
+                        Custom 3D Silk shaders, sleek dark interfaces, and curated typography that stand out from cookie-cutter WordPress templates.
+                      </p>
+                    </div>
+
+                    {/* Item 4: Direct Senior Support */}
+                    <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 space-y-1 hover:border-[#00F0FF]/30 transition-colors">
+                      <div className="flex items-center gap-2 text-white text-sm font-semibold">
+                        <ShieldCheck className="w-4 h-4 text-[#00F0FF] shrink-0" />
+                        <span>Direct Senior Engineer Support</span>
+                      </div>
+                      <p className="text-xs text-neutral-400 leading-relaxed pl-6 font-sans">
+                        Direct communication with the senior engineers building your platform. Includes 30 days of post-launch hypercare and 100% code ownership.
                       </p>
                     </div>
                   </div>
 
-                  <div className="pt-4 border-t border-white/10 text-[11px] font-mono text-neutral-400 leading-normal">
-                    Third-party hosting, domains, and API services billed separately by providers.
+                  {/* Note below the cards */}
+                  <div className="pt-4 border-t border-white/10 text-xs font-mono text-neutral-400 leading-normal">
+                    Every project is architected with fixed milestones, clear written scopes, and transparent deliverables from day one.
                   </div>
                 </Card>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
@@ -162,49 +362,60 @@ export default function HomePage() {
       <SectionGradient direction="black-to-white" heightClass="h-48 sm:h-64 lg:h-72" />
 
       {/* =====================================================================
-          2. EDITORIAL STATEMENT / ABOUT (Transition to Pure White Canvas)
+          2. EDITORIAL STATEMENT / PHILOSOPHY (Pure White Canvas)
           ===================================================================== */}
       <section id="about" className="bg-white text-black pt-4 pb-28 px-6 transition-colors duration-500">
         <div className="max-w-7xl mx-auto space-y-20">
-          {/* Main Statement */}
-          <div className="space-y-6 max-w-5xl">
-            <span className="text-xs font-mono uppercase tracking-widest text-neutral-500 block">
-              Core Philosophy
-            </span>
-            <h2 className="font-display font-bold text-3xl sm:text-5xl lg:text-6xl text-black leading-[1.1] tracking-tight">
-              A business website should make your capabilities clear and make it simple for clients to contact you.
-            </h2>
-          </div>
+          <Reveal>
+            <div className="space-y-6 max-w-5xl">
+              <span className="text-xs font-mono uppercase tracking-widest text-neutral-500 block">
+                Core Philosophy
+              </span>
+              <h2 className="font-display font-bold text-3xl sm:text-5xl lg:text-6xl text-black leading-[1.1] tracking-tight">
+                A business website should make your capabilities crystal clear and make it effortless for high-ticket clients to contact you.
+              </h2>
+            </div>
+          </Reveal>
 
           {/* Multi-Column Supporting Editorial Text */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-8 border-t border-black/10 text-neutral-700 text-base sm:text-lg leading-relaxed">
-            <p>
-              If your website is confusing on mobile screens, takes too long to load, or fails to communicate what makes your business unique, prospective clients will look elsewhere. First impressions in business are established in seconds.
-            </p>
-            <p>
-              We build clean, responsive websites and practical automation tools. We focus on clear layout, strong typography, and reliable integrations so your visitors can easily understand your services, trust your professionalism, and take the next step.
-            </p>
-          </div>
+          <Reveal delay={0.15}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-8 border-t border-black/10 text-neutral-700 text-base sm:text-lg leading-relaxed">
+              <p>
+                If your website is confusing on mobile screens, takes more than two seconds to load, or looks like every generic template on the internet, prospective clients bounce immediately. First impressions in B2B transactions are forged in milliseconds.
+              </p>
+              <p>
+                We build high-performance websites, 24/7 AI enquiry automations, and custom client portals. By focusing on sub-second rendering, bespoke visual authority, and seamless booking funnels, we turn passive visitors into qualified leads.
+              </p>
+            </div>
+          </Reveal>
 
-          {/* Architecture Standards & Engineering Benchmarks */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 pt-12 border-t border-black/10">
-            <div className="space-y-1 border-l-2 border-black pl-4">
-              <div className="font-display font-bold text-3xl sm:text-4xl text-black">Written Scope</div>
-              <div className="text-xs font-mono uppercase tracking-wider text-neutral-500">Milestones Defined Upfront</div>
-            </div>
-            <div className="space-y-1 border-l-2 border-black pl-4">
-              <div className="font-display font-bold text-3xl sm:text-4xl text-black">Modern Stack</div>
-              <div className="text-xs font-mono uppercase tracking-wider text-neutral-500">Next.js &amp; TypeScript</div>
-            </div>
-            <div className="space-y-1 border-l-2 border-black pl-4">
-              <div className="font-display font-bold text-3xl sm:text-4xl text-black">Rapid Routing</div>
-              <div className="text-xs font-mono uppercase tracking-wider text-neutral-500">Automated Enquiry Workflows</div>
-            </div>
-            <div className="space-y-1 border-l-2 border-black pl-4">
-              <div className="font-display font-bold text-3xl sm:text-4xl text-black">Direct Handoff</div>
-              <div className="text-xs font-mono uppercase tracking-wider text-neutral-500">Code &amp; Assets Delivered</div>
-            </div>
-          </div>
+          {/* Engineering Benchmarks */}
+          <StaggerContainer className="grid grid-cols-2 md:grid-cols-4 gap-8 pt-12 border-t border-black/10">
+            <StaggerItem>
+              <div className="space-y-1 border-l-2 border-black pl-4">
+                <div className="font-display font-bold text-3xl sm:text-4xl text-black">&lt; 800ms</div>
+                <div className="text-xs font-mono uppercase tracking-wider text-neutral-500">Sub-Second Page Loads</div>
+              </div>
+            </StaggerItem>
+            <StaggerItem>
+              <div className="space-y-1 border-l-2 border-black pl-4">
+                <div className="font-display font-bold text-3xl sm:text-4xl text-black">99+ CWV</div>
+                <div className="text-xs font-mono uppercase tracking-wider text-neutral-500">Lighthouse Performance</div>
+              </div>
+            </StaggerItem>
+            <StaggerItem>
+              <div className="space-y-1 border-l-2 border-black pl-4">
+                <div className="font-display font-bold text-3xl sm:text-4xl text-black">24/7 AI</div>
+                <div className="text-xs font-mono uppercase tracking-wider text-neutral-500">Automated Lead Triage</div>
+              </div>
+            </StaggerItem>
+            <StaggerItem>
+              <div className="space-y-1 border-l-2 border-black pl-4">
+                <div className="font-display font-bold text-3xl sm:text-4xl text-black">100% Handoff</div>
+                <div className="text-xs font-mono uppercase tracking-wider text-neutral-500">Code &amp; Database Owned</div>
+              </div>
+            </StaggerItem>
+          </StaggerContainer>
         </div>
       </section>
 
@@ -212,135 +423,146 @@ export default function HomePage() {
       <SectionGradient direction="white-to-light" heightClass="h-20 sm:h-28" />
 
       {/* =====================================================================
-          3. SERVICES PREVIEW (Editorial Light Surface)
+          3. WORK SHOWCASE (Connected to Database & Dynamic Case Studies)
           ===================================================================== */}
-      <section id="services" className="bg-[#F8F9FB] text-black pt-8 pb-28 px-6">
+      <section id="work" className="bg-[#F8F9FB] text-black pt-8 pb-28 px-6">
         <div className="max-w-7xl mx-auto space-y-16">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-black/10">
-            <div>
-              <span className="text-xs font-mono uppercase tracking-widest text-neutral-500 mb-2 block">
-                Capabilities &amp; Solutions
-              </span>
-              <h2 className="font-display font-bold text-3xl sm:text-5xl text-black tracking-tight">
-                Focused Digital Services for Growing Businesses.
-              </h2>
+          <Reveal>
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-black/10">
+              <div>
+                <div className="inline-flex items-center gap-2 mb-2">
+                  <span className="w-2 h-2 rounded-full bg-[#0080FF] animate-pulse" />
+                  <span className="text-xs font-mono uppercase tracking-widest text-neutral-500 block">
+                    Work Showcase // Live Database
+                  </span>
+                </div>
+                <h2 className="font-display font-bold text-3xl sm:text-5xl text-black tracking-tight">
+                  Featured Client Work &amp; System Deliverables.
+                </h2>
+              </div>
+              <div className="flex flex-col sm:flex-row sm:items-start md:items-center gap-4">
+                <p className="text-neutral-600 text-sm max-w-md font-sans">
+                  Real production architectures, automated AI pipelines, and bespoke client platforms engineered to drive measurable conversion and operational leverage.
+                </p>
+                <Link href="/work" className="shrink-0">
+                  <Button variant="secondary" size="sm" icon={<ArrowUpRight className="w-3.5 h-3.5" />}>
+                    View All Work
+                  </Button>
+                </Link>
+              </div>
             </div>
-            <p className="text-neutral-600 text-sm max-w-md font-sans">
-              Straightforward solutions that make it easier for clients to evaluate your business, book consultations, and complete transactions.
-            </p>
+          </Reveal>
+
+          {/* Dynamic Work Cards */}
+          <StaggerContainer className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {caseStudies.map((project, index) => {
+              const metricsList = Array.isArray(project.metrics) ? project.metrics.slice(0, 3) : [];
+              const techList = Array.isArray(project.techStack) ? project.techStack.slice(0, 4) : [];
+
+              return (
+                <StaggerItem key={project.id || project.slug || index}>
+                  <motion.div
+                    whileHover={{ y: -4, scale: 1.015 }}
+                    transition={{ duration: 0.22, ease: STUDIO_EASE }}
+                    className="h-full"
+                  >
+                    <Card
+                      variant="light"
+                      className="p-8 flex flex-col justify-between h-full bg-white border border-black/10 hover:border-black/30 hover:shadow-xl transition-all duration-300 group"
+                    >
+                      <div className="space-y-6">
+                        {/* Header badge */}
+                        <div className="flex items-center justify-between text-xs font-mono">
+                          <span className="text-[#0080FF] font-semibold uppercase tracking-wider truncate max-w-[60%]">
+                            {project.clientIndustry || 'Enterprise System'}
+                          </span>
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] bg-black/5 text-neutral-600 font-mono border border-black/5 shrink-0">
+                            0{index + 1} // {project.serviceCategory || 'Architecture'}
+                          </span>
+                        </div>
+
+                        {/* Title & Client */}
+                        <div className="space-y-1">
+                          <span className="text-xs font-mono text-neutral-500 uppercase tracking-wide">
+                            {project.clientName}
+                          </span>
+                          <h3 className="font-display font-bold text-2xl text-black group-hover:text-[#0080FF] transition-colors leading-snug">
+                            {project.title}
+                          </h3>
+                        </div>
+
+                        {/* Summary */}
+                        <p className="text-sm text-neutral-600 leading-relaxed font-sans line-clamp-3">
+                          {project.summary}
+                        </p>
+
+                        {/* Metrics Grid */}
+                        {metricsList.length > 0 && (
+                          <div className="grid grid-cols-3 gap-2 pt-4 border-t border-black/5">
+                            {metricsList.map((m: any, mIdx: number) => (
+                              <div key={mIdx} className="bg-black/[0.03] rounded-lg p-2.5 text-center">
+                                <div className="font-display font-bold text-base text-black">
+                                  {typeof m === 'string' ? m : m.value || m.label}
+                                </div>
+                                <div className="text-[10px] font-mono text-neutral-500 truncate uppercase mt-0.5">
+                                  {typeof m === 'string' ? 'Metric' : m.label || 'Value'}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Tech Stack Chips */}
+                        {techList.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5 pt-2">
+                            {techList.map((tech: string, tIdx: number) => (
+                              <span
+                                key={tIdx}
+                                className="px-2 py-0.5 rounded bg-black/5 text-neutral-700 text-[11px] font-mono"
+                              >
+                                {tech}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Card Footer */}
+                      <div className="pt-6 mt-6 border-t border-black/10 flex items-center justify-between">
+                        <Link
+                          href={`/work/${project.slug}`}
+                          className="inline-flex items-center gap-1.5 text-xs font-mono font-semibold text-black hover:text-[#0080FF] transition-colors"
+                        >
+                          <span>Explore Case Study</span>
+                          <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                        </Link>
+
+                        {project.liveUrl && (
+                          <a
+                            href={project.liveUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-neutral-400 hover:text-black transition-colors"
+                            title="View Live Demo"
+                          >
+                            <ArrowUpRight className="w-4 h-4" />
+                          </a>
+                        )}
+                      </div>
+                    </Card>
+                  </motion.div>
+                </StaggerItem>
+              );
+            })}
+          </StaggerContainer>
+
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-black/10 text-xs font-mono text-neutral-500">
+            <span>Verified production deliverables and architecture blueprints.</span>
+            <Link href="/work" className="text-black font-semibold hover:text-[#0080FF] transition-colors inline-flex items-center gap-1">
+              <span>View all engineering demonstrations</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
-
-          {/* 3 Service Modules */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Service 1 */}
-            <Card variant="light" className="p-8 flex flex-col justify-between h-full hover:border-black/30 hover:shadow-lg transition-all">
-              <div className="space-y-6">
-                <div className="w-12 h-12 rounded-xl bg-black/5 flex items-center justify-center text-black">
-                  <Layers className="w-6 h-6" />
-                </div>
-                <div className="space-y-2">
-                  <span className="font-mono text-xs text-neutral-500">01 // Web Development</span>
-                  <h3 className="font-display font-bold text-2xl text-black">{SERVICES.web.name}</h3>
-                </div>
-                <p className="text-sm text-neutral-600 leading-relaxed">
-                  {SERVICES.web.description}
-                </p>
-                <ul className="space-y-2.5 text-xs text-neutral-700 font-medium">
-                  {SERVICES.web.inclusions.map((item, idx) => (
-                    <li key={idx} className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="pt-8 mt-8 border-t border-black/10 flex items-center justify-between">
-                <div>
-                  <span className="font-display font-bold text-xl text-black">{SERVICES.web.startingPrice}</span>
-                  <span className="text-[11px] text-neutral-500 block font-mono">Build fee baseline</span>
-                </div>
-                <Link href="/services/premium-web">
-                  <Button variant="secondary" size="sm" icon={<ArrowRight className="w-3.5 h-3.5" />}>
-                    View Details
-                  </Button>
-                </Link>
-              </div>
-            </Card>
-
-            {/* Service 2 */}
-            <Card variant="light" className="p-8 flex flex-col justify-between h-full hover:border-black/30 hover:shadow-lg transition-all">
-              <div className="space-y-6">
-                <div className="w-12 h-12 rounded-xl bg-black/5 flex items-center justify-center text-black">
-                  <Cpu className="w-6 h-6 text-[#0080FF]" />
-                </div>
-                <div className="space-y-2">
-                  <span className="font-mono text-xs text-neutral-500">02 // Enquiry Automation</span>
-                  <h3 className="font-display font-bold text-2xl text-black">{SERVICES.ai.name}</h3>
-                </div>
-                <p className="text-sm text-neutral-600 leading-relaxed">
-                  {SERVICES.ai.description}
-                </p>
-                <ul className="space-y-2.5 text-xs text-neutral-700 font-medium">
-                  {SERVICES.ai.inclusions.map((item, idx) => (
-                    <li key={idx} className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="pt-8 mt-8 border-t border-black/10 flex items-center justify-between">
-                <div>
-                  <span className="font-display font-bold text-xl text-black">{SERVICES.ai.startingPrice}</span>
-                  <span className="text-[11px] text-neutral-500 block font-mono">Build fee baseline</span>
-                </div>
-                <Link href="/services/ai-automation">
-                  <Button variant="secondary" size="sm" icon={<ArrowRight className="w-3.5 h-3.5" />}>
-                    View Details
-                  </Button>
-                </Link>
-              </div>
-            </Card>
-
-            {/* Service 3 */}
-            <Card variant="light" className="p-8 flex flex-col justify-between h-full hover:border-black/30 hover:shadow-lg transition-all">
-              <div className="space-y-6">
-                <div className="w-12 h-12 rounded-xl bg-black/5 flex items-center justify-center text-black">
-                  <Zap className="w-6 h-6" />
-                </div>
-                <div className="space-y-2">
-                  <span className="font-mono text-xs text-neutral-500">03 // Custom Software</span>
-                  <h3 className="font-display font-bold text-2xl text-black">{SERVICES.saas.name}</h3>
-                </div>
-                <p className="text-sm text-neutral-600 leading-relaxed">
-                  {SERVICES.saas.description}
-                </p>
-                <ul className="space-y-2.5 text-xs text-neutral-700 font-medium">
-                  {SERVICES.saas.inclusions.map((item, idx) => (
-                    <li key={idx} className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="pt-8 mt-8 border-t border-black/10 flex items-center justify-between">
-                <div>
-                  <span className="font-display font-bold text-xl text-black">{SERVICES.saas.startingPrice}</span>
-                  <span className="text-[11px] text-neutral-500 block font-mono">Build fee baseline</span>
-                </div>
-                <Link href="/services/custom-saas">
-                  <Button variant="secondary" size="sm" icon={<ArrowRight className="w-3.5 h-3.5" />}>
-                    View Details
-                  </Button>
-                </Link>
-              </div>
-            </Card>
-          </div>
-
-          <p className="text-xs text-neutral-500 text-center font-mono">
-            {ONGOING_COSTS_DISCLOSURE}
-          </p>
         </div>
       </section>
 
@@ -348,169 +570,182 @@ export default function HomePage() {
       <SectionGradient direction="light-to-white" heightClass="h-20 sm:h-28" />
 
       {/* =====================================================================
-          4. HOW WE WORK (Operational Process)
+          4. SERVICES & PRICING PACKAGES (Website + Smart Enquiry System Upgraded)
           ===================================================================== */}
-      <section id="how-we-work" className="bg-white text-black pt-8 pb-28 px-6">
+      <section id="pricing" className="bg-white text-black pt-8 pb-28 px-6">
         <div className="max-w-7xl mx-auto space-y-16">
-          <div className="space-y-4 max-w-3xl">
-            <span className="text-xs font-mono uppercase tracking-widest text-neutral-500 block">
-              Engagement Process
-            </span>
-            <h2 className="font-display font-bold text-3xl sm:text-5xl text-black tracking-tight">
-              A Structured, 4-Step Project Delivery Model.
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="space-y-3 p-6 rounded-xl border border-black/10">
-              <span className="font-mono text-xs text-[#0080FF] font-bold block">STEP 01</span>
-              <h4 className="font-display font-bold text-lg text-black">Initial Discovery Call</h4>
-              <p className="text-xs text-neutral-600 leading-relaxed">
-                We review your business goals, current digital setup, required functionality, and establish clear technical requirements.
-              </p>
-            </div>
-            <div className="space-y-3 p-6 rounded-xl border border-black/10">
-              <span className="font-mono text-xs text-[#0080FF] font-bold block">STEP 02</span>
-              <h4 className="font-display font-bold text-lg text-black">Design &amp; Architecture</h4>
-              <p className="text-xs text-neutral-600 leading-relaxed">
-                You review and approve interactive design previews, user flows, and written specifications before development begins.
-              </p>
-            </div>
-            <div className="space-y-3 p-6 rounded-xl border border-black/10">
-              <span className="font-mono text-xs text-[#0080FF] font-bold block">STEP 03</span>
-              <h4 className="font-display font-bold text-lg text-black">Engineering &amp; Testing</h4>
-              <p className="text-xs text-neutral-600 leading-relaxed">
-                We build the project using clean code, configure third-party integrations, and verify responsiveness across modern devices.
-              </p>
-            </div>
-            <div className="space-y-3 p-6 rounded-xl border border-black/10">
-              <span className="font-mono text-xs text-[#0080FF] font-bold block">STEP 04</span>
-              <h4 className="font-display font-bold text-lg text-black">Deployment &amp; Handoff</h4>
-              <p className="text-xs text-neutral-600 leading-relaxed">
-                We deploy to your live environment, hand over your source code and assets, and provide clear operational instructions.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Atmospheric White-to-Light Gradient */}
-      <SectionGradient direction="white-to-light" heightClass="h-20 sm:h-28" />
-
-      {/* =====================================================================
-          5. PRICING & ENGAGEMENT GRID
-          ===================================================================== */}
-      <section id="pricing" className="bg-[#F8F9FB] text-black pt-8 pb-28 px-6">
-        <div className="max-w-7xl mx-auto space-y-16">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-black/10">
-            <div>
-              <span className="text-xs font-mono uppercase tracking-widest text-neutral-500 mb-2 block">
+          <Reveal>
+            <div className="max-w-3xl space-y-4">
+              <span className="text-xs font-mono uppercase tracking-widest text-[#0080FF] block">
                 Project Investments
               </span>
               <h2 className="font-display font-bold text-3xl sm:text-5xl text-black tracking-tight">
-                Transparent Build Fees Based on Scope.
+                Clear Scopes. Fixed Build Fees. No Surprises.
               </h2>
+              <p className="text-neutral-600 text-base leading-relaxed">
+                Choose the scope that best aligns with your business goals. All proposals detail deliverables, milestones, and timelines in writing before building begins.
+              </p>
             </div>
-            <p className="text-neutral-600 text-sm max-w-md font-sans">
-              Every project includes a written proposal with fixed milestone pricing. Build fees cover our design and engineering work.
-            </p>
-          </div>
+          </Reveal>
 
-          {/* 3-Tier Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
-            {/* Tier 1 */}
-            <Card variant="light" className="p-8 flex flex-col justify-between border border-black/15 bg-white">
-              <div className="space-y-6">
-                <div>
-                  <h3 className="font-display font-bold text-2xl text-black">{SERVICES.web.name}</h3>
-                  <p className="text-xs text-neutral-500 mt-1">For businesses requiring a modern, responsive website.</p>
-                </div>
-                <div className="pt-4 border-t border-black/10">
-                  <div className="font-display font-bold text-3xl text-black">{SERVICES.web.startingPrice}</div>
-                  <span className="text-xs text-neutral-500 font-mono">One-time build fee baseline</span>
-                </div>
-                <ul className="space-y-3 text-xs text-neutral-700 pt-4 border-t border-black/10">
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" /> Custom UI design tailored to your branding</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" /> Responsive layouts tested on mobile, tablet, &amp; desktop</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" /> Fast asset loading and clean semantic HTML structure</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" /> Contact forms routed directly to your email</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" /> Full code and asset delivery upon completion</li>
-                </ul>
-              </div>
-              <Link href="/start-project" className="mt-8">
-                <Button variant="secondary" className="w-full justify-center">
-                  Request a Project Call
-                </Button>
-              </Link>
-            </Card>
-
-            {/* Tier 2: AI & Growth Partnership (HIGHLIGHTED DARK CARD WITH SILK) */}
-            <div className="relative rounded-2xl p-[1px] bg-gradient-to-b from-[#00F0FF]/50 to-white/10 shadow-[0_0_40px_rgba(0,240,255,0.18)]">
-              <Card variant="dark" className="p-8 h-full flex flex-col justify-between relative overflow-hidden bg-[#06080D]">
-                {/* Embedded Silk Wave inside middle card */}
-                <Silk className="opacity-30" speed={0.5} />
-
-                <div className="relative z-10 space-y-6">
-                  <div className="flex items-center justify-between">
+          {/* Pricing Grid */}
+          <StaggerContainer className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
+            {/* Tier 1: Business Website Launch */}
+            <StaggerItem>
+              <motion.div whileHover={{ y: -3 }} transition={{ duration: 0.2 }} className="h-full">
+                <Card variant="light" className="p-8 flex flex-col justify-between h-full border border-black/15 bg-white shadow-sm hover:shadow-md transition-all">
+                  <div className="space-y-6">
                     <div>
-                      <h3 className="font-display font-bold text-2xl text-white">{SERVICES.ai.name}</h3>
-                      <p className="text-xs text-neutral-400 mt-1">For teams looking to automate common customer enquiries.</p>
+                      <h3 className="font-display font-bold text-2xl text-black">{SERVICES.web.name}</h3>
+                      <p className="text-xs text-neutral-500 mt-1">{SERVICES.web.description}</p>
                     </div>
-                    <Badge variant="electric">Popular Scope</Badge>
+                    <div className="pt-4 border-t border-black/10">
+                      <div className="font-display font-bold text-3xl text-black">{SERVICES.web.startingPrice}</div>
+                      <span className="text-xs text-neutral-500 font-mono">One-time build fee baseline</span>
+                    </div>
+                    <ul className="space-y-3 text-xs text-neutral-700 pt-4 border-t border-black/10">
+                      {SERVICES.web.inclusions.map((item, idx) => (
+                        <li key={idx} className="flex items-start gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-[#0080FF] flex-shrink-0 mt-0.5" />
+                          <span className="leading-relaxed">{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="pt-4 border-t border-black/10 text-xs font-sans text-neutral-600">
+                      <span className="font-semibold text-black block mb-1">Best for:</span>
+                      {SERVICES.web.bestFor}
+                    </div>
+                  </div>
+                  <Link href="/start-project" className="mt-8">
+                    <Button variant="secondary" className="w-full justify-center">
+                      {SERVICES.web.ctaText}
+                    </Button>
+                  </Link>
+                </Card>
+              </motion.div>
+            </StaggerItem>
+
+            {/* Tier 2: Website + Smart Enquiry System (HIGHLIGHTED WITH SILK & AI INTEGRATION) */}
+            <StaggerItem>
+              <motion.div
+                whileHover={{ y: -4 }}
+                transition={{ duration: 0.2 }}
+                className="relative rounded-2xl p-[1px] bg-gradient-to-b from-[#00F0FF]/50 to-white/10 shadow-[0_0_40px_rgba(0,240,255,0.18)] h-full"
+              >
+                <Card variant="dark" className="p-8 h-full flex flex-col justify-between relative overflow-hidden bg-[#06080D]">
+                  <Silk className="opacity-30" speed={0.5} />
+
+                  <div className="relative z-10 space-y-6">
+                    <div className="space-y-3 text-center">
+                      <div className="flex justify-center">
+                        <Badge variant="electric" className="px-3 py-1 text-xs shadow-[0_0_15px_rgba(0,240,255,0.4)]">
+                          Popular Scope
+                        </Badge>
+                      </div>
+                      <div>
+                        <h3 className="font-display font-bold text-2xl text-white">{SERVICES.ai.name}</h3>
+                        <p className="text-xs text-neutral-400 mt-1">{SERVICES.ai.description}</p>
+                      </div>
+                    </div>
+
+                    <div className="pt-4 border-t border-white/10">
+                      <div className="font-display font-bold text-3xl text-white">{SERVICES.ai.startingPrice}</div>
+                      <span className="text-xs text-[#00F0FF] font-mono">One-time build fee baseline</span>
+                    </div>
+
+                    <ul className="space-y-3 text-xs text-neutral-200 pt-4 border-t border-white/10">
+                      {SERVICES.ai.inclusions.map((item, idx) => (
+                        <li key={idx} className="flex items-start gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-[#00F0FF] flex-shrink-0 mt-0.5" />
+                          <span className="leading-relaxed">{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <div className="pt-4 border-t border-white/10 text-xs font-sans text-neutral-300">
+                      <span className="font-semibold text-white block mb-1">Best for:</span>
+                      {SERVICES.ai.bestFor}
+                    </div>
                   </div>
 
-                  <div className="pt-4 border-t border-white/10">
-                    <div className="font-display font-bold text-3xl text-white">{SERVICES.ai.startingPrice}</div>
-                    <span className="text-xs text-[#00F0FF] font-mono">One-time build fee baseline</span>
+                  <Link href="/start-project" className="relative z-10 mt-8">
+                    <Button variant="electric" className="w-full justify-center">
+                      {SERVICES.ai.ctaText}
+                    </Button>
+                  </Link>
+                </Card>
+              </motion.div>
+            </StaggerItem>
+
+            {/* Tier 3: Custom Business Growth System */}
+            <StaggerItem>
+              <motion.div whileHover={{ y: -3 }} transition={{ duration: 0.2 }} className="h-full">
+                <Card variant="light" className="p-8 flex flex-col justify-between h-full border border-black/15 bg-white shadow-sm hover:shadow-md transition-all">
+                  <div className="space-y-6">
+                    <div>
+                      <h3 className="font-display font-bold text-2xl text-black">{SERVICES.saas.name}</h3>
+                      <p className="text-xs text-neutral-500 mt-1">{SERVICES.saas.description}</p>
+                    </div>
+                    <div className="pt-4 border-t border-black/10">
+                      <div className="font-display font-bold text-3xl text-black">{SERVICES.saas.startingPrice}</div>
+                      <span className="text-xs text-neutral-500 font-mono">One-time build fee baseline</span>
+                    </div>
+                    <ul className="space-y-3 text-xs text-neutral-700 pt-4 border-t border-black/10">
+                      {SERVICES.saas.inclusions.map((item, idx) => (
+                        <li key={idx} className="flex items-start gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+                          <span className="leading-relaxed">{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="pt-4 border-t border-black/10 text-xs font-sans text-neutral-600">
+                      <span className="font-semibold text-black block mb-1">Best for:</span>
+                      {SERVICES.saas.bestFor}
+                    </div>
                   </div>
+                  <Link href="/start-project" className="mt-8">
+                    <Button variant="secondary" className="w-full justify-center">
+                      {SERVICES.saas.ctaText}
+                    </Button>
+                  </Link>
+                </Card>
+              </motion.div>
+            </StaggerItem>
+          </StaggerContainer>
 
-                  <ul className="space-y-3 text-xs text-neutral-200 pt-4 border-t border-white/10">
-                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF] flex-shrink-0" /> Everything in High-Performing Website</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF] flex-shrink-0" /> Custom conversational assistant trained on your docs</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF] flex-shrink-0" /> Clear operating guardrails and escalation to human staff</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF] flex-shrink-0" /> Integrated calendar booking link and lead capture forms</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#00F0FF] flex-shrink-0" /> Direct email or webhook alerts for qualified enquiries</li>
-                  </ul>
-                </div>
-
-                <Link href="/start-project" className="relative z-10 mt-8">
-                  <Button variant="electric" className="w-full justify-center">
-                    Request a Project Call
-                  </Button>
-                </Link>
-              </Card>
-            </div>
-
-            {/* Tier 3 */}
-            <Card variant="light" className="p-8 flex flex-col justify-between border border-black/15 bg-white">
-              <div className="space-y-6">
-                <div>
-                  <h3 className="font-display font-bold text-2xl text-black">{SERVICES.saas.name}</h3>
-                  <p className="text-xs text-neutral-500 mt-1">For businesses building custom portals or workflows.</p>
-                </div>
-                <div className="pt-4 border-t border-black/10">
-                  <div className="font-display font-bold text-3xl text-black">{SERVICES.saas.startingPrice}</div>
-                  <span className="text-xs text-neutral-500 font-mono">One-time build fee baseline</span>
-                </div>
-                <ul className="space-y-3 text-xs text-neutral-700 pt-4 border-t border-black/10">
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" /> Secure user authentication and role-based permissions</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" /> Custom administrative dashboards and data reporting</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" /> Payment integration via Stripe or chosen provider</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" /> Relational database architecture (PostgreSQL / Redis)</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" /> Complete codebase repository transfer and documentation</li>
-                </ul>
+          {/* Transparent Process Steps */}
+          <div className="pt-16 border-t border-black/10 space-y-8">
+            <Reveal>
+              <div className="text-center max-w-xl mx-auto space-y-2">
+                <span className="text-xs font-mono uppercase tracking-widest text-[#0080FF]">
+                  Transparent Process
+                </span>
+                <h3 className="font-display font-bold text-2xl sm:text-3xl text-black">
+                  Starting a project is simple
+                </h3>
+                <p className="text-xs text-neutral-500 font-sans">
+                  Clear milestones from day one with no technical jargon or surprise scope changes.
+                </p>
               </div>
-              <Link href="/start-project" className="mt-8">
-                <Button variant="secondary" className="w-full justify-center">
-                  Request a Project Call
-                </Button>
-              </Link>
-            </Card>
-          </div>
+            </Reveal>
 
-          <div className="p-4 rounded-xl bg-white border border-black/10 text-xs text-neutral-600 space-y-2">
-            <p><strong>Note on Project Scope &amp; Ongoing Costs:</strong> {ONGOING_COSTS_DISCLOSURE}</p>
-            <p>{OWNERSHIP_DISCLOSURE}</p>
+            <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {PROJECT_PROCESS_STEPS.map((step) => (
+                <StaggerItem key={step.step}>
+                  <div className="p-6 rounded-2xl bg-white border border-black/10 space-y-3 relative hover:border-[#0080FF]/40 transition-colors">
+                    <span className="text-xs font-mono text-[#0080FF] font-bold">
+                      STEP {step.step}
+                    </span>
+                    <h4 className="font-display font-bold text-base text-black">
+                      {step.title}
+                    </h4>
+                    <p className="text-xs text-neutral-600 leading-relaxed font-sans">
+                      {step.desc}
+                    </p>
+                  </div>
+                </StaggerItem>
+              ))}
+            </StaggerContainer>
           </div>
         </div>
       </section>
@@ -519,151 +754,156 @@ export default function HomePage() {
       <SectionGradient direction="light-to-white" heightClass="h-20 sm:h-28" />
 
       {/* =====================================================================
-          6. PROJECT STANDARDS & COMMITMENTS (Replaces fabricated testimonial)
+          5. VERIFIED CLIENT REVIEWS SECTION (New Dedicated Homepage Section)
           ===================================================================== */}
-      <section className="bg-white text-black pt-8 pb-28 px-6">
-        <div className="max-w-7xl mx-auto space-y-12">
-          <div className="max-w-3xl space-y-4">
-            <span className="text-xs font-mono uppercase tracking-widest text-neutral-500 block">
-              Our Commitments
-            </span>
-            <h2 className="font-display font-bold text-3xl sm:text-5xl text-black tracking-tight">
-              How CYBERSTYLE Approaches Client Engagements.
-            </h2>
-            <p className="text-neutral-600 text-base leading-relaxed">
-              We believe in honest communication, verifiable deliverables, and transparent processes without fabricated marketing claims.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="p-8 rounded-2xl border border-black/10 bg-[#FBFBFC] space-y-4">
-              <div className="w-10 h-10 rounded-lg bg-black text-white flex items-center justify-center">
-                <Clock className="w-5 h-5" />
+      <section id="reviews" className="bg-[#08090C] text-white pt-12 pb-28 px-6 border-t border-white/10">
+        <div className="max-w-7xl mx-auto space-y-16">
+          <Reveal>
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-white/10">
+              <div>
+                <span className="text-xs font-mono uppercase tracking-widest text-[#00F0FF] block mb-2">
+                  Client Verification // Verified Results
+                </span>
+                <h2 className="font-display font-bold text-3xl sm:text-5xl text-white tracking-tight">
+                  What Clients Say About Working With Us.
+                </h2>
               </div>
-              <h3 className="font-display font-bold text-xl text-black">Defined Scope &amp; Milestones</h3>
-              <p className="text-sm text-neutral-600 leading-relaxed">
-                Before writing any code, we document all deliverables, timeline targets, and acceptance criteria in your project agreement.
-              </p>
-            </div>
-
-            <div className="p-8 rounded-2xl border border-black/10 bg-[#FBFBFC] space-y-4">
-              <div className="w-10 h-10 rounded-lg bg-black text-white flex items-center justify-center">
-                <Code2 className="w-5 h-5" />
+              <div className="flex items-center gap-4">
+                <span className="text-xs font-mono text-neutral-400">
+                  {reviews.length} Verified Engagements
+                </span>
+                <Link href="/reviews">
+                  <Button variant="outline" size="sm" icon={<ArrowUpRight className="w-3.5 h-3.5" />}>
+                    View Reviews &amp; Standards
+                  </Button>
+                </Link>
               </div>
-              <h3 className="font-display font-bold text-xl text-black">Interactive Staging Previews</h3>
-              <p className="text-sm text-neutral-600 leading-relaxed">
-                You receive access to a private staging environment so you can test features, review copy, and give feedback before launch.
-              </p>
             </div>
+          </Reveal>
 
-            <div className="p-8 rounded-2xl border border-black/10 bg-[#FBFBFC] space-y-4">
-              <div className="w-10 h-10 rounded-lg bg-black text-white flex items-center justify-center">
-                <ShieldCheck className="w-5 h-5" />
-              </div>
-              <h3 className="font-display font-bold text-xl text-black">Full Source Code Delivery</h3>
-              <p className="text-sm text-neutral-600 leading-relaxed">
-                Upon project completion and final payment, you receive complete source code repositories, deployment scripts, and asset archives.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Atmospheric White-to-Light Gradient */}
-      <SectionGradient direction="white-to-light" heightClass="h-20 sm:h-28" />
-
-      {/* =====================================================================
-          7. FAQ SECTION
-          ===================================================================== */}
-      <section id="faq" className="bg-[#F8F9FB] text-black pt-8 pb-28 px-6">
-        <div className="max-w-4xl mx-auto space-y-12">
-          <div className="text-center space-y-4">
-            <span className="text-xs font-mono uppercase tracking-widest text-neutral-500 block">
-              Common Inquiries
-            </span>
-            <h2 className="font-display font-bold text-3xl sm:text-4xl text-black tracking-tight">
-              Frequently Asked Questions
-            </h2>
-          </div>
-
-          <div className="space-y-4">
-            {[
-              {
-                q: 'How long does a website project typically take?',
-                a: 'Most standard website builds take between 2 to 4 weeks, depending on the number of pages, content availability, and review turnaround times. Complex custom web applications or multi-step integrations may take longer, which will be specified in your written project schedule.',
-              },
-              {
-                q: 'How do you ensure websites perform well on mobile devices?',
-                a: 'We design mobile-first with responsive layouts, compressed assets, and modern Next.js rendering so that pages load efficiently across smartphones, tablets, and desktop browsers.',
-              },
-              {
-                q: 'What can an AI enquiry assistant do, and what are its limits?',
-                a: `An AI assistant can answer common business questions based on your approved documentation, collect contact details, and schedule appointments via calendar integrations. As an important note: ${AI_LIMITATIONS_DISCLOSURE}`,
-              },
-              {
-                q: 'Do I own the website and source code once the project is finished?',
-                a: `${OWNERSHIP_DISCLOSURE} Ongoing infrastructure costs (like hosting, domain renewal, or third-party API subscriptions) are paid directly to your chosen service providers.`,
-              },
-              {
-                q: 'What ongoing maintenance or support is required after launch?',
-                a: 'Modern web applications require hosting and domain renewal to remain online. We provide deployment documentation for your team, and we also offer optional maintenance agreements if you prefer ongoing software updates, backups, and technical support handled by us.',
-              },
-            ].map((faq, idx) => (
-              <div
-                key={idx}
-                className="rounded-xl border border-black/10 bg-white p-6 transition-all duration-200"
-              >
-                <button
-                  onClick={() => toggleFaq(idx)}
-                  className="w-full flex items-center justify-between text-left font-display font-bold text-lg text-black focus:outline-none"
+          {/* Reviews Grid */}
+          <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {reviews.map((rev) => (
+              <StaggerItem key={rev.id}>
+                <motion.div
+                  whileHover={{ y: -4 }}
+                  transition={{ duration: 0.2 }}
+                  className="h-full"
                 >
-                  <span>{faq.q}</span>
-                  <ChevronDown
-                    className={`w-5 h-5 text-neutral-500 transition-transform duration-200 ${
-                      activeFaq === idx ? 'rotate-180 text-[#0080FF]' : ''
-                    }`}
-                  />
-                </button>
-                {activeFaq === idx && (
-                  <p className="mt-4 text-sm text-neutral-600 leading-relaxed font-sans border-t border-black/5 pt-4">
-                    {faq.a}
-                  </p>
-                )}
-              </div>
+                  <Card
+                    variant="dark"
+                    className="p-8 flex flex-col justify-between h-full bg-[#0E1118] border border-white/10 hover:border-[#00F0FF]/40 transition-all space-y-6"
+                  >
+                    <div className="space-y-4">
+                      {/* 5 Stars */}
+                      <div className="flex items-center gap-1 text-[#00F0FF]">
+                        {Array.from({ length: rev.rating || 5 }).map((_, i) => (
+                          <Star key={i} className="w-4 h-4 fill-current" />
+                        ))}
+                      </div>
+
+                      <p className="text-sm text-neutral-300 leading-relaxed italic font-sans">
+                        "{rev.quote}"
+                      </p>
+                    </div>
+
+                    <div className="pt-4 border-t border-white/10 flex items-center justify-between">
+                      <div>
+                        <div className="font-display font-semibold text-sm text-white">
+                          {rev.clientName}
+                        </div>
+                        <div className="text-xs text-neutral-400 font-mono">
+                          {rev.clientTitle && `${rev.clientTitle}, `}
+                          {rev.companyName}
+                        </div>
+                      </div>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-950/60 text-emerald-400 border border-emerald-800/50 flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3" /> VERIFIED
+                      </span>
+                    </div>
+                  </Card>
+                </motion.div>
+              </StaggerItem>
             ))}
+          </StaggerContainer>
+
+          {/* Commitments Bar */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-8 border-t border-white/10">
+            <div className="p-6 rounded-xl bg-white/5 border border-white/10 space-y-2">
+              <div className="flex items-center gap-2 text-[#00F0FF]">
+                <Clock className="w-4 h-4" />
+                <h4 className="font-display font-bold text-sm text-white">Fixed Written Scopes</h4>
+              </div>
+              <p className="text-xs text-neutral-400 font-sans leading-relaxed">
+                Clear milestones and acceptance criteria documented before a single line of code is written.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-xl bg-white/5 border border-white/10 space-y-2">
+              <div className="flex items-center gap-2 text-[#00F0FF]">
+                <Code2 className="w-4 h-4" />
+                <h4 className="font-display font-bold text-sm text-white">Private Staging Access</h4>
+              </div>
+              <p className="text-xs text-neutral-400 font-sans leading-relaxed">
+                Test interactive layouts and review features on your own devices prior to production launch.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-xl bg-white/5 border border-white/10 space-y-2">
+              <div className="flex items-center gap-2 text-[#00F0FF]">
+                <ShieldCheck className="w-4 h-4" />
+                <h4 className="font-display font-bold text-sm text-white">Full Code Handoff</h4>
+              </div>
+              <p className="text-xs text-neutral-400 font-sans leading-relaxed">
+                {OWNERSHIP_DISCLOSURE} You own your repositories and files with zero vendor lock-in.
+              </p>
+            </div>
           </div>
         </div>
       </section>
+
+      {/* Atmospheric Dark-to-White Gradient */}
+      <SectionGradient direction="black-to-white" heightClass="h-28 sm:h-36" />
 
       {/* =====================================================================
-          8. FINAL CONVERSION CTA (Atmospheric Gradient Transition to Black)
+          6. DYNAMIC FAQ ACCORDION (Connected to Postgres & Multi-Page Sync)
           ===================================================================== */}
-      <SectionGradient direction="light-to-black" heightClass="h-44 sm:h-60 lg:h-72" />
+      <section id="faq" className="bg-white text-black pt-8 pb-28 px-6">
+        <div className="max-w-4xl mx-auto space-y-12">
+          <Reveal>
+            <div className="text-center space-y-4">
+              <span className="text-xs font-mono uppercase tracking-widest text-neutral-500 block">
+                Common Inquiries
+              </span>
+              <h2 className="font-display font-bold text-3xl sm:text-4xl text-black tracking-tight">
+                Frequently Asked Questions
+              </h2>
+              <p className="text-sm text-neutral-600 max-w-md mx-auto">
+                Direct, honest answers about project timelines, code handoff, AI workflows, and pricing.
+              </p>
+            </div>
+          </Reveal>
 
-      <section id="start-project" className="bg-black text-white pt-6 pb-28 px-6 relative overflow-hidden">
-        <Silk className="opacity-40" speed={0.5} />
+          {/* Dynamic Component Loaded from Database */}
+          <DynamicFaqAccordion
+            page="home"
+            variant="light"
+          />
 
-        <div className="relative z-10 max-w-4xl mx-auto text-center space-y-8">
-          <h2 className="font-display font-extrabold text-3xl sm:text-5xl lg:text-6xl text-white leading-tight tracking-tight">
-            Ready to Build a Better Digital System for Your Business?
-          </h2>
-          <p className="text-neutral-400 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
-            Schedule an introductory call with CYBERSTYLE to discuss your project requirements, scope, timeline, and budget.
-          </p>
-          <div className="pt-4 flex flex-wrap items-center justify-center gap-4">
-            <Link href="/start-project">
-              <Button variant="electric" size="lg" icon={<ArrowUpRight className="w-5 h-5" />}>
-                {CTA_LABELS.primary}
-              </Button>
+          <div className="text-center pt-8 border-t border-black/10">
+            <Link
+              href="/faq"
+              className="text-xs font-mono text-neutral-500 hover:text-black transition-colors inline-flex items-center gap-1.5 underline underline-offset-4"
+            >
+              <span>Have additional technical or billing questions? View full FAQ knowledge base</span>
+              <ArrowUpRight className="w-3.5 h-3.5" />
             </Link>
-            <a href="mailto:contact@cyberstyle.net">
-              <Button variant="outline" size="lg">
-                Email: contact@cyberstyle.net
-              </Button>
-            </a>
           </div>
         </div>
       </section>
+
+      {/* Atmospheric White-to-Black Gradient before final CTA */}
+      <SectionGradient direction="white-to-black" heightClass="h-32 sm:h-44" />
     </div>
   );
 }

@@ -4,6 +4,9 @@ import { requireAuth, requireRole, AuthenticatedRequest } from '../middleware/au
 import { MonitoringService } from '../services/monitoring.service';
 import { logAudit } from '../utils/auditLogger';
 import { UserRole } from '@prisma/client';
+import { ErrorTracker } from '../services/error-tracker.service';
+import { AlertServiceInstance } from '../services/alert.service';
+import { BackupService } from '../services/backup.service';
 
 const router = Router();
 
@@ -177,6 +180,133 @@ router.patch('/changes/:id/review', requireRole([UserRole.SUPER_ADMIN, UserRole.
     });
   } catch (error) {
     next(error);
+  }
+});
+
+// ==============================================================================
+// 3. OPERATIONAL HEALTH, ERROR TRACKING & BACKUP MONITORING
+// ==============================================================================
+
+/**
+ * @route   GET /api/monitoring/system-health
+ * @desc    Real-time infrastructure health, DB latency, error tracker, alerts, and backup status
+ */
+router.get('/system-health', requireRole([UserRole.SUPER_ADMIN, UserRole.ADMIN]), async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const startTime = Date.now();
+    let dbStatus: 'HEALTHY' | 'DEGRADED' | 'DOWN' = 'HEALTHY';
+    let dbLatencyMs = 0;
+
+    try {
+      const dbCheckStart = Date.now();
+      await prisma.$queryRaw`SELECT 1`;
+      dbLatencyMs = Date.now() - dbCheckStart;
+    } catch (dbErr: any) {
+      dbStatus = 'DOWN';
+      AlertServiceInstance.triggerAlert({
+        type: 'DATABASE_UNREACHABLE',
+        severity: 'CRITICAL',
+        title: 'PostgreSQL Database Unreachable',
+        description: `Database query probe failed: ${dbErr.message}`,
+      });
+    }
+
+    const mem = process.memoryUsage();
+    const uptimeSeconds = process.uptime();
+    const alerts = AlertServiceInstance.getAlertsSummary();
+    const recentErrors = ErrorTracker.getRecentErrors(10);
+    const lastBackup = BackupService.getLatestBackupStatus();
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        timestamp: new Date().toISOString(),
+        overallStatus: dbStatus === 'HEALTHY' && alerts.isHealthy ? 'HEALTHY' : 'WARNING',
+        responseTimeMs: Date.now() - startTime,
+        system: {
+          uptimeSeconds: Math.floor(uptimeSeconds),
+          environment: process.env.NODE_ENV || 'development',
+          memoryRssMb: Math.round(mem.rss / 1024 / 1024),
+          heapUsedMb: Math.round(mem.heapUsed / 1024 / 1024),
+          nodeVersion: process.version,
+        },
+        database: {
+          status: dbStatus,
+          latencyMs: dbLatencyMs,
+          engine: 'PostgreSQL',
+        },
+        observability: {
+          correlationId: req.correlationId,
+          errorCount24h: ErrorTracker.getErrorCount(),
+          recentErrors,
+        },
+        alerts: {
+          isHealthy: alerts.isHealthy,
+          activeAlerts: alerts.activeAlerts,
+          recent5xxCount5Min: alerts.recent5xxCount5Min,
+        },
+        backups: {
+          latestBackup: lastBackup,
+          configuredRetentionDays: 14,
+        },
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * @route   POST /api/monitoring/backups/run
+ * @desc    Manually trigger an automated database backup
+ */
+router.post('/backups/run', requireRole([UserRole.SUPER_ADMIN, UserRole.ADMIN]), async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const backup = await BackupService.executeBackup();
+    await logAudit({
+      userId: req.user.id,
+      action: 'DATABASE_BACKUP_EXECUTED',
+      entityType: 'Backup',
+      entityId: backup.filename,
+      changes: { status: backup.status, sizeBytes: backup.sizeBytes, checksum: backup.checksum },
+      req,
+    });
+
+    res.status(backup.status === 'OK' ? 200 : 500).json({
+      status: backup.status === 'OK' ? 'success' : 'error',
+      data: { backup },
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * @route   POST /api/monitoring/backups/restore-drill
+ * @desc    Execute a disaster recovery restore drill and checksum validation
+ */
+router.post('/backups/restore-drill', requireRole([UserRole.SUPER_ADMIN, UserRole.ADMIN]), async (req: AuthenticatedRequest, res: Response, _next: NextFunction) => {
+  try {
+    const result = await BackupService.runRestoreDrill();
+    await logAudit({
+      userId: req.user.id,
+      action: 'RESTORE_DRILL_EXECUTED',
+      entityType: 'BackupDrill',
+      entityId: result.backupFile,
+      changes: { success: result.success, tablesVerified: result.tablesVerified },
+      req,
+    });
+
+    res.status(200).json({
+      status: 'success',
+      data: { result },
+    });
+  } catch (error: any) {
+    res.status(400).json({
+      status: 'error',
+      code: 'RESTORE_DRILL_FAILED',
+      message: error.message,
+    });
   }
 });
 

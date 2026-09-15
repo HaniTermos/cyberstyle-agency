@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start --port 3000",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@cyberstyle/ui": "file:../../packages/ui",
@@ -26,6 +27,7 @@
   },
   "devDependencies": {
     "@cyberstyle/config": "file:../../packages/config",
+    "@playwright/test": "^1.41.2",
     "@types/node": "^22.13.4",
     "@types/react": "19.0.10",
     "@types/react-dom": "19.0.4",

@@ -14,27 +14,28 @@ import {
   User,
   LogOut,
   Sparkles,
-  ExternalLink
+  ExternalLink,
 } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
+import { DEMO_WORKSPACE_DATA, PORTAL_LABELS } from '@/lib/constants/portal';
 
 const navigation = [
-  { name: 'Dashboard', href: '/portal/dashboard', icon: LayoutDashboard },
-  { name: 'Active Builds & Milestones', href: '/portal/projects', icon: FolderGit2 },
-  { name: 'Invoices & Retainers', href: '/portal/invoices', icon: Receipt },
-  { name: 'Asset Vault & Files', href: '/portal/files', icon: FileText },
-  { name: 'Direct Comms / Support', href: '/portal/messages', icon: MessageSquare },
-  { name: 'Feedback & Reviews', href: '/portal/feedback', icon: Star },
-  { name: 'Security & 2FA', href: '/portal/security', icon: ShieldCheck },
-  { name: 'Organization Profile', href: '/portal/profile', icon: User },
+  { name: PORTAL_LABELS.DASHBOARD, href: '/portal/dashboard', icon: LayoutDashboard },
+  { name: PORTAL_LABELS.PROJECTS, href: '/portal/projects', icon: FolderGit2 },
+  { name: PORTAL_LABELS.INVOICES, href: '/portal/invoices', icon: Receipt },
+  { name: PORTAL_LABELS.FILES, href: '/portal/files', icon: FileText },
+  { name: PORTAL_LABELS.MESSAGES, href: '/portal/messages', icon: MessageSquare },
+  { name: PORTAL_LABELS.FEEDBACK, href: '/portal/feedback', icon: Star },
+  { name: PORTAL_LABELS.SECURITY, href: '/portal/security', icon: ShieldCheck },
+  { name: PORTAL_LABELS.SETTINGS, href: '/portal/profile', icon: User },
 ];
 
 export function PortalSidebar() {
   const pathname = usePathname();
   const [orgData, setOrgData] = useState<{ name: string; plan: string; initials: string }>({
-    name: 'Client Enclave',
-    plan: 'Active SLA',
-    initials: 'CE',
+    name: DEMO_WORKSPACE_DATA.organization.name,
+    plan: DEMO_WORKSPACE_DATA.organization.businessName,
+    initials: 'DW',
   });
 
   useEffect(() => {
@@ -45,11 +46,13 @@ export function PortalSidebar() {
         try {
           const parsed = JSON.parse(stored);
           const userName = parsed.user?.name || parsed.user?.email?.split('@')[0] || '';
-          const orgName = parsed.user?.organizationName || (userName ? `${userName}'s Workspace` : 'Client Enclave');
+          const orgName =
+            parsed.user?.organizationName ||
+            (userName ? `${userName}'s Workspace` : DEMO_WORKSPACE_DATA.organization.name);
           const initials = orgName.substring(0, 2).toUpperCase();
           setOrgData({
             name: orgName,
-            plan: 'Enterprise Workspace',
+            plan: parsed.user?.businessName || DEMO_WORKSPACE_DATA.organization.businessName,
             initials: initials || 'CW',
           });
         } catch {}
@@ -61,17 +64,18 @@ export function PortalSidebar() {
       .then((res) => {
         if (res.success && res.data) {
           const org = res.data.organization || res.data;
-          const name = org.name || res.data.name || 'Client Enclave';
-          const initials = name
-            .split(' ')
-            .map((w: string) => w[0])
-            .join('')
-            .substring(0, 2)
-            .toUpperCase() || 'CE';
+          const name = org.name || res.data.name || DEMO_WORKSPACE_DATA.organization.name;
+          const initials =
+            name
+              .split(' ')
+              .map((w: string) => w[0])
+              .join('')
+              .substring(0, 2)
+              .toUpperCase() || 'CW';
 
           setOrgData({
             name,
-            plan: org.industry ? `${org.industry} Enclave` : 'Verified Agreement',
+            plan: org.businessName || org.legalName || 'Authorized Workspace',
             initials,
           });
         }
@@ -91,7 +95,10 @@ export function PortalSidebar() {
   };
 
   return (
-    <aside className="w-64 bg-[#080A10] border-r border-zinc-800/80 flex flex-col h-screen sticky top-0 text-zinc-300 select-none z-30 font-sans">
+    <aside
+      aria-label="Client Portal Navigation"
+      className="w-64 bg-[#080A10] border-r border-zinc-800/80 flex flex-col h-screen sticky top-0 text-zinc-300 select-none z-30 font-sans"
+    >
       {/* Brand Header */}
       <div className="p-5 border-b border-zinc-800/80 flex items-center justify-between">
         <Link href="/portal/dashboard" className="flex items-center gap-2 group">
@@ -115,7 +122,9 @@ export function PortalSidebar() {
           Client Workspace
         </div>
         {navigation.map((item) => {
-          const isActive = pathname === item.href || (item.href !== '/portal/dashboard' && pathname?.startsWith(item.href));
+          const isActive =
+            pathname === item.href ||
+            (item.href !== '/portal/dashboard' && pathname?.startsWith(item.href));
           const Icon = item.icon;
 
           return (
@@ -128,14 +137,16 @@ export function PortalSidebar() {
                   : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900/60 border border-transparent'
               }`}
             >
-              <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-cyan-400' : 'text-zinc-400'}`} />
+              <Icon
+                className={`w-4 h-4 shrink-0 ${isActive ? 'text-cyan-400' : 'text-zinc-400'}`}
+              />
               <span>{item.name}</span>
             </Link>
           );
         })}
       </nav>
 
-      {/* Organization Info / Dynamic Real Client Footer */}
+      {/* Organization Info Footer */}
       <div className="p-4 border-t border-zinc-800/80 bg-[#080A10]/95 space-y-3">
         <div className="flex items-center gap-3 px-2 py-1.5 rounded-md bg-zinc-900/60 border border-zinc-800/80">
           <div className="w-7 h-7 rounded bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 font-mono text-xs flex items-center justify-center font-bold">
@@ -143,7 +154,7 @@ export function PortalSidebar() {
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-xs font-semibold text-zinc-100 truncate">{orgData.name}</p>
-            <p className="text-[10px] text-cyan-400/80 font-mono truncate">{orgData.plan}</p>
+            <p className="text-[10px] text-zinc-400 font-mono truncate">{orgData.plan}</p>
           </div>
         </div>
 

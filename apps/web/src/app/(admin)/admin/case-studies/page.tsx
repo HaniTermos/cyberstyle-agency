@@ -284,6 +284,27 @@ export default function AdminCaseStudiesPage() {
     setIsModalOpen(true);
   };
 
+  // Quick Inline Status Switcher
+  const handleQuickStatusChange = async (id: string, newStatus: 'PUBLISHED' | 'DRAFT' | 'ARCHIVED') => {
+    try {
+      const res = await apiRequest<{ caseStudy: CaseStudyItem }>(`/admin/case-studies/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (!res.success) {
+        throw new Error(res.error || 'Failed to update status');
+      }
+
+      setCaseStudies((prev) =>
+        prev.map((c) => (c.id === id ? { ...c, status: newStatus } : c))
+      );
+      showToast(`Status updated to ${newStatus}`);
+    } catch (err: any) {
+      alert(err.message || 'Could not update status');
+    }
+  };
+
   // Open Edit Modal
   const handleOpenEdit = (cs: CaseStudyItem) => {
     setModalMode('edit');
@@ -698,17 +719,22 @@ export default function AdminCaseStudiesPage() {
                     </td>
 
                     <td className="p-4">
-                      <span
-                        className={`px-2.5 py-1 rounded text-[10px] font-mono uppercase tracking-wider font-bold border ${
+                      <select
+                        value={cs.status}
+                        onChange={(e) => handleQuickStatusChange(cs.id, e.target.value as any)}
+                        className={`px-2.5 py-1 rounded text-[10px] font-mono uppercase tracking-wider font-bold border cursor-pointer focus:outline-none focus:ring-1 focus:ring-cyan-400 transition-colors ${
                           cs.status === 'PUBLISHED'
-                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                            ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500/40 hover:border-emerald-400'
                             : cs.status === 'DRAFT'
-                            ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
-                            : 'bg-zinc-800 text-zinc-400 border-zinc-700'
+                            ? 'bg-amber-950/80 text-amber-300 border-amber-500/40 hover:border-amber-400'
+                            : 'bg-zinc-900 text-zinc-400 border-zinc-700 hover:border-zinc-500'
                         }`}
+                        title="Click to change publishing status"
                       >
-                        {cs.status}
-                      </span>
+                        <option value="PUBLISHED" className="bg-zinc-900 text-emerald-400">PUBLISHED</option>
+                        <option value="DRAFT" className="bg-zinc-900 text-amber-400">DRAFT</option>
+                        <option value="ARCHIVED" className="bg-zinc-900 text-zinc-400">ARCHIVED</option>
+                      </select>
                     </td>
 
                     <td className="p-4 text-right">

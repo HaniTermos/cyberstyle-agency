@@ -147,6 +147,17 @@ export default function AdminAnalyticsPage() {
         </div>
       </div>
 
+      {/* Honesty & Data Source Disclosure Banner */}
+      <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-mono flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+          <span className="font-semibold">Sample / Demo Data Mode — Not Connected to Live GA4 / GSC</span>
+        </div>
+        <span className="text-[11px] text-zinc-400">
+          Telemetry is currently simulated. Configure Google Analytics 4 API keys in Settings to activate live telemetry.
+        </span>
+      </div>
+
       {/* Real-time Pulse Banner */}
       <div className="p-4 rounded-2xl bg-gradient-to-r from-cyan-950/40 via-zinc-900/60 to-zinc-950 border border-cyan-500/20 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">

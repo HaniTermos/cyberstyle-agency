@@ -15,12 +15,21 @@ import seoRoutes from './routes/seo.routes';
 import emailRoutes from './routes/email.routes';
 import analyticsRoutes from './routes/analytics.routes';
 import geoRoutes from './routes/geo.routes';
+import fileRoutes from './routes/file.routes';
 import { detailedRequestLogger } from './middleware/requestLogger';
+import path from 'path';
+import { correlationIdMiddleware } from './middleware/correlationId';
 import { errorHandler } from './middleware/errorHandler';
 import { env } from './config/env';
 
 export function createServer() {
   const app = express();
+
+  // Static uploads directory for media assets & public images
+  const uploadsPath = path.resolve(process.cwd(), 'uploads');
+  const cleanUploadsPath = path.resolve(process.cwd(), 'uploads', 'clean');
+  app.use('/uploads', express.static(uploadsPath));
+  app.use('/uploads/clean', express.static(cleanUploadsPath));
 
   // Security Headers with Helmet
   app.use(helmet({
@@ -40,10 +49,11 @@ export function createServer() {
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'stripe-signature'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'stripe-signature', 'x-correlation-id', 'x-request-id'],
   }));
 
-  // Body Parsing & Detailed Terminal Request Logging
+  // Correlation ID Tracing & Body Parsing & Detailed Request Logging
+  app.use(correlationIdMiddleware);
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
   app.use(detailedRequestLogger);
@@ -79,6 +89,7 @@ export function createServer() {
     app.use(`${prefix}/admin/analytics`, analyticsRoutes);
     app.use(`${prefix}/admin/geo`, geoRoutes);
     app.use(`${prefix}/geo`, geoRoutes);
+    app.use(`${prefix}/files`, fileRoutes);
   };
 
   mountRoutes('/api');

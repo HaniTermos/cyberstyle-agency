@@ -20,6 +20,7 @@ import { PageBanner } from '@/components/layout/PageBanner';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { SectionGradient } from '@/components/ui/SectionGradient';
+import { DynamicFaqAccordion } from '@/components/faq/DynamicFaqAccordion';
 import {
   SERVICES,
   AI_LIMITATIONS_DISCLOSURE,
@@ -265,22 +266,14 @@ export default function AIAutomationServicePage() {
 
       {/* FAQs */}
       <section className="pt-4 pb-24 px-6 bg-white text-black">
-        <div className="max-w-4xl mx-auto space-y-10">
-          <div className="space-y-2">
-            <span className="text-xs font-mono uppercase tracking-widest text-neutral-500">PLAIN QUESTIONS &amp; ANSWERS</span>
-            <h2 className="text-3xl sm:text-4xl font-bold text-black tracking-tight">
-              Frequently Asked Questions
-            </h2>
-          </div>
-
-          <div className="space-y-4">
-            {faqs.map((faq, idx) => (
-              <div key={idx} className="p-6 rounded-2xl border border-black/10 bg-[#F8F9FB] space-y-2">
-                <h4 className="font-bold text-base text-black">{faq.q}</h4>
-                <p className="text-xs sm:text-sm text-neutral-600 leading-relaxed font-sans">{faq.a}</p>
-              </div>
-            ))}
-          </div>
+        <div className="max-w-4xl mx-auto">
+          <DynamicFaqAccordion
+            page="ai-automation"
+            subtitle="PLAIN QUESTIONS & ANSWERS"
+            title="Frequently Asked Questions"
+            fallbackFaqs={faqs}
+            variant="light"
+          />
         </div>
       </section>
 

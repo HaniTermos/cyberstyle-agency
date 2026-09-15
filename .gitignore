@@ -142,3 +142,16 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# Database backups and checksums
+backups/
+**/backups/**
+*.sql
+*.sql.gz
+*.sha256
+
+# Local storage and file quarantine
+infra/storage/
+quarantine/
+uploads/
+.gemini/

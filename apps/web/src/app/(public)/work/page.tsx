@@ -1,98 +1,102 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowUpRight, Info, Layers, Cpu, Zap } from 'lucide-react';
+import { ArrowUpRight, Layers, Cpu, Zap, FolderKanban } from 'lucide-react';
 import { PageBanner } from '@/components/layout/PageBanner';
 import { Card } from '@/components/ui/Card';
-import { CONCEPT_DEMO_DISCLAIMER, CTA_LABELS } from '@/lib/constants/brand';
+import { apiRequest } from '@/lib/api';
 
-interface ConceptItem {
+export interface WorkCaseItem {
   id: string;
   slug: string;
   title: string;
   conceptType: string;
   industry: string;
-  serviceCategory: 'web' | 'ai' | 'saas';
+  serviceCategory: 'web' | 'ai' | 'saas' | string;
   summary: string;
   highlight: string;
   highlightLabel: string;
+  techStack?: string[];
+  liveUrl?: string;
+  clientName?: string;
+  coverImage?: string;
 }
-
-const concepts: ConceptItem[] = [
-  {
-    id: 'concept-1',
-    slug: 'logistics-lead-routing-concept',
-    title: 'Automated Enquiry Intake & Dispatch Architecture',
-    conceptType: 'Interactive Automation Prototype',
-    industry: 'Logistics & Supply Chain',
-    serviceCategory: 'ai',
-    summary:
-      'A prototype intake system designed to process complex freight requests, categorize volume specifications, and route qualified enquiries directly to dispatcher calendars.',
-    highlight: 'Automated Triage',
-    highlightLabel: 'Workflow Blueprint',
-  },
-  {
-    id: 'concept-2',
-    slug: 'professional-services-web-concept',
-    title: 'Responsive Multi-Page Advisory Web Platform',
-    conceptType: 'Web Architecture Demonstration',
-    industry: 'B2B Professional Services',
-    serviceCategory: 'web',
-    summary:
-      'A modern web architecture demonstration featuring semantic SEO hierarchies, optimized responsive layouts, and friction-free consultation booking paths.',
-    highlight: 'Next.js & TypeScript',
-    highlightLabel: 'Engineering Stack',
-  },
-  {
-    id: 'concept-3',
-    slug: 'operations-portal-concept',
-    title: 'Operations Dashboard & Client Milestone Portal',
-    conceptType: 'Software Architecture Prototype',
-    industry: 'Business Operations',
-    serviceCategory: 'saas',
-    summary:
-      'A centralized dashboard prototype showcasing role-based user authentication, mock Stripe payment integration, and real-time deliverable tracking.',
-    highlight: 'Role-Based RBAC',
-    highlightLabel: 'System Architecture',
-  },
-];
 
 export default function WorkIndexPage() {
   const [activeFilter, setActiveFilter] = useState<'all' | 'web' | 'ai' | 'saas'>('all');
+  const [caseStudies, setCaseStudies] = useState<WorkCaseItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    setLoading(true);
+
+    apiRequest<{ caseStudies: any[] }>('/content/case-studies')
+      .then((res) => {
+        if (!isMounted) return;
+        if (res.success && res.data?.caseStudies) {
+          const mapped: WorkCaseItem[] = res.data.caseStudies.map((cs) => {
+            const rawCat = (cs.serviceCategory || '').toLowerCase();
+            let cat: 'web' | 'ai' | 'saas' = 'web';
+            if (rawCat.includes('ai') || rawCat.includes('automation')) cat = 'ai';
+            else if (rawCat.includes('saas') || rawCat.includes('portal') || rawCat.includes('cloud')) cat = 'saas';
+
+            return {
+              id: cs.id,
+              slug: cs.slug,
+              title: cs.title,
+              conceptType: cs.serviceCategory || 'Production Specimen',
+              industry: cs.clientIndustry || 'Enterprise Technology',
+              serviceCategory: cat,
+              summary: cs.summary,
+              highlight: Array.isArray(cs.techStack) && cs.techStack.length > 0 ? cs.techStack[0] : 'Verified Build',
+              highlightLabel: cs.clientName ? `Client: ${cs.clientName}` : 'Engineering Specimen',
+              techStack: Array.isArray(cs.techStack) ? cs.techStack : [],
+              liveUrl: cs.liveUrl || undefined,
+              clientName: cs.clientName,
+              coverImage: cs.coverImage || undefined,
+            };
+          });
+
+          // Pure database items
+          setCaseStudies(mapped);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load live case studies:', err);
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const filteredConcepts =
     activeFilter === 'all'
-      ? concepts
-      : concepts.filter((cs) => cs.serviceCategory === activeFilter);
+      ? caseStudies
+      : caseStudies.filter((cs) => cs.serviceCategory === activeFilter);
 
   return (
     <div className="min-h-screen bg-black text-white">
       <PageBanner
-        badgeText="Engineering Demonstrations"
-        title="Selected Concepts &amp; System Demonstrations"
-        description="Explore technical architecture blueprints, prototype interfaces, and automation workflows engineered by CYBERSTYLE to showcase how we solve common business challenges."
+        badgeText="Selected Work"
+        title="Production Systems & Architectural Blueprints"
+        description="Explore custom full-stack web architectures, AI enquiry intake pipelines, and operations software engineered by CYBERSTYLE."
       />
-
-      {/* Concept Disclaimer Alert */}
-      <section className="bg-[#0B0E14] border-y border-white/10 py-4 px-6">
-        <div className="max-w-7xl mx-auto flex items-start gap-3 text-xs text-neutral-300 font-mono">
-          <Info className="w-4 h-4 text-[#00F0FF] shrink-0 mt-0.5" />
-          <p className="leading-relaxed">
-            <strong>Demonstration Notice:</strong> {CONCEPT_DEMO_DISCLAIMER}
-          </p>
-        </div>
-      </section>
 
       {/* Filter Tabs */}
       <section className="py-8 px-6 bg-black border-b border-white/10 sticky top-16 z-20 backdrop-blur-md bg-black/90">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0">
             {[
-              { id: 'all', label: 'All Demonstrations' },
+              { id: 'all', label: 'All Projects' },
               { id: 'web', label: 'Web Architecture' },
-              { id: 'ai', label: 'Automation Workflows' },
-              { id: 'saas', label: 'Software Prototypes' },
+              { id: 'ai', label: 'AI & Automation' },
+              { id: 'saas', label: 'Custom Portals & Apps' },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -109,54 +113,111 @@ export default function WorkIndexPage() {
           </div>
 
           <div className="text-xs font-mono text-neutral-400">
-            Showing {filteredConcepts.length} of {concepts.length} system specimens
+            Showing {filteredConcepts.length} of {caseStudies.length} deliverables
           </div>
         </div>
       </section>
 
-      {/* Demonstrations Grid */}
+      {/* Deliverables Grid */}
       <section className="py-20 px-6 bg-black">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredConcepts.map((item) => (
-            <Link key={item.id} href={`/work/${item.slug}`} className="group block focus:outline-none">
-              <Card
-                variant="dark"
-                hoverEffect
-                className="h-full flex flex-col justify-between p-8 bg-[#0B0E16] border border-white/10 group-hover:border-[#00F0FF]/50 transition-all duration-300"
-              >
-                <div className="space-y-6">
-                  {/* Category Banner */}
-                  <div className="flex items-center justify-between text-xs font-mono">
-                    <span className="text-[#00F0FF] uppercase tracking-wider">{item.industry}</span>
-                    <span className="px-2 py-0.5 rounded text-[10px] bg-white/5 text-neutral-400 border border-white/10">
-                      Concept
-                    </span>
-                  </div>
+        <div className="max-w-7xl mx-auto">
+          {loading ? (
+            <div className="py-24 text-center text-neutral-500 font-mono text-xs animate-pulse">
+              Loading verified deliverables from database...
+            </div>
+          ) : filteredConcepts.length === 0 ? (
+            <div className="py-24 text-center border border-dashed border-white/10 rounded-2xl p-12">
+              <FolderKanban className="w-10 h-10 text-neutral-600 mx-auto mb-3" />
+              <p className="text-neutral-400 text-sm font-mono">No case studies found in this category.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredConcepts.map((item) => (
+                <Link key={item.id} href={`/work/${item.slug}`} className="group block focus:outline-none">
+                  <Card
+                    variant="dark"
+                    hoverEffect
+                    className="h-full flex flex-col justify-between overflow-hidden p-0 bg-[#0B0E16] border border-white/10 group-hover:border-[#00F0FF]/50 transition-all duration-300"
+                  >
+                    {/* Visual Cover Image Header if present */}
+                    {item.coverImage && (
+                      <div className="w-full h-52 relative overflow-hidden bg-black/40 border-b border-white/10">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={item.coverImage}
+                          alt={item.title}
+                          className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                          onError={(e) => {
+                            // Gracefully hide broken images
+                            (e.target as HTMLElement).style.display = 'none';
+                          }}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#0B0E16] via-transparent to-transparent opacity-80 pointer-events-none" />
+                      </div>
+                    )}
 
-                  <h3 className="font-display font-bold text-2xl text-white group-hover:text-[#00F0FF] transition-colors leading-snug">
-                    {item.title}
-                  </h3>
+                    <div className="p-8 flex-1 flex flex-col justify-between space-y-6">
+                      <div className="space-y-4">
+                        {/* Category Banner */}
+                        <div className="flex items-center justify-between text-xs font-mono">
+                          <span className="text-[#00F0FF] uppercase tracking-wider font-semibold">
+                            {item.industry}
+                          </span>
+                          <span className="px-2 py-0.5 rounded text-[10px] bg-white/5 text-neutral-400 border border-white/10">
+                            {item.clientName ? item.clientName : 'Case Study'}
+                          </span>
+                        </div>
 
-                  <p className="text-sm text-neutral-400 leading-relaxed font-sans line-clamp-3">
-                    {item.summary}
-                  </p>
-                </div>
+                        <h3 className="font-display font-bold text-2xl text-white group-hover:text-[#00F0FF] transition-colors leading-snug">
+                          {item.title}
+                        </h3>
 
-                <div className="pt-6 mt-8 border-t border-white/10 flex items-end justify-between">
-                  <div>
-                    <div className="font-display font-bold text-xl text-white">
-                      {item.highlight}
+                        <p className="text-sm text-neutral-400 leading-relaxed font-sans line-clamp-3">
+                          {item.summary}
+                        </p>
+
+                        {item.techStack && item.techStack.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5 pt-2">
+                            {item.techStack.slice(0, 3).map((tech, tIdx) => (
+                              <span
+                                key={tIdx}
+                                className="px-2 py-0.5 rounded bg-white/5 text-neutral-400 text-[10px] font-mono border border-white/5"
+                              >
+                                {tech}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Footer Details */}
+                      <div className="pt-6 border-t border-white/10 flex items-center justify-between">
+                        <div>
+                          <div className="text-[10px] font-mono text-neutral-400 uppercase">
+                            {item.highlightLabel}
+                          </div>
+                          <div className="text-xs font-mono text-white font-semibold flex items-center gap-1.5 mt-0.5">
+                            {item.serviceCategory === 'ai' ? (
+                              <Zap className="w-3.5 h-3.5 text-[#00F0FF]" />
+                            ) : item.serviceCategory === 'saas' ? (
+                              <Layers className="w-3.5 h-3.5 text-[#00F0FF]" />
+                            ) : (
+                              <Cpu className="w-3.5 h-3.5 text-[#00F0FF]" />
+                            )}
+                            <span>{item.highlight}</span>
+                          </div>
+                        </div>
+
+                        <div className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-neutral-400 group-hover:bg-[#00F0FF] group-hover:text-black group-hover:border-[#00F0FF] transition-all duration-300">
+                          <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-xs font-mono text-neutral-500 uppercase">{item.highlightLabel}</div>
-                  </div>
-
-                  <div className="w-10 h-10 rounded-full bg-white/5 border border-white/15 flex items-center justify-center text-white group-hover:bg-[#00F0FF] group-hover:text-black transition-all">
-                    <ArrowUpRight className="w-5 h-5" />
-                  </div>
-                </div>
-              </Card>
-            </Link>
-          ))}
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </section>
     </div>

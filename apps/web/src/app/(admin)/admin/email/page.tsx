@@ -448,7 +448,7 @@ export default function AdminEmailHubPage() {
               </div>
 
               <div className="text-[11px] font-mono text-zinc-500">
-                From: <span className="text-zinc-300">{transportStatus?.configuredFrom || 'contact@cyberstyle.net'}</span>
+                From: <span className="text-zinc-300">{transportStatus?.configuredFrom || 'info@cyberstyle.net'}</span>
               </div>
             </div>
 
@@ -884,7 +884,7 @@ export default function AdminEmailHubPage() {
 
               <div className="p-3 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-1">
                 <div className="text-zinc-400 uppercase text-[10px]">Configured Sender Address</div>
-                <div className="text-zinc-200">{transportStatus?.configuredFrom || 'contact@cyberstyle.net'}</div>
+                <div className="text-zinc-200">{transportStatus?.configuredFrom || 'info@cyberstyle.net'}</div>
               </div>
 
               <div className="p-4 rounded-xl bg-zinc-900/40 border border-zinc-800 text-[11px] text-zinc-400 font-sans leading-relaxed">

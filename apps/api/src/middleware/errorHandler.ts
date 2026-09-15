@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
+import { ErrorTracker } from '../services/error-tracker.service';
+import { AlertServiceInstance } from '../services/alert.service';
 
 const RESET = '\x1b[0m';
 const RED = '\x1b[31m';
@@ -13,6 +15,15 @@ export function errorHandler(
   _next: NextFunction
 ) {
   const timeStr = new Date().toLocaleTimeString();
+  const statusCode = err.statusCode || (err instanceof ZodError ? 400 : 500);
+
+  // Capture exception in operational tracker with correlationId and user context
+  ErrorTracker.captureException(err, { req, statusCode });
+
+  // Record 5xx occurrences in Alert Service
+  if (statusCode >= 500) {
+    AlertServiceInstance.recordResponseStatus(statusCode, req.originalUrl || req.url);
+  }
 
   console.error(`\n${RED}╔═════════════════════════════════════════════════════════════════${RESET}`);
   console.error(`${RED}║ 🚨 EXCEPTION CAUGHT [${timeStr}] ON ${req.method} ${req.originalUrl || req.url}${RESET}`);

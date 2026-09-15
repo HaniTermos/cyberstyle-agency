@@ -6,6 +6,7 @@ import { PageBanner } from '@/components/layout/PageBanner';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { SectionGradient } from '@/components/ui/SectionGradient';
+import { DynamicFaqAccordion } from '@/components/faq/DynamicFaqAccordion';
 import {
   SERVICES,
   OWNERSHIP_DISCLOSURE,
@@ -192,23 +193,16 @@ export default function CustomSaaSServicePage() {
 
       <SectionGradient direction="black-to-white" heightClass="h-44 sm:h-60" />
 
+      {/* FAQs */}
       <section className="pt-4 pb-24 px-6 bg-white text-black">
-        <div className="max-w-4xl mx-auto space-y-12">
-          <div className="space-y-4">
-            <span className="text-xs font-mono uppercase tracking-widest text-neutral-500">Frequently Asked</span>
-            <h2 className="font-display font-bold text-3xl sm:text-4xl text-black">
-              Questions About Custom Software
-            </h2>
-          </div>
-
-          <div className="space-y-6">
-            {faqs.map((faq, idx) => (
-              <div key={idx} className="p-6 rounded-2xl border border-black/10 bg-[#F8F9FB] space-y-2">
-                <h4 className="font-display font-bold text-lg text-black">{faq.q}</h4>
-                <p className="text-sm text-neutral-600 leading-relaxed font-sans">{faq.a}</p>
-              </div>
-            ))}
-          </div>
+        <div className="max-w-4xl mx-auto">
+          <DynamicFaqAccordion
+            page="custom-saas"
+            subtitle="PRACTICAL ANSWERS"
+            title="Questions About Custom Software"
+            fallbackFaqs={faqs}
+            variant="light"
+          />
         </div>
       </section>
 

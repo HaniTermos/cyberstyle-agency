@@ -6,7 +6,7 @@ import { Mail, Clock, Globe, ArrowUpRight, Send, CheckCircle2, AlertCircle, Load
 import { PageBanner } from '@/components/layout/PageBanner';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { CTA_LABELS } from '@/lib/constants/brand';
+import { CTA_LABELS, CONTACT_EMAIL } from '@/lib/constants/brand';
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -71,8 +71,8 @@ export default function ContactPage() {
             <div className="p-6 rounded-2xl bg-[#0E1118] border border-white/10 space-y-4">
               <div className="flex items-center gap-3 text-sm">
                 <Mail className="w-5 h-5 text-[#00F0FF]" />
-                <a href="mailto:contact@cyberstyle.net" className="font-display font-bold text-lg text-white hover:text-[#00F0FF] transition-colors">
-                  contact@cyberstyle.net
+                <a href={`mailto:${CONTACT_EMAIL}`} className="font-display font-bold text-lg text-white hover:text-[#00F0FF] transition-colors">
+                  {CONTACT_EMAIL}
                 </a>
               </div>
               <div className="flex items-start gap-3 text-xs font-mono text-neutral-400">

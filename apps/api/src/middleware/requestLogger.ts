@@ -77,10 +77,38 @@ export function detailedRequestLogger(req: Request, res: Response, next: NextFun
       return;
     }
 
-    // Format standard request summary
+    // Emit structured JSON log entry
+    const user = (req as any).user;
+    const correlationId = (req as any).correlationId;
+    const logLevel = status >= 500 ? 'ERROR' : status >= 400 ? 'WARN' : 'INFO';
+
+    const structuredEntry = {
+      timestamp: new Date().toISOString(),
+      level: logLevel,
+      service: 'api',
+      environment: process.env.NODE_ENV || 'development',
+      correlationId: correlationId || undefined,
+      userId: user?.id || undefined,
+      organizationId: user?.organizationId || undefined,
+      route: url.split('?')[0],
+      method: req.method,
+      statusCode: status,
+      latencyMs: duration,
+    };
+
+    // If in production or JSON_LOGS=true, emit raw structured JSON
+    if (process.env.NODE_ENV === 'production' || process.env.JSON_LOGS === 'true') {
+      const outputStr = JSON.stringify(structuredEntry);
+      if (status >= 500) console.error(outputStr);
+      else if (status >= 400) console.warn(outputStr);
+      else console.log(outputStr);
+      return;
+    }
+
+    // Format standard request summary for development
     console.log(`\n${GRAY}─────────────────────────────────────────────────────────────────${RESET}`);
     console.log(
-      `${GRAY}[${timeStr}]${RESET} 📥 ${BOLD}${methodColor}${req.method}${RESET} ${BOLD}${url}${RESET}`
+      `${GRAY}[${timeStr}]${RESET} 📥 ${BOLD}${methodColor}${req.method}${RESET} ${BOLD}${url}${RESET} ${GRAY}[cid: ${correlationId || 'none'}]${RESET}`
     );
     console.log(`${GRAY}├─ IP:${RESET} ${ip} ${GRAY}│ Origin:${RESET} ${origin}`);
 

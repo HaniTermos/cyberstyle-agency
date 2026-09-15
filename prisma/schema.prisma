@@ -19,6 +19,10 @@ datasource db {
 enum UserRole {
   SUPER_ADMIN
   ADMIN
+  STAFF
+  FINANCE
+  CONTENT_EDITOR
+  SUPPORT
   CLIENT
 }
 
@@ -31,11 +35,14 @@ enum UserStatus {
 
 enum LeadStage {
   NEW
-  CONTACTED
+  REVIEWING
   QUALIFIED
+  CONTACTED
+  PROPOSAL_SENT
   PROPOSAL
   WON
   LOST
+  NURTURE
   ARCHIVED
 }
 
@@ -84,11 +91,14 @@ enum MilestonePaymentStatus {
 enum InvoiceStatus {
   DRAFT
   SENT
-  PARTIALLY_PAID
-  PAID
+  DUE
   OVERDUE
+  PAID
+  PARTIALLY_PAID
   VOID
   REFUNDED
+  REFUNDED_CREDITED
+  DISPUTED
 }
 
 enum PaymentStatus {
@@ -173,7 +183,17 @@ enum ProposalStatus {
   DRAFT
   APPROVED
   SENT
+  ACCEPTED
   REJECTED
+  EXPIRED
+}
+
+enum MessageVisibility {
+  CLIENT_VISIBLE
+  INTERNAL_STAFF_ONLY
+  RESTRICTED
+  SYSTEM_EVENT
+  DRAFT
 }
 
 enum ThreadStatus {
@@ -205,6 +225,52 @@ enum ReportType {
   PROJECT_DELIVERY
   HEALTH_AUDIT
   SECURITY_AUDIT
+}
+
+enum ScanState {
+  PENDING_SCAN
+  CLEAN
+  FLAGGED
+  REJECTED
+}
+
+enum FileFolder {
+  PROJECT_PLAN
+  DESIGN_REVIEW
+  CONTENT_BRAND
+  PREVIEWS
+  INVOICES_AGREEMENTS
+  LAUNCH_HANDOVER
+  ARCHIVE
+}
+
+enum FileVisibility {
+  CLIENT_VISIBLE
+  INTERNAL_ONLY
+}
+
+enum EmailDeliveryStatus {
+  QUEUED
+  SENT
+  DELIVERED
+  BOUNCED
+  COMPLAINED
+  FAILED
+}
+
+enum SuppressionReason {
+  HARD_BOUNCE
+  COMPLAINT
+  MANUAL_UNSUBSCRIBE
+}
+
+enum AiFeatureType {
+  LEAD_SCORING
+  OUTREACH_DRAFT
+  PROPOSAL_OUTLINE
+  CONTENT_ASSIST
+  MESSAGE_SUMMARY
+  GENERAL_ASSIST
 }
 
 // ------------------------------------------------------------------------------
@@ -245,9 +311,14 @@ model User {
   messageParticipants  MessageParticipant[]
   sentMessages         Message[]            @relation("SentMessages")
   uploadedFileAssets   FileAsset[]          @relation("FileAssetUploader")
+  uploadedFileVersions FileVersion[]        @relation("FileVersionUploader")
+  fileAccessLogs       FileAccessLog[]      @relation("FileAccessUser")
+  approvedEmailTemplates EmailTemplate[]    @relation("TemplateApprover")
+  aiUsageLogs          AiUsageLog[]         @relation("AiUser")
   assignedTasks        Task[]
   publishedReports     Report[]             @relation("ReportPublisher")
   emailAccounts        EmailAccount[]
+  memberships          OrganizationMembership[]
 
   createdAt            DateTime             @default(now())
   updatedAt            DateTime             @updatedAt
@@ -314,6 +385,7 @@ model ClientOrganization {
 
   // Relations
   members              ClientProfile[]
+  memberships          OrganizationMembership[]
   projects             Project[]
   invoices             Invoice[]
   retainers            Retainer[]
@@ -322,11 +394,38 @@ model ClientOrganization {
   reports              Report[]
   monitoringWorkspaces MonitoringWorkspace[]
   seoWorkspaces        SeoWorkspace[]
+  aiUsageLogs          AiUsageLog[]
+  aiBudgetPolicy       AiBudgetPolicy?
 
   createdAt            DateTime        @default(now())
   updatedAt            DateTime        @updatedAt
 
   @@index([name])
+}
+
+enum OrganizationRole {
+  CLIENT_OWNER
+  CLIENT_BILLING_CONTACT
+  CLIENT_PROJECT_CONTACT
+  CLIENT_MEMBER
+}
+
+model OrganizationMembership {
+  id             String           @id @default(cuid())
+  organizationId String
+  userId         String
+  role           OrganizationRole @default(CLIENT_MEMBER)
+  status         String           @default("ACTIVE") // "ACTIVE", "INVITED", "SUSPENDED"
+
+  organization   ClientOrganization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@unique([organizationId, userId])
+  @@index([userId])
+  @@index([organizationId, role])
 }
 
 model ClientProfile {
@@ -446,9 +545,15 @@ model Proposal {
   aiModelUsed           String?        @default("gemini-3.7-flash")
 
   status                ProposalStatus @default(DRAFT)
+  version               Int            @default(1)
   approvedById          String?
   approvedAt            DateTime?
   sentAt                DateTime?
+  acceptedAt            DateTime?
+  rejectedAt            DateTime?
+  rejectionReason       String?        @db.Text
+  acceptedBySignature   String?
+  clientIpAtAcceptance  String?
   createdById           String?
 
   lead                  Lead?          @relation(fields: [leadId], references: [id], onDelete: SetNull)
@@ -516,6 +621,7 @@ model Project {
   invoices         Invoice[]
   reports          Report[]
   reviews          Review[]
+  fileAssets       FileAsset[]
 
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
@@ -949,8 +1055,13 @@ model Review {
   rating      Int          @default(5)
   quote       String       @db.Text
   isFeatured  Boolean      @default(false)
-  status      ReviewStatus @default(PENDING)
-  approvedAt  DateTime?
+  status            ReviewStatus @default(PENDING)
+  approvedAt        DateTime?
+  provenance        String?      // e.g. "Direct Feedback", "Google Maps", "Clutch", "Email"
+  consent           Boolean      @default(false)
+  displayPermission Boolean      @default(false)
+  source            String?      @default("client_portal")
+  reviewDate        DateTime?
 
   project     Project?     @relation(fields: [projectId], references: [id], onDelete: SetNull)
 
@@ -959,6 +1070,21 @@ model Review {
 
   @@index([status])
   @@index([isFeatured])
+}
+
+model FAQ {
+  id           String    @id @default(cuid())
+  question     String
+  answer       String    @db.Text
+  category     String    @default("General")
+  displayPages String[]  @default(["faq", "home"])
+  orderIndex   Int       @default(0)
+  isPublished  Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([isPublished])
+  @@index([category])
 }
 
 model EmailLog {
@@ -996,21 +1122,27 @@ model Notification {
 }
 
 model AuditLog {
-  id         String   @id @default(cuid())
-  userId     String?
-  action     String   // e.g., "USER_LOGIN", "INVOICE_CREATED", "THREAD_CREATED"
-  entityType String   // "Invoice", "Review", "Lead", "Project", "MessageThread", "FileAsset"
-  entityId   String?
-  ipAddress  String?
-  userAgent  String?
-  changes    Json?
+  id             String   @id @default(cuid())
+  userId         String?
+  organizationId String?
+  action         String   // e.g., "USER_LOGIN", "INVOICE_CREATED", "THREAD_CREATED"
+  entityType     String   // "Invoice", "Review", "Lead", "Project", "MessageThread", "FileAsset"
+  entityId       String?
+  ipAddress      String?
+  userAgent      String?
+  changes        Json?
+  
+  // Tamper-evident forward-hash chaining
+  previousHash   String?
+  currentHash    String?
 
-  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user           User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 
-  createdAt  DateTime @default(now())
+  createdAt      DateTime @default(now())
 
   @@index([entityType, entityId])
   @@index([userId])
+  @@index([organizationId])
   @@index([createdAt])
 }
 
@@ -1103,7 +1235,8 @@ model Message {
   content     String      @db.Text
   messageType MessageType @default(TEXT)
   fileId      String?
-  isInternal  Boolean     @default(false) // internal admin-only notes
+  isInternal  Boolean           @default(false) // internal admin-only notes
+  visibility  MessageVisibility @default(CLIENT_VISIBLE)
   
   // Moderation & Edit Lifecycle (Phase 4 Hardening)
   deletedAt   DateTime?
@@ -1119,6 +1252,7 @@ model Message {
 
   @@index([threadId, createdAt])
   @@index([threadId, isInternal, createdAt])
+  @@index([threadId, visibility, createdAt])
   @@index([senderId])
   @@index([deletedAt])
 }
@@ -1126,20 +1260,78 @@ model Message {
 model FileAsset {
   id             String             @id @default(cuid())
   organizationId String
+  projectId      String?
   uploaderId     String
   filename       String
+  folder         FileFolder         @default(PROJECT_PLAN)
+  visibility     FileVisibility     @default(CLIENT_VISIBLE)
+  isQuarantined  Boolean            @default(true)
+  isDeleted      Boolean            @default(false)
+  currentVersion Int                @default(1)
   mimeType       String
   sizeBytes      Int
   storageKey     String             @unique // storage file hash or relative path
   url            String?            // nullable per security spec
   createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
 
   organization   ClientOrganization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  project        Project?           @relation(fields: [projectId], references: [id], onDelete: SetNull)
   uploader       User               @relation("FileAssetUploader", fields: [uploaderId], references: [id], onDelete: Restrict)
   messages       Message[]
+  versions       FileVersion[]
+  accessLogs     FileAccessLog[]
 
-  @@index([organizationId])
+  @@index([organizationId, folder])
+  @@index([organizationId, visibility])
+  @@index([projectId])
   @@index([uploaderId])
+  @@index([createdAt])
+  @@index([isDeleted])
+}
+
+model FileVersion {
+  id              String         @id @default(cuid())
+  fileAssetId     String
+  versionNumber   Int
+  checksum        String         // SHA-256 hash of the file bytes
+  storageKey      String         @unique
+  filename        String
+  mimeType        String
+  sizeBytes       Int
+  scanState       ScanState      @default(PENDING_SCAN)
+  scanReport      Json?
+  retentionPolicy String         @default("STANDARD_7_YEAR")
+  uploaderId      String
+  createdAt       DateTime       @default(now())
+
+  fileAsset       FileAsset      @relation(fields: [fileAssetId], references: [id], onDelete: Cascade)
+  uploader        User           @relation("FileVersionUploader", fields: [uploaderId], references: [id], onDelete: Restrict)
+  accessLogs      FileAccessLog[]
+
+  @@unique([fileAssetId, versionNumber])
+  @@index([fileAssetId])
+  @@index([checksum])
+  @@index([scanState])
+  @@index([uploaderId])
+}
+
+model FileAccessLog {
+  id            String       @id @default(cuid())
+  fileAssetId   String
+  fileVersionId String?
+  userId        String?
+  action        String       // "UPLOAD" | "DOWNLOAD" | "VIEW" | "SCAN_STATE_CHANGE" | "DELETE"
+  ipAddress     String?
+  userAgent     String?
+  createdAt     DateTime     @default(now())
+
+  fileAsset     FileAsset    @relation(fields: [fileAssetId], references: [id], onDelete: Cascade)
+  fileVersion   FileVersion? @relation(fields: [fileVersionId], references: [id], onDelete: SetNull)
+  user          User?        @relation("FileAccessUser", fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([fileAssetId, action])
+  @@index([userId])
   @@index([createdAt])
 }
 
@@ -1424,27 +1616,121 @@ model EmailThread {
 }
 
 model EmailMessage {
-  id                 String         @id @default(cuid())
+  id                 String              @id @default(cuid())
   threadId           String
   organizationId     String?
-  gmailMessageId     String?        @unique
+  gmailMessageId     String?             @unique
   inReplyTo          String?
   from               String
   to                 String
   subject            String
-  body               String         @db.Text
+  body               String              @db.Text
   snippet            String?
-  direction          String         @default("outbound") // 'inbound' | 'outbound'
-  status             String         @default("SENT")     // 'SENT' | 'FAILED' | 'RECEIVED'
-  transport          String         @default("gmail")    // 'gmail' | 'smtp' | 'mock'
-  sentAt             DateTime       @default(now())
+  direction          String              @default("outbound") // 'inbound' | 'outbound'
+  status             String              @default("SENT")     // 'SENT' | 'FAILED' | 'RECEIVED'
+  transport          String              @default("gmail")    // 'gmail' | 'smtp' | 'mock'
+  sentAt             DateTime            @default(now())
 
-  thread             EmailThread    @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  // Phase 3 Email Center Hardening
+  templateId         String?
+  templateVersion    Int?
+  idempotencyKey     String?             @unique
+  deliveryStatus     EmailDeliveryStatus @default(SENT)
+  campaignId         String?
+  actorId            String?
 
-  createdAt          DateTime       @default(now())
+  thread             EmailThread         @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  template           EmailTemplate?      @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  deliveryEvents     EmailDeliveryEvent[]
+
+  createdAt          DateTime            @default(now())
 
   @@index([threadId, sentAt])
   @@index([organizationId])
+  @@index([deliveryStatus])
+  @@index([idempotencyKey])
+}
+
+model EmailTemplate {
+  id           String      @id @default(cuid())
+  name         String
+  slug         String      @unique
+  version      Int         @default(1)
+  subject      String
+  bodyHtml     String      @db.Text
+  bodyText     String?     @db.Text
+  variables    Json?       // array of variable names or schema definition
+  isApproved   Boolean     @default(false)
+  approvedById String?
+  approvedAt   DateTime?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  approvedBy   User?       @relation("TemplateApprover", fields: [approvedById], references: [id], onDelete: SetNull)
+  messages     EmailMessage[]
+
+  @@index([slug, version])
+  @@index([isApproved])
+}
+
+model EmailDeliveryEvent {
+  id             String              @id @default(cuid())
+  emailMessageId String
+  event          EmailDeliveryStatus // QUEUED, SENT, DELIVERED, BOUNCED, COMPLAINED, FAILED
+  errorCode      String?
+  metadata       Json?
+  timestamp      DateTime            @default(now())
+
+  emailMessage   EmailMessage        @relation(fields: [emailMessageId], references: [id], onDelete: Cascade)
+
+  @@index([emailMessageId, event])
+  @@index([timestamp])
+}
+
+model EmailSuppression {
+  id        String            @id @default(cuid())
+  email     String            @unique
+  reason    SuppressionReason @default(HARD_BOUNCE)
+  source    String?           // e.g. "WEBHOOK_BOUNCE", "MANUAL_ADMIN"
+  createdAt DateTime          @default(now())
+
+  @@index([email])
+  @@index([reason])
+}
+
+model AiUsageLog {
+  id                 String              @id @default(cuid())
+  organizationId     String?
+  userId             String?
+  feature            AiFeatureType
+  model              String
+  promptTokens       Int                 @default(0)
+  completionTokens   Int                 @default(0)
+  totalTokens        Int                 @default(0)
+  latencyMs          Int?
+  status             String              @default("SUCCESS") // "SUCCESS" | "RATE_LIMITED" | "ERROR"
+  metadata           Json?
+  createdAt          DateTime            @default(now())
+
+  organization       ClientOrganization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  user               User?               @relation("AiUser", fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, feature])
+  @@index([userId])
+  @@index([createdAt])
+  @@index([feature])
+}
+
+model AiBudgetPolicy {
+  id                 String              @id @default(cuid())
+  organizationId     String?             @unique // null means global default policy
+  monthlyTokenBudget Int                 @default(500000)
+  tokensUsedMonth    Int                 @default(0)
+  rateLimitPerMinute Int                 @default(60)
+  isEnforced         Boolean             @default(true)
+  updatedAt          DateTime            @updatedAt
+
+  organization       ClientOrganization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 }
 
 model AnalyticsCache {
@@ -1502,5 +1788,23 @@ model GeoObservation {
 
   @@index([geoQueryId])
   @@index([model, checkedAt])
+}
+
+// ------------------------------------------------------------------------------
+// 10. ENVIRONMENT-SCOPED SYSTEM SETTINGS
+// ------------------------------------------------------------------------------
+
+model SystemSetting {
+  id          String   @id @default(cuid())
+  environment String   @default("development") // "development", "staging", "production"
+  key         String
+  value       String   @db.Text
+  isEncrypted Boolean  @default(false)
+  updatedById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([environment, key])
+  @@index([environment])
 }
 

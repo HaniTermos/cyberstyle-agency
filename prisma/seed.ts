@@ -13,10 +13,16 @@ async function hashPassword(password: string): Promise<string> {
 }
 
 async function main() {
-  console.log('🌱 Starting comprehensive CYBERSTYLE demo database seeding...');
+  if (process.env.NODE_ENV === 'production') {
+    console.error('❌ FATAL: Database seeding is strictly PROHIBITED in production environments.');
+    process.exit(1);
+  }
 
-  // 1. Super Admin Account (admin@cyberstyle.net / Admin123456!)
-  const superAdminPasswordHash = await hashPassword('Admin123456!');
+  console.log('🌱 Starting CYBERSTYLE non-production demo database seeding...');
+
+  // 1. Super Admin Account ([NON-PRODUCTION DEMO ONLY])
+  const demoAdminPass = process.env.SEED_SUPER_ADMIN_PASSWORD || 'DevDemoAdminPassword2026!';
+  const superAdminPasswordHash = await hashPassword(demoAdminPass);
   const superAdmin = await prisma.user.upsert({
     where: { email: 'admin@cyberstyle.net' },
     update: { passwordHash: superAdminPasswordHash },
@@ -35,9 +41,9 @@ async function main() {
       },
     },
   });
-  console.log(`✅ Super Admin created: ${superAdmin.email} (Password: Admin123456!)`);
+  console.log(`✅ [DEV ONLY] Super Admin created: ${superAdmin.email}`);
 
-  // 2. Demo Client Organization & User (client@apexcapital.com / Client123456!)
+  // 2. Demo Client Organization & User ([NON-PRODUCTION DEMO ONLY])
   const clientOrg = await prisma.clientOrganization.create({
     data: {
       name: 'Apex Capital Advisory',
@@ -46,7 +52,8 @@ async function main() {
     },
   });
 
-  const clientPasswordHash = await hashPassword('Client123456!');
+  const demoClientPass = process.env.SEED_CLIENT_PASSWORD || 'DevDemoClientPassword2026!';
+  const clientPasswordHash = await hashPassword(demoClientPass);
   const clientUser = await prisma.user.create({
     data: {
       email: 'client@apexcapital.com',
@@ -63,7 +70,7 @@ async function main() {
       },
     },
   });
-  console.log(`✅ Demo Client created: ${clientUser.email} (Password: Client123456!)`);
+  console.log(`✅ [DEV ONLY] Demo Client created: ${clientUser.email}`);
 
   // 3. Demo Active Project & Milestones
   const project = await prisma.project.create({

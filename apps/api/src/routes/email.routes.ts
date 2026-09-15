@@ -1,6 +1,7 @@
 import { Router, Response, NextFunction } from 'express';
 import { requireAuth, requireRole, AuthenticatedRequest } from '../middleware/auth.middleware';
 import { EmailService, AGENCY_EMAIL_TEMPLATES } from '../services/email.service';
+import { EmailGovernanceService } from '../services/email-governance.service';
 import { prisma } from '../config/db';
 import { UserRole } from '@prisma/client';
 import { logAudit } from '../utils/auditLogger';
@@ -26,7 +27,6 @@ router.get('/status', async (req: AuthenticatedRequest, res: Response) => {
       provider: true,
       isActive: true,
       lastSyncedAt: true,
-      createdAt: true,
     },
   });
 
@@ -34,7 +34,7 @@ router.get('/status', async (req: AuthenticatedRequest, res: Response) => {
     status: 'success',
     data: {
       transportMode: mode,
-      configuredFrom: process.env.EMAIL_FROM || 'contact@cyberstyle.net',
+      configuredFrom: process.env.EMAIL_FROM || 'info@cyberstyle.net',
       accounts,
       smtpConfigured: Boolean(process.env.GMAIL_USER || process.env.SMTP_USER),
       gmailApiConfigured: Boolean(process.env.GMAIL_CLIENT_ID && process.env.GMAIL_REFRESH_TOKEN),
@@ -44,13 +44,49 @@ router.get('/status', async (req: AuthenticatedRequest, res: Response) => {
 
 /**
  * @route   GET /api/admin/email/templates
- * @desc    Get high-converting agency email templates
+ * @desc    Get email templates with versioning and approval metadata
  */
-router.get('/templates', async (_req: AuthenticatedRequest, res: Response) => {
-  res.status(200).json({
-    status: 'success',
-    data: { templates: AGENCY_EMAIL_TEMPLATES },
-  });
+router.get('/templates', async (_req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    let dbTemplates = await prisma.emailTemplate.findMany({
+      include: {
+        approvedBy: { select: { id: true, name: true, email: true } },
+      },
+      orderBy: [{ slug: 'asc' }, { version: 'desc' }],
+    });
+
+    // Seed default agency templates into database if empty
+    if (dbTemplates.length === 0) {
+      for (const t of AGENCY_EMAIL_TEMPLATES) {
+        await prisma.emailTemplate.create({
+          data: {
+            name: t.name,
+            slug: t.id.toLowerCase(),
+            version: 1,
+            subject: t.subject,
+            bodyHtml: t.body.replace(/\n/g, '<br/>'),
+            bodyText: t.body,
+            variables: ['prospect_name', 'project_name', 'calendly_link'],
+            isApproved: true, // Default agency templates pre-approved
+          },
+        }).catch(() => {});
+      }
+
+      dbTemplates = await prisma.emailTemplate.findMany({
+        include: {
+          approvedBy: { select: { id: true, name: true, email: true } },
+        },
+        orderBy: [{ slug: 'asc' }, { version: 'desc' }],
+      });
+    }
+
+    res.status(200).json({
+      status: 'success',
+      data: { templates: dbTemplates },
+    });
+  } catch (error) {
+    next(error);
+  }
 });
 
 /**
@@ -138,7 +174,7 @@ router.post('/send-test', async (req: AuthenticatedRequest, res: Response, next:
   try {
     const { toEmail, message } = z
       .object({
-        toEmail: z.string().email().default('contact@cyberstyle.net'),
+        toEmail: z.string().email().default('info@cyberstyle.net'),
         message: z.string().optional(),
       })
       .parse(req.body);
@@ -278,6 +314,178 @@ router.post('/connect-account', async (req: AuthenticatedRequest, res: Response,
     });
   } catch (error) {
     next(error);
+  }
+});
+
+// ==============================================================================
+// PHASE 3 EMAIL GOVERNANCE & DELIVERY HARDENING
+// ==============================================================================
+
+/**
+ * @route   POST /api/admin/email/templates
+ * @desc    Create new email template (requires approval before production send)
+ */
+router.post('/templates', async (req: AuthenticatedRequest, res: Response, _next: NextFunction) => {
+  try {
+    const { name, slug, subject, bodyHtml, bodyText, variables } = req.body;
+
+    if (!name || !slug || !subject || !bodyHtml) {
+      res.status(400).json({ status: 'error', code: 'INVALID_PAYLOAD', message: 'Name, slug, subject, and bodyHtml are required.' });
+      return;
+    }
+
+    const template = await EmailGovernanceService.createTemplate({
+      name,
+      slug,
+      subject,
+      bodyHtml,
+      bodyText,
+      variables,
+    });
+
+    res.status(201).json({
+      status: 'success',
+      data: { template, message: 'Template created in draft state. Human approval required before use.' },
+    });
+  } catch (error: any) {
+    res.status(400).json({ status: 'error', code: 'TEMPLATE_CREATE_FAILED', message: error.message });
+  }
+});
+
+/**
+ * @route   POST /api/admin/email/templates/:id/approve
+ * @desc    Approve template for production use (Human Gate)
+ */
+router.post('/templates/:id/approve', async (req: AuthenticatedRequest, res: Response, _next: NextFunction) => {
+  try {
+    const id = String(req.params.id);
+    const template = await EmailGovernanceService.approveTemplate(id, req.user.id, req);
+
+    res.status(200).json({
+      status: 'success',
+      data: { template, message: `Template "${template.name}" approved for production dispatches.` },
+    });
+  } catch (error: any) {
+    res.status(400).json({ status: 'error', code: 'APPROVAL_FAILED', message: error.message });
+  }
+});
+
+/**
+ * @route   POST /api/admin/email/campaign/dispatch
+ * @desc    Dispatches outbound campaign email with human approval gate & idempotency
+ */
+router.post('/campaign/dispatch', async (req: AuthenticatedRequest, res: Response, _next: NextFunction) => {
+  try {
+    const {
+      recipient,
+      templateSlug,
+      templateVersion,
+      subject,
+      bodyHtml,
+      variables,
+      idempotencyKey,
+      campaignId,
+      humanApproved,
+    } = req.body;
+
+    // Human Approval Gate
+    if (!humanApproved) {
+      res.status(400).json({
+        status: 'error',
+        code: 'HUMAN_APPROVAL_REQUIRED',
+        message: 'Campaign dispatches require explicit human approval (humanApproved: true). Automated autonomous outreach is blocked.',
+      });
+      return;
+    }
+
+    if (!recipient || !subject) {
+      res.status(400).json({ status: 'error', code: 'INVALID_PAYLOAD', message: 'Recipient and subject are required.' });
+      return;
+    }
+
+    const result = await EmailGovernanceService.dispatchGovernedEmail({
+      recipient,
+      templateSlug,
+      templateVersion: templateVersion ? Number(templateVersion) : undefined,
+      subject,
+      bodyHtml,
+      variables,
+      idempotencyKey,
+      campaignId,
+      actorUserId: req.user.id,
+      contextReason: `Campaign [${campaignId || 'manual'}] dispatched by ${req.user.name || req.user.email}`,
+    }, req);
+
+    res.status(result.isDuplicate ? 200 : 201).json({
+      status: 'success',
+      data: {
+        message: result.message,
+        isDuplicate: result.isDuplicate,
+        deliveryStatus: result.status,
+      },
+    });
+  } catch (error: any) {
+    res.status(400).json({
+      status: 'error',
+      code: 'DISPATCH_BLOCKED',
+      message: error.message || 'Email dispatch blocked by governance rules.',
+    });
+  }
+});
+
+/**
+ * @route   GET /api/admin/email/telemetry
+ * @desc    Live delivery telemetry from real database events (Sent, Delivered, Bounced, Complained)
+ */
+router.get('/telemetry', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const timeframe = req.query.timeframe ? Number(req.query.timeframe) : 30;
+    const telemetry = await EmailGovernanceService.getRealDeliveryTelemetry(timeframe);
+
+    res.status(200).json({
+      status: 'success',
+      data: telemetry,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * @route   GET /api/admin/email/suppressions
+ * @desc    List active suppressions (hard bounces and complaints)
+ */
+router.get('/suppressions', async (_req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const suppressions = await prisma.emailSuppression.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+    });
+
+    res.status(200).json({
+      status: 'success',
+      data: { suppressions, count: suppressions.length },
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * @route   DELETE /api/admin/email/suppressions/:email
+ * @desc    Remove an email from suppression list with admin audit log
+ */
+router.delete('/suppressions/:email', async (req: AuthenticatedRequest, res: Response, _next: NextFunction) => {
+  try {
+    const email = String(req.params.email);
+    await EmailGovernanceService.removeSuppression(email, req.user.id, req);
+
+    res.status(200).json({
+      status: 'success',
+      message: `Suppression removed for "${email}".`,
+    });
+  } catch (error: any) {
+    res.status(400).json({ status: 'error', code: 'REMOVAL_FAILED', message: error.message });
   }
 });
 

@@ -1,7 +1,6 @@
 import argon2 from 'argon2';
 import crypto from 'crypto';
 import { prisma } from '../config/db';
-import { User } from '@prisma/client';
 
 export class AuthService {
   // 1. Password Hashing with Argon2id
@@ -44,10 +43,22 @@ export class AuthService {
     return { sessionToken, expires };
   }
 
-  static async validateSession(sessionToken: string): Promise<User | null> {
+  static async validateSession(sessionToken: string): Promise<any | null> {
     const session = await prisma.session.findUnique({
       where: { sessionToken },
-      include: { user: true },
+      include: {
+        user: {
+          include: {
+            clientProfile: true,
+            adminProfile: true,
+            memberships: {
+              include: {
+                organization: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     if (!session) return null;
@@ -154,7 +165,7 @@ export class AuthService {
   // 5. Verification & Password Reset Tokens
   static async createVerificationToken(
     identifier: string,
-    type: 'EMAIL_VERIFY' | 'PASSWORD_RESET' | 'MAGIC_LINK' | '2FA_TEMP',
+    type: 'EMAIL_VERIFY' | 'PASSWORD_RESET' | 'MAGIC_LINK' | '2FA_TEMP' | '2FA_ENROLL',
     ttlMinutes = 30
   ): Promise<string> {
     const token = crypto.randomBytes(32).toString('hex');

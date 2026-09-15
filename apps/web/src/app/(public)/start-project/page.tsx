@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ArrowUpRight, CheckCircle2, ShieldCheck, Send, AlertCircle, Loader2 } from 'lucide-react';
 import { PageBanner } from '@/components/layout/PageBanner';
@@ -13,7 +13,7 @@ import {
   CTA_LABELS,
 } from '@/lib/constants/brand';
 
-export default function StartProjectPage() {
+function StartProjectContent() {
   const searchParams = useSearchParams();
 
   const [formData, setFormData] = useState({
@@ -375,5 +375,13 @@ export default function StartProjectPage() {
         </div>
       </section>
     </div>
+  );
+}
+
+export default function StartProjectPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-black" />}>
+      <StartProjectContent />
+    </Suspense>
   );
 }

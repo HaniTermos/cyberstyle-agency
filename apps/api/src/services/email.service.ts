@@ -164,7 +164,7 @@ export class EmailService {
             snippet: 'Thanks for sending over the technical breakdown. Can you confirm if Argon2id auth is supported?',
             relatedType: 'LEAD',
             status: 'OPEN',
-            participants: ['marcus.vance@apexfintech.com', 'contact@cyberstyle.net'],
+            participants: ['marcus.vance@apexfintech.com', 'info@cyberstyle.net'],
             lastMessageAt: new Date(),
           },
         });
@@ -173,7 +173,7 @@ export class EmailService {
           data: [
             {
               threadId: thread1.id,
-              from: 'contact@cyberstyle.net',
+              from: 'info@cyberstyle.net',
               to: 'marcus.vance@apexfintech.com',
               subject: 'Enterprise Next.js 15 Platform Scope & Security Architecture',
               body: '<p>Hi Marcus,</p><p>Following up on our call, here is the architecture breakdown for your high-concurrency telemetry platform.</p><p>Best,<br>CYBERSTYLE Engineering</p>',
@@ -186,7 +186,7 @@ export class EmailService {
             {
               threadId: thread1.id,
               from: 'marcus.vance@apexfintech.com',
-              to: 'contact@cyberstyle.net',
+              to: 'info@cyberstyle.net',
               subject: 'Re: Enterprise Next.js 15 Platform Scope & Security Architecture',
               body: '<p>Thanks for sending over the technical breakdown. Can you confirm if Argon2id password hashing and TOTP 2FA are included in the baseline milestone?</p><p>Marcus Vance<br>CTO, Apex Fintech</p>',
               snippet: 'Thanks for sending over the technical breakdown. Can you confirm if Argon2id...',
@@ -204,7 +204,7 @@ export class EmailService {
             snippet: 'The BullMQ worker is processing leads in under 20 seconds. Exceptional delivery!',
             relatedType: 'PROJECT',
             status: 'OPEN',
-            participants: ['sarah.lin@nexuslogistics.com', 'contact@cyberstyle.net'],
+            participants: ['sarah.lin@nexuslogistics.com', 'info@cyberstyle.net'],
             lastMessageAt: new Date(Date.now() - 86400000),
           },
         });
@@ -213,7 +213,7 @@ export class EmailService {
           data: {
             threadId: thread2.id,
             from: 'sarah.lin@nexuslogistics.com',
-            to: 'contact@cyberstyle.net',
+            to: 'info@cyberstyle.net',
             subject: 'AI Quote Routing Pipeline — Production Feedback',
             body: '<p>Team CYBERSTYLE,</p><p>The BullMQ worker is processing leads in under 20 seconds. Qualified inquiries are already up 40% week-over-week. Exceptional delivery!</p><p>Sarah Lin<br>VP Ops, Nexus Global</p>',
             snippet: 'The BullMQ worker is processing leads in under 20 seconds...',
@@ -320,7 +320,7 @@ export class EmailService {
                 <div style="margin-top: 8px; font-size: 11px; color: #64748B; font-family: monospace;">
                   <span>🌐 <a href="https://cyberstyle.net" style="color: #00F0FF; text-decoration: none;">cyberstyle.net</a></span>
                   <span style="margin: 0 6px; color: #334155;">&bull;</span>
-                  <span>✉️ <a href="mailto:contact@cyberstyle.net" style="color: #94A3B8; text-decoration: none;">contact@cyberstyle.net</a></span>
+                  <span>✉️ <a href="mailto:info@cyberstyle.net" style="color: #94A3B8; text-decoration: none;">info@cyberstyle.net</a></span>
                   <span style="margin: 0 6px; color: #334155;">&bull;</span>
                   <span>📞 +1 (800) CYBER-STYLE</span>
                 </div>
@@ -352,7 +352,7 @@ export class EmailService {
     transportUsed: string;
   }> {
     const logId = `eml_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-    const fromAddress = options.from || process.env.EMAIL_FROM || '"CYBERSTYLE Command" <contact@cyberstyle.net>';
+    const fromAddress = options.from || process.env.EMAIL_FROM || '"CYBERSTYLE Command" <info@cyberstyle.net>';
     const transportMode = this.getTransportMode();
     const transporter = this.getTransporter();
 

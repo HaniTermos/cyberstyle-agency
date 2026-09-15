@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, X, ArrowUpRight } from 'lucide-react';
 import { Button } from '../ui/Button';
+import { LogoMotion } from '../motion/Motion';
 
 export function Header() {
   const [scrolled, setScrolled] = useState(false);
@@ -63,9 +64,7 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
         {/* Brand Logo & Wordmark */}
         <Link href="/" className="flex items-center group focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00F0FF] rounded-lg">
-          <span className="font-display font-bold tracking-wider text-lg uppercase text-white group-hover:text-[#00F0FF] transition-colors">
-            CYBERSTYLE
-          </span>
+          <LogoMotion />
         </Link>
 
         {/* Desktop Navigation Links */}
@@ -76,14 +75,17 @@ export function Header() {
               <Link
                 key={link.label}
                 href={link.href}
-                className={`transition-colors py-1 relative hover:text-white ${
-                  isActive ? 'text-[#00F0FF] font-semibold' : 'text-neutral-300'
+                className={`transition-colors py-1 relative group/link focus:outline-none focus-visible:text-white ${
+                  isActive ? 'text-[#00F0FF] font-semibold' : 'text-neutral-300 hover:text-white'
                 }`}
               >
-                {link.label}
-                {isActive && (
-                  <span className="absolute -bottom-1 left-0 right-0 h-[2px] bg-[#00F0FF] rounded-full" />
-                )}
+                <span>{link.label}</span>
+                {/* Subtle animated underline sweep */}
+                <span
+                  className={`absolute -bottom-1 left-0 right-0 h-[2px] bg-[#00F0FF] rounded-full transition-transform duration-200 origin-left ${
+                    isActive ? 'scale-x-100' : 'scale-x-0 group-hover/link:scale-x-100'
+                  }`}
+                />
               </Link>
             );
           })}

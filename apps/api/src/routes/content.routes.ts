@@ -1006,26 +1006,44 @@ router.patch(
 // 6. FAQS
 // ==============================================================================
 
-router.get('/faqs', async (_req: Request, res: Response) => {
-  const defaultFaqs = [
-    {
-      question: 'How do CYBERSTYLE sprint milestones work?',
-      answer: 'Projects are structured into multi-week milestones. Funds are escrowed and settled only upon verified deliverable approval.',
-      category: 'Billing & Delivery',
-    },
-    {
-      question: 'What is included in the AI Automation Management Retainer?',
-      answer: 'Continuous fine-tuning, latency optimization, monthly prompt enhancements, vector database maintenance, and priority engineering support.',
-      category: 'Retainers',
-    },
-    {
-      question: 'What tech stack does CYBERSTYLE build with?',
-      answer: 'Next.js 15 App Router, TypeScript, PostgreSQL, Prisma, Redis, Docker, and Gemini Flash enterprise AI integrations.',
-      category: 'Technology',
-    },
-  ];
+router.get('/faqs', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { page, category, search } = req.query;
 
-  res.status(200).json({ status: 'success', data: { faqs: defaultFaqs } });
+    const where: any = {
+      isPublished: true,
+    };
+
+    if (page && page !== 'all') {
+      where.displayPages = {
+        has: String(page).toLowerCase(),
+      };
+    }
+
+    if (category && category !== 'all') {
+      where.category = {
+        contains: String(category),
+        mode: 'insensitive',
+      };
+    }
+
+    if (search) {
+      const q = String(search);
+      where.OR = [
+        { question: { contains: q, mode: 'insensitive' } },
+        { answer: { contains: q, mode: 'insensitive' } },
+      ];
+    }
+
+    const faqs = await prisma.fAQ.findMany({
+      where,
+      orderBy: [{ orderIndex: 'asc' }, { createdAt: 'asc' }],
+    });
+
+    res.status(200).json({ status: 'success', data: { faqs } });
+  } catch (error) {
+    next(error);
+  }
 });
 
 export default router;

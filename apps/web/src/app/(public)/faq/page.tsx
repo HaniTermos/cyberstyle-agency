@@ -13,7 +13,9 @@ import {
   AI_LIMITATIONS_DISCLOSURE,
   SUPPORT_DISCLOSURE,
   CTA_LABELS,
+  CONTACT_EMAIL,
 } from '@/lib/constants/brand';
+import { apiRequest } from '@/lib/api';
 
 interface FaqItem {
   q: string;
@@ -66,6 +68,28 @@ const faqs: FaqItem[] = [
 
 export default function FaqPage() {
   const [activeIdx, setActiveIdx] = useState<number | null>(null);
+  const [items, setItems] = useState<FaqItem[]>(faqs);
+
+  React.useEffect(() => {
+    let isMounted = true;
+    apiRequest<{ faqs: Array<{ question: string; answer: string; category: string }> }>('/faqs?page=faq')
+      .then((res) => {
+        if (!isMounted) return;
+        if (res.success && res.data?.faqs && res.data.faqs.length > 0) {
+          setItems(
+            res.data.faqs.map((f) => ({
+              q: f.question,
+              a: f.answer,
+              category: f.category || 'General',
+            }))
+          );
+        }
+      })
+      .catch(() => {});
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-black text-white font-sans">
@@ -80,7 +104,7 @@ export default function FaqPage() {
 
       <section className="pt-4 pb-24 px-6 bg-white text-black">
         <div className="max-w-4xl mx-auto space-y-6">
-          {faqs.map((faq, idx) => (
+          {items.map((faq, idx) => (
             <div
               key={idx}
               className="rounded-2xl border border-black/10 bg-[#F8F9FB] p-6 transition-all duration-200"
@@ -120,9 +144,9 @@ export default function FaqPage() {
                   {CTA_LABELS.primary}
                 </Button>
               </Link>
-              <a href="mailto:contact@cyberstyle.net">
+              <a href={`mailto:${CONTACT_EMAIL}`}>
                 <Button variant="secondary" size="md">
-                  Email: contact@cyberstyle.net
+                  Email: {CONTACT_EMAIL}
                 </Button>
               </a>
             </div>

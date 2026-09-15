@@ -1,15 +1,64 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Settings, ShieldCheck, Key, CreditCard, Mail, Cpu, CheckCircle2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Settings, ShieldCheck, Key, CreditCard, Mail, Cpu, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
+import { apiRequest } from '@/lib/api';
 
 export default function AdminSettingsPage() {
-  const [saved, setSaved] = useState(false);
+  const [brandLegalName, setBrandLegalName] = useState('CYBERSTYLE LLC');
+  const [primaryProductionDomain, setPrimaryProductionDomain] = useState('cyberstyle.net');
+  const [strictTotpEnforcement, setStrictTotpEnforcement] = useState(true);
+  const [autoSessionRotation, setAutoSessionRotation] = useState(true);
 
-  const handleSave = (e: React.FormEvent) => {
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [savedMessage, setSavedMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    apiRequest('/admin/settings')
+      .then((res) => {
+        if (res.success && res.data) {
+          if (res.data.brandLegalName) setBrandLegalName(res.data.brandLegalName);
+          if (res.data.primaryProductionDomain) setPrimaryProductionDomain(res.data.primaryProductionDomain);
+          if (res.data.strictTotpEnforcement !== undefined) setStrictTotpEnforcement(res.data.strictTotpEnforcement);
+          if (res.data.autoSessionRotation !== undefined) setAutoSessionRotation(res.data.autoSessionRotation);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load settings:', err);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+    setSaving(true);
+    setSavedMessage(null);
+    setErrorMessage(null);
+
+    try {
+      const res = await apiRequest('/admin/settings', {
+        method: 'PUT',
+        body: JSON.stringify({
+          brandLegalName,
+          primaryProductionDomain,
+          strictTotpEnforcement,
+          autoSessionRotation,
+        }),
+      });
+
+      if (res.success) {
+        setSavedMessage((res as any).message || 'System settings saved successfully.');
+        setTimeout(() => setSavedMessage(null), 4000);
+      } else {
+        setErrorMessage(res.error || 'Failed to save settings to server.');
+      }
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Network error saving settings.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -25,10 +74,16 @@ export default function AdminSettingsPage() {
           <h1 className="text-2xl font-bold text-white tracking-tight">System & Agency Settings</h1>
         </div>
 
-        {saved && (
-          <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-mono">
+        {savedMessage && (
+          <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-mono bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20">
             <CheckCircle2 className="w-4 h-4" />
-            <span>Settings saved successfully</span>
+            <span>{savedMessage}</span>
+          </div>
+        )}
+        {errorMessage && (
+          <div className="flex items-center gap-1.5 text-xs text-rose-400 font-mono bg-rose-500/10 px-3 py-1.5 rounded-lg border border-rose-500/20">
+            <AlertCircle className="w-4 h-4" />
+            <span>{errorMessage}</span>
           </div>
         )}
       </div>
@@ -45,16 +100,20 @@ export default function AdminSettingsPage() {
               <label className="block text-zinc-400 mb-1 font-mono uppercase text-[10px]">Brand Legal Name</label>
               <input
                 type="text"
-                defaultValue="CYBERSTYLE LLC"
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-white"
+                required
+                value={brandLegalName}
+                onChange={(e) => setBrandLegalName(e.target.value)}
+                className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-white focus:border-cyan-500 focus:outline-none"
               />
             </div>
             <div>
               <label className="block text-zinc-400 mb-1 font-mono uppercase text-[10px]">Primary Production Domain</label>
               <input
                 type="text"
-                defaultValue="cyberstyle.net"
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-white font-mono"
+                required
+                value={primaryProductionDomain}
+                onChange={(e) => setPrimaryProductionDomain(e.target.value)}
+                className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-white font-mono focus:border-cyan-500 focus:outline-none"
               />
             </div>
           </div>
@@ -68,14 +127,24 @@ export default function AdminSettingsPage() {
           </div>
           <div className="space-y-3 text-xs">
             <label className="flex items-center gap-3 cursor-pointer">
-              <input type="checkbox" defaultChecked className="rounded bg-zinc-950 border-zinc-800 text-cyan-500 w-4 h-4" />
+              <input
+                type="checkbox"
+                checked={strictTotpEnforcement}
+                onChange={(e) => setStrictTotpEnforcement(e.target.checked)}
+                className="rounded bg-zinc-950 border-zinc-800 text-cyan-500 w-4 h-4"
+              />
               <div>
                 <span className="text-zinc-200 font-medium">Strict First-Login TOTP 2FA Enforcement</span>
                 <p className="text-[11px] text-zinc-500">Require all administrator accounts to configure TOTP before accessing dashboard modules.</p>
               </div>
             </label>
             <label className="flex items-center gap-3 cursor-pointer">
-              <input type="checkbox" defaultChecked className="rounded bg-zinc-950 border-zinc-800 text-cyan-500 w-4 h-4" />
+              <input
+                type="checkbox"
+                checked={autoSessionRotation}
+                onChange={(e) => setAutoSessionRotation(e.target.checked)}
+                className="rounded bg-zinc-950 border-zinc-800 text-cyan-500 w-4 h-4"
+              />
               <div>
                 <span className="text-zinc-200 font-medium">Automatic Server-Side Session Rotation</span>
                 <p className="text-[11px] text-zinc-500">Invalidate active session tokens upon password change or 2FA reset.</p>

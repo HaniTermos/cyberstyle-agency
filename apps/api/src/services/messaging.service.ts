@@ -1,7 +1,7 @@
 import { prisma } from '../config/db';
 import { logAudit } from '../utils/auditLogger';
 import { safeAddEmailJob } from '../queues/email.queue';
-import { UserRole, ThreadStatus, ThreadContextType, MessageType } from '@prisma/client';
+import { UserRole, ThreadStatus, ThreadContextType, MessageType, MessageVisibility } from '@prisma/client';
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
@@ -40,6 +40,7 @@ export interface SendMessageInput {
   messageType?: MessageType;
   fileId?: string | null;
   isInternal?: boolean;
+  visibility?: MessageVisibility;
 }
 
 // In-Memory Rate Limiting Tracker
@@ -377,12 +378,14 @@ export class MessagingService {
    */
   static async getThreadDetail(user: AuthenticatedUserContext, threadId: string, limit = 50) {
     const thread = await this.assertThreadAccess(user, threadId);
-    const isAdmin = user.role === UserRole.SUPER_ADMIN || user.role === UserRole.ADMIN;
+    const isStaffOrAdmin = ([UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.STAFF] as UserRole[]).includes(user.role);
 
     const messages = await prisma.message.findMany({
       where: {
         threadId,
-        ...(isAdmin ? {} : { isInternal: false }),
+        ...(isStaffOrAdmin
+          ? {}
+          : { visibility: MessageVisibility.CLIENT_VISIBLE, isInternal: false }),
       },
       include: {
         sender: {
@@ -440,7 +443,7 @@ export class MessagingService {
    */
   static async pollMessages(user: AuthenticatedUserContext, threadId: string, sinceMessageId?: string, limit = 50) {
     await this.assertThreadAccess(user, threadId);
-    const isAdmin = user.role === UserRole.SUPER_ADMIN || user.role === UserRole.ADMIN;
+    const isStaffOrAdmin = ([UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.STAFF] as UserRole[]).includes(user.role);
 
     let sinceDate: Date | undefined;
     if (sinceMessageId) {
@@ -457,7 +460,9 @@ export class MessagingService {
       where: {
         threadId,
         ...(sinceDate ? { createdAt: { gt: sinceDate } } : {}),
-        ...(isAdmin ? {} : { isInternal: false }),
+        ...(isStaffOrAdmin
+          ? {}
+          : { visibility: MessageVisibility.CLIENT_VISIBLE, isInternal: false }),
       },
       include: {
         sender: {
@@ -495,6 +500,7 @@ export class MessagingService {
             }
           : null,
         isInternal: m.isInternal,
+        visibility: m.visibility,
         deletedAt: m.deletedAt,
         editedAt: m.editedAt,
         createdAt: m.createdAt,
@@ -510,13 +516,16 @@ export class MessagingService {
   static async sendMessage(user: AuthenticatedUserContext, threadId: string, input: SendMessageInput, req?: any) {
     this.checkRateLimit(user.id, 'MESSAGE');
     const thread = await this.assertThreadAccess(user, threadId);
-    const isAdmin = user.role === UserRole.SUPER_ADMIN || user.role === UserRole.ADMIN;
+    const isStaffOrAdmin = ([UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.STAFF] as UserRole[]).includes(user.role);
 
-    if (thread.status === ThreadStatus.CLOSED && !isAdmin) {
+    if (thread.status === ThreadStatus.CLOSED && !isStaffOrAdmin) {
       throw new Error('Cannot send messages to a closed conversation.');
     }
 
-    const isInternal = isAdmin ? Boolean(input.isInternal) : false;
+    const isInternal = isStaffOrAdmin ? Boolean(input.isInternal || input.visibility === MessageVisibility.INTERNAL_STAFF_ONLY) : false;
+    const visibility = isStaffOrAdmin
+      ? (input.visibility || (isInternal ? MessageVisibility.INTERNAL_STAFF_ONLY : MessageVisibility.CLIENT_VISIBLE))
+      : MessageVisibility.CLIENT_VISIBLE;
 
     const message = await prisma.$transaction(async (tx) => {
       const msg = await tx.message.create({
@@ -527,6 +536,7 @@ export class MessagingService {
           messageType: input.messageType || (input.fileId ? MessageType.FILE : MessageType.TEXT),
           fileId: input.fileId || null,
           isInternal,
+          visibility,
         },
         include: {
           sender: {
@@ -562,21 +572,21 @@ export class MessagingService {
 
     for (const p of participants) {
       if (p.userId !== user.id) {
-        const isRecipientAdmin = p.user.role === UserRole.ADMIN || p.user.role === UserRole.SUPER_ADMIN;
+        const isRecipientStaff = ([UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.STAFF] as UserRole[]).includes(p.user.role);
 
-        // In-App Notification
-        await prisma.notification.create({
-          data: {
-            userId: p.userId,
-            title: `New Message in ${thread.title || 'Discussion'}`,
-            message: `${user.name || user.email}: ${input.content.slice(0, 80)}`,
-            type: 'MESSAGE',
-            linkUrl: isRecipientAdmin ? `/admin/messages?threadId=${threadId}` : `/portal/messages?threadId=${threadId}`,
-          },
-        }).catch(() => {});
+        // Security check: NEVER notify external clients of internal notes
+        if (!isInternal && visibility === MessageVisibility.CLIENT_VISIBLE || isRecipientStaff) {
+          // In-App Notification
+          await prisma.notification.create({
+            data: {
+              userId: p.userId,
+              title: `New Message in ${thread.title || 'Discussion'}`,
+              message: `${user.name || user.email}: ${input.content.slice(0, 80)}`,
+              type: 'MESSAGE',
+              linkUrl: isRecipientStaff ? `/admin/messages?threadId=${threadId}` : `/portal/messages?threadId=${threadId}`,
+            },
+          }).catch(() => {});
 
-        // Email Notification: Never send internal notes to external client users
-        if (!isInternal || isRecipientAdmin) {
           safeAddEmailJob('new-message-notification', {
             to: p.user.email,
             subject: `New message in ${thread.title || 'Discussion'} – CYBERSTYLE`,
@@ -585,7 +595,7 @@ export class MessagingService {
               threadTitle: thread.title,
               senderName: user.name || user.email,
               excerpt: input.content.slice(0, 160),
-              deepLink: isRecipientAdmin
+              deepLink: isRecipientStaff
                 ? `http://localhost:3000/admin/messages?threadId=${threadId}`
                 : `http://localhost:3000/portal/messages?threadId=${threadId}`,
             },

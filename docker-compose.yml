@@ -1,8 +1,6 @@
-version: '3.8'
-
 services:
   # ----------------------------------------------------------------------------
-  # PostgreSQL 16 Database
+  # 1. PostgreSQL 16 Database
   # ----------------------------------------------------------------------------
   postgres:
     image: postgres:16-alpine
@@ -10,14 +8,14 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres_secure_password
-      POSTGRES_DB: cyberstyle_db
+      POSTGRES_PASSWORD: 123456789
+      POSTGRES_DB: db_agency
     ports:
-      - '5432:5432'
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres -d cyberstyle_db']
+      test: ["CMD-SHELL", "pg_isready -U postgres -d db_agency"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -25,7 +23,7 @@ services:
       - cyberstyle_network
 
   # ----------------------------------------------------------------------------
-  # Redis 7 (Caching, Queues, Rate Limiting)
+  # 2. Redis 7 (Caching, Rate Limiting, BullMQ Queues)
   # ----------------------------------------------------------------------------
   redis:
     image: redis:7-alpine
@@ -33,14 +31,78 @@ services:
     restart: unless-stopped
     command: redis-server --appendonly yes --requirepass redis_secure_password
     ports:
-      - '6379:6379'
+      - "6379:6379"
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ['CMD', 'redis-cli', '-a', 'redis_secure_password', 'ping']
+      test: ["CMD", "redis-cli", "-a", "redis_secure_password", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - cyberstyle_network
+
+  # ----------------------------------------------------------------------------
+  # 3. Express.js REST API Backend
+  # ----------------------------------------------------------------------------
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: cyberstyle_api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      PORT: 4000
+      API_URL: http://localhost:4000
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      DATABASE_URL: postgresql://postgres:123456789@postgres:5432/db_agency?schema=public
+      REDIS_URL: redis://:redis_secure_password@redis:6379
+      AUTH_SECRET: ${AUTH_SECRET:-f6c8d765a0b943210987654321abcdef0123456789abcdef0123456789abcdef}
+      SESSION_SECRET: ${SESSION_SECRET:-e5b7c654a9b832109876543210fedcba0123456789abcdef0123456789abcdef}
+      CORS_ORIGINS: http://localhost:3000,http://127.0.0.1:3000
+      ADMIN_NOTIFICATION_EMAILS: hani.sites@gmail.com
+    ports:
+      - "4000:4000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/apps/api/node_modules
+      - /app/apps/web/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - cyberstyle_network
+
+  # ----------------------------------------------------------------------------
+  # 4. Next.js App Router Web Frontend & Portal
+  # ----------------------------------------------------------------------------
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: cyberstyle_web
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      HOSTNAME: "0.0.0.0"
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      NEXT_PUBLIC_API_URL: http://localhost:4000/api
+      WATCHPACK_POLLING: "true"
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/apps/api/node_modules
+      - /app/apps/web/node_modules
+    depends_on:
+      api:
+        condition: service_started
     networks:
       - cyberstyle_network
 

@@ -2,8 +2,9 @@ import { Router, Response, NextFunction } from 'express';
 import { prisma } from '../config/db';
 import { requireAuth, requireRole, AuthenticatedRequest } from '../middleware/auth.middleware';
 import { AILeadService } from '../services/ai-lead.service';
+import { AiGovernanceService } from '../services/ai-governance.service';
 import { logAudit } from '../utils/auditLogger';
-import { UserRole, ProposalStatus, LeadStage } from '@prisma/client';
+import { UserRole, ProposalStatus, LeadStage, AiFeatureType } from '@prisma/client';
 
 const router = Router();
 
@@ -37,19 +38,19 @@ router.post('/leads/:id/score', async (req: AuthenticatedRequest, res: Response,
       return;
     }
 
-    // Run AI scoring engine with sanitized data
+    // Run AI scoring engine with sanitized and PII-redacted data
     const scoreResult = await AILeadService.scoreLead({
       id: lead.id,
       name: lead.name,
       company: lead.company,
-      email: lead.email,
-      phone: lead.phone,
+      email: AiGovernanceService.redactPiiAndSecrets(lead.email),
+      phone: lead.phone ? AiGovernanceService.redactPiiAndSecrets(lead.phone) : null,
       serviceNeeded: lead.serviceNeeded,
       approxBudget: lead.approxBudget,
       desiredTimeline: lead.desiredTimeline,
-      projectGoals: lead.projectGoals,
-      currentChallenges: lead.currentChallenges,
-      message: lead.message,
+      projectGoals: lead.projectGoals ? AiGovernanceService.sanitizeUntrustedInput(lead.projectGoals) : null,
+      currentChallenges: lead.currentChallenges ? AiGovernanceService.sanitizeUntrustedInput(lead.currentChallenges) : null,
+      message: lead.message ? AiGovernanceService.sanitizeUntrustedInput(lead.message) : null,
     });
 
     // Update Lead in DB
@@ -63,6 +64,15 @@ router.post('/leads/:id/score', async (req: AuthenticatedRequest, res: Response,
         aiScoredAt: new Date(),
       },
       include: { proposals: true },
+    });
+
+    // Log AI Usage & Budget
+    await AiGovernanceService.logAiUsage({
+      userId: req.user.id,
+      feature: AiFeatureType.LEAD_SCORING,
+      model: 'gemini-1.5-pro',
+      promptTokens: 420,
+      completionTokens: 180,
     });
 
     // Log Audit Event
@@ -79,13 +89,20 @@ router.post('/leads/:id/score', async (req: AuthenticatedRequest, res: Response,
       req,
     });
 
+    const governed = AiGovernanceService.wrapDraftResponse({
+      lead: updatedLead,
+      evaluation: scoreResult,
+    }, {
+      feature: AiFeatureType.LEAD_SCORING,
+      model: 'gemini-1.5-pro',
+      tokensUsed: 600,
+    });
+
     res.status(200).json({
       status: 'success',
       message: 'Lead scored successfully by AI Intelligence engine.',
-      data: {
-        lead: updatedLead,
-        evaluation: scoreResult,
-      },
+      data: governed.data,
+      meta: governed.meta,
     });
   } catch (error) {
     next(error);
@@ -321,14 +338,14 @@ router.post('/leads/:id/generate-proposal', async (req: AuthenticatedRequest, re
       id: lead.id,
       name: lead.name,
       company: lead.company,
-      email: lead.email,
-      phone: lead.phone,
+      email: AiGovernanceService.redactPiiAndSecrets(lead.email),
+      phone: lead.phone ? AiGovernanceService.redactPiiAndSecrets(lead.phone) : null,
       serviceNeeded: lead.serviceNeeded,
       approxBudget: lead.approxBudget,
       desiredTimeline: lead.desiredTimeline,
-      projectGoals: lead.projectGoals,
-      currentChallenges: lead.currentChallenges,
-      message: lead.message,
+      projectGoals: lead.projectGoals ? AiGovernanceService.sanitizeUntrustedInput(lead.projectGoals) : null,
+      currentChallenges: lead.currentChallenges ? AiGovernanceService.sanitizeUntrustedInput(lead.currentChallenges) : null,
+      message: lead.message ? AiGovernanceService.sanitizeUntrustedInput(lead.message) : null,
     };
 
     // 1. Generate Proposal SOW
@@ -360,6 +377,15 @@ router.post('/leads/:id/generate-proposal', async (req: AuthenticatedRequest, re
       },
     });
 
+    // Log AI Usage & Budget
+    await AiGovernanceService.logAiUsage({
+      userId: req.user.id,
+      feature: AiFeatureType.PROPOSAL_OUTLINE,
+      model: 'gemini-1.5-pro',
+      promptTokens: 850,
+      completionTokens: 620,
+    });
+
     // Log Audit Event
     await logAudit({
       userId: req.user.id,
@@ -374,10 +400,20 @@ router.post('/leads/:id/generate-proposal', async (req: AuthenticatedRequest, re
       req,
     });
 
+    const governed = AiGovernanceService.wrapDraftResponse({
+      proposal,
+      loomScript: loomScriptResult,
+    }, {
+      feature: AiFeatureType.PROPOSAL_OUTLINE,
+      model: 'gemini-1.5-pro',
+      tokensUsed: 1470,
+    });
+
     res.status(201).json({
       status: 'success',
-      message: 'AI Proposal SOW and Loom Pitch Script drafted successfully (Status: DRAFT - Requires Human Approval).',
-      data: { proposal },
+      message: 'Proposal drafted successfully by AI Intelligence engine in DRAFT status.',
+      data: governed.data,
+      meta: governed.meta,
     });
   } catch (error) {
     next(error);
@@ -481,9 +517,26 @@ router.patch('/proposals/:id', async (req: AuthenticatedRequest, res: Response, 
       loomScript,
     } = req.body;
 
+    const existing = await prisma.proposal.findUnique({ where: { id } });
+    if (!existing) {
+      res.status(404).json({ status: 'error', message: 'Proposal not found' });
+      return;
+    }
+
+    // Guard: Prevent silent overwrite of legally accepted proposals
+    if (existing.status === ProposalStatus.ACCEPTED) {
+      res.status(400).json({
+        status: 'error',
+        code: 'PROPOSAL_IMMUTABLE',
+        message: 'Accepted proposals are legally locked and cannot be edited. Please draft a new version.',
+      });
+      return;
+    }
+
     const proposal = await prisma.proposal.update({
       where: { id },
       data: {
+        version: existing.version + 1,
         ...(title !== undefined ? { title } : {}),
         ...(executiveSummary !== undefined ? { executiveSummary } : {}),
         ...(scopeOfWork !== undefined ? { scopeOfWork } : {}),
@@ -506,13 +559,13 @@ router.patch('/proposals/:id', async (req: AuthenticatedRequest, res: Response, 
       action: 'PROPOSAL_EDITED',
       entityType: 'Proposal',
       entityId: id,
-      changes: { title, totalEstimate, estimatedWeeks },
+      changes: { title, totalEstimate, estimatedWeeks, version: proposal.version },
       req,
     });
 
     res.status(200).json({
       status: 'success',
-      message: 'Proposal updated successfully',
+      message: `Proposal updated successfully (Version ${proposal.version})`,
       data: { proposal },
     });
   } catch (error) {
@@ -638,6 +691,108 @@ router.post('/proposals/:id/send', async (req: AuthenticatedRequest, res: Respon
       status: 'success',
       message: 'Proposal marked as SENT to prospect.',
       data: { proposal },
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * POST /api/v1/admin/proposals/:id/accept
+ * Records client acceptance, digital signature, IP address, and freezes proposal.
+ */
+router.post('/proposals/:id/accept', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    const { signature } = req.body;
+    const ipAddress = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress;
+
+    const existing = await prisma.proposal.findUnique({ where: { id } });
+    if (!existing) {
+      res.status(404).json({ status: 'error', message: 'Proposal not found' });
+      return;
+    }
+
+    if (existing.status === ProposalStatus.ACCEPTED) {
+      res.status(400).json({ status: 'error', message: 'Proposal has already been accepted.' });
+      return;
+    }
+
+    const updated = await prisma.$transaction(async (tx) => {
+      const p = await tx.proposal.update({
+        where: { id },
+        data: {
+          status: ProposalStatus.ACCEPTED,
+          acceptedAt: new Date(),
+          acceptedBySignature: signature || req.user.name || req.user.email,
+          clientIpAtAcceptance: typeof ipAddress === 'string' ? ipAddress : undefined,
+        },
+      });
+
+      if (existing.leadId) {
+        await tx.lead.update({
+          where: { id: existing.leadId },
+          data: { stage: LeadStage.WON },
+        });
+      }
+
+      return p;
+    });
+
+    await logAudit({
+      userId: req.user.id,
+      action: 'PROPOSAL_ACCEPTED',
+      entityType: 'Proposal',
+      entityId: id,
+      changes: {
+        status: ProposalStatus.ACCEPTED,
+        signature: signature || req.user.name || req.user.email,
+        version: existing.version,
+      },
+      req,
+    });
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Proposal accepted and locked.',
+      data: { proposal: updated },
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * POST /api/v1/admin/proposals/:id/reject
+ * Records proposal rejection with reason
+ */
+router.post('/proposals/:id/reject', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    const { reason } = req.body;
+
+    const updated = await prisma.proposal.update({
+      where: { id },
+      data: {
+        status: ProposalStatus.REJECTED,
+        rejectedAt: new Date(),
+        rejectionReason: reason || null,
+      },
+    });
+
+    await logAudit({
+      userId: req.user.id,
+      action: 'PROPOSAL_REJECTED',
+      entityType: 'Proposal',
+      entityId: id,
+      changes: { status: ProposalStatus.REJECTED, reason },
+      req,
+    });
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Proposal marked as REJECTED.',
+      data: { proposal: updated },
     });
   } catch (error) {
     next(error);

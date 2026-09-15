@@ -51,33 +51,13 @@ export default function AdminContactsPage() {
     setLoading(true);
     try {
       const res = await apiRequest<ContactSubmission[]>('/admin/contacts');
-      if (res.success && Array.isArray(res.data) && res.data.length > 0) {
+      if (res.success && Array.isArray(res.data)) {
         setContacts(res.data);
       } else {
-        // Fallback sample inquiries
-        setContacts([
-          {
-            id: 'cont_01',
-            name: 'David Vance',
-            email: 'dvance@quantumcorp.io',
-            subject: 'High Frequency Matching Engine Architecture',
-            message: 'Looking for an engineering team to architect a low-latency matching engine in Rust/Go with Next.js web portal.',
-            status: 'NEW',
-            createdAt: new Date().toISOString(),
-          },
-          {
-            id: 'cont_02',
-            name: 'Elena Rostova',
-            email: 'elena@novatech.ch',
-            subject: 'Zero-Knowledge Compliance Audit & Enclave',
-            message: 'Need a complete Zero-Knowledge data privacy enclave built before Q4 audit. Let us set up a technical discovery call.',
-            status: 'REPLIED',
-            createdAt: new Date(Date.now() - 86400000).toISOString(),
-          },
-        ]);
+        setContacts([]);
       }
     } catch {
-      // Retain sample data
+      setContacts([]);
     } finally {
       setLoading(false);
     }
@@ -378,14 +358,24 @@ export default function AdminContactsPage() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-2 border-t border-zinc-800">
-              <button
-                onClick={() => handleConvertToLead(activeContact)}
-                className="px-3.5 py-2 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-mono flex items-center gap-1.5 transition-colors"
-              >
-                <UserPlus className="w-4 h-4" />
-                <span>Convert to Pipeline Lead</span>
-              </button>
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-zinc-800">
+              <div className="flex items-center gap-2">
+                <a
+                  href={`mailto:${activeContact.email}?subject=${encodeURIComponent('Re: ' + (activeContact.subject || 'CYBERSTYLE Agency Inquiry'))}`}
+                  className="px-3.5 py-2 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 text-xs font-mono flex items-center gap-1.5 transition-colors"
+                >
+                  <Mail className="w-4 h-4" />
+                  <span>Reply via Email</span>
+                </a>
+
+                <button
+                  onClick={() => handleConvertToLead(activeContact)}
+                  className="px-3.5 py-2 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-mono flex items-center gap-1.5 transition-colors"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  <span>Convert to Lead</span>
+                </button>
+              </div>
 
               <button
                 type="button"

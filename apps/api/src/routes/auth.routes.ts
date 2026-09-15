@@ -167,7 +167,9 @@ router.post('/login', strictAuthLimiter, async (req: Request, res: Response, nex
     }
 
     // 2FA Enforcement Check
-    const requires2FA = user.twoFactorEnabled || user.role === UserRole.SUPER_ADMIN || user.role === UserRole.ADMIN;
+    const isProductionOrStaging = process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging';
+    const isAdmin = user.role === UserRole.SUPER_ADMIN || user.role === UserRole.ADMIN;
+    const requires2FA = user.twoFactorEnabled || (isAdmin && isProductionOrStaging);
 
     if (requires2FA && user.twoFactorEnabled) {
       const tempToken = await AuthService.createVerificationToken(user.email, '2FA_TEMP', 10);
@@ -176,6 +178,20 @@ router.post('/login', strictAuthLimiter, async (req: Request, res: Response, nex
         requires2FA: true,
         tempToken,
         message: 'Two-factor authentication required. Submit 6-digit TOTP code.',
+      });
+      return;
+    }
+
+    if (requires2FA && !user.twoFactorEnabled) {
+      const tempToken = await AuthService.createVerificationToken(user.email, '2FA_ENROLL', 15);
+      const { secret, uri } = AuthService.generate2FASecret();
+      res.status(200).json({
+        status: 'success',
+        requires2FAEnrollment: true,
+        tempToken,
+        secret,
+        uri,
+        message: 'Administrative security policy requires mandatory MFA enrollment before access.',
       });
       return;
     }
@@ -449,6 +465,10 @@ router.post('/forgot-password', strictAuthLimiter, async (req: Request, res: Res
             <span style="font-family: monospace; font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #FFFFFF;">${resetCode}</span>
             <p style="margin: 8px 0 0 0; font-size: 11px; color: #94A3B8;">Expires in 60 minutes. Do not share this code with anyone.</p>
           </div>
+
+          <p style="text-align: center; margin: 16px 0;">
+            <a href="${resetUrl}" style="display: inline-block; padding: 10px 20px; background-color: #00F0FF; color: #000000; font-weight: bold; text-decoration: none; border-radius: 6px; font-size: 13px;">Reset Password in Browser</a>
+          </p>
 
           <p>If you did not request this password reset, please disregard this email or notify <a href="mailto:security@cyberstyle.net" style="color: #00F0FF;">security@cyberstyle.net</a> immediately. Your password remains securely unchanged.</p>
         `,

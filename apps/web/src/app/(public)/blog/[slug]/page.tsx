@@ -146,6 +146,46 @@ const aliasMap: Record<string, string> = {
 };
 
 async function getPost(slug: string): Promise<BlogPost | null> {
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+
+  try {
+    const res = await fetch(`${API_BASE}/content/posts/${encodeURIComponent(slug)}`, {
+      next: { revalidate: 30 },
+    });
+    if (res.ok) {
+      const json = await res.json();
+      const p = json?.data?.post;
+      if (p) {
+        return {
+          slug: p.slug,
+          title: p.title,
+          excerpt: p.excerpt,
+          category: p.category || 'Engineering',
+          readingLevel: p.tags?.[0] || 'Technical Guide',
+          readingTimeMinutes: p.readingTimeMinutes || 5,
+          publishedDate: p.publishedAt
+            ? new Date(p.publishedAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+            : 'Recent',
+          authorName: p.authorName || 'CYBERSTYLE Engineering',
+          plainLanguageSummary: p.excerpt,
+          whoItIsFor: 'Business owners and technical leaders planning digital systems.',
+          contentSections: [
+            {
+              title: 'Overview & Implementation Details',
+              paragraphs: (p.content || p.excerpt).split('\n\n').filter((x: string) => x.trim().length > 0),
+            },
+          ],
+          tradeoffsAndCosts: [
+            'Fixed upfront build fee versus recurring proprietary software fees',
+            'Full source code and data ownership transferred upon launch',
+          ],
+        };
+      }
+    }
+  } catch (err) {
+    // Graceful fallback
+  }
+
   const targetSlug = aliasMap[slug] || slug;
   return postsData[targetSlug] || null;
 }

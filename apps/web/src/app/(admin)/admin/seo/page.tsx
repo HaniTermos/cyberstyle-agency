@@ -368,6 +368,17 @@ export default function AdminSeoPage() {
         </div>
       </div>
 
+      {/* Honesty & Data Source Disclosure Banner */}
+      <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-mono flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+          <span className="font-semibold">Sample Data Mode — Observational & Manual Keyword Snapshots</span>
+        </div>
+        <span className="text-[11px] text-zinc-400">
+          Rank positions are manual/observational audit snapshots. No guaranteed search engine rankings or automated indexing SLAs.
+        </span>
+      </div>
+
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-5 rounded-2xl bg-[#07090E] border border-zinc-800 space-y-1">

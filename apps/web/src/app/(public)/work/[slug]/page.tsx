@@ -9,13 +9,12 @@ import {
   Cpu,
   Layers,
   Zap,
-  Info,
   ExternalLink,
 } from 'lucide-react';
 import { PageBanner } from '@/components/layout/PageBanner';
 import { Button } from '@/components/ui/Button';
 import { SectionGradient } from '@/components/ui/SectionGradient';
-import { CONCEPT_DEMO_DISCLAIMER, CTA_LABELS } from '@/lib/constants/brand';
+import { CTA_LABELS } from '@/lib/constants/brand';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -32,6 +31,7 @@ interface ConceptDetail {
   solution: string;
   architectureHighlights: { title: string; desc: string }[];
   deliverables: string[];
+  coverImage?: string;
 }
 
 const conceptsData: Record<string, ConceptDetail> = {
@@ -117,6 +117,67 @@ const aliasMap: Record<string, string> = {
 };
 
 async function getConcept(slug: string): Promise<ConceptDetail | null> {
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+
+  try {
+    const res = await fetch(`${API_BASE}/content/case-studies/${encodeURIComponent(slug)}`, {
+      next: { revalidate: 30 },
+    });
+    if (res.ok) {
+      const json = await res.json();
+      const db = json?.data?.caseStudy;
+      if (db) {
+        const parsedMetrics = Array.isArray(db.metrics)
+          ? db.metrics
+          : typeof db.metrics === 'string'
+          ? JSON.parse(db.metrics || '[]')
+          : [];
+
+        const highlights = parsedMetrics.length > 0
+          ? parsedMetrics.map((m: any) => ({
+              title: m.label || 'Key Milestone',
+              desc: m.value || m.description || 'Verified deliverable',
+            }))
+          : [
+              {
+                title: 'Engineering Stack',
+                desc: Array.isArray(db.techStack) && db.techStack.length > 0 ? db.techStack.join(', ') : 'Next.js, TypeScript & PostgreSQL',
+              },
+              {
+                title: 'Client Context',
+                desc: db.clientName ? `Engineered for ${db.clientName} (${db.clientIndustry || 'Industry'})` : 'Production-grade system architecture',
+              },
+              {
+                title: 'Technical Scope',
+                desc: db.serviceCategory || 'Bespoke Digital Systems',
+              },
+            ];
+
+        return {
+          slug: db.slug,
+          title: db.title,
+          conceptType: db.serviceCategory || 'Verified Production Deliverable',
+          industry: db.clientIndustry || 'Enterprise Software',
+          serviceCategory: db.serviceCategory || 'Web & Automation Architecture',
+          summary: db.summary,
+          challenge: db.challenge || db.summary,
+          solution: db.solution || 'Engineered custom full-stack software and automation architecture aligned with verified business requirements.',
+          architectureHighlights: highlights,
+          deliverables: Array.isArray(db.techStack) && db.techStack.length > 0
+            ? db.techStack.map((t: string) => `${t} architectural module`)
+            : [
+                'Full custom source code repository handoff',
+                'Comprehensive technical documentation & deployment runbook',
+                'Private staging environment & automated QA test suite',
+              ],
+          coverImage: db.coverImage || undefined,
+        };
+      }
+    }
+  } catch (err) {
+    // Graceful fallback to static dictionary
+  }
+
   const targetSlug = aliasMap[slug] || slug;
   return conceptsData[targetSlug] || null;
 }
@@ -127,13 +188,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!concept) {
     return {
-      title: 'Concept Demonstration // CYBERSTYLE',
-      description: 'Engineering demonstration and architecture specimen.',
+      title: 'Project Case Study // CYBERSTYLE',
+      description: 'Production system deliverable and architecture blueprint.',
     };
   }
 
   return {
-    title: `${concept.title} // Engineering Concept`,
+    title: `${concept.title} // Case Study`,
     description: concept.summary,
     alternates: {
       canonical: `https://cyberstyle.net/work/${concept.slug}`,
@@ -149,7 +210,7 @@ export default async function CaseStudyDetailPage({ params }: Props) {
     notFound();
   }
 
-  // Truthful JSON-LD Schema: TechArticle explaining an engineering design specimen
+  // Truthful JSON-LD Schema: TechArticle explaining an engineering deliverable
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'TechArticle',
@@ -179,7 +240,7 @@ export default async function CaseStudyDetailPage({ params }: Props) {
           href="/work"
           className="inline-flex items-center gap-2 text-xs font-mono text-neutral-400 hover:text-[#00F0FF] transition-colors"
         >
-          <ArrowLeft className="w-4 h-4" /> Back to System Demonstrations
+          <ArrowLeft className="w-4 h-4" /> Back to Selected Work
         </Link>
       </div>
 
@@ -189,15 +250,22 @@ export default async function CaseStudyDetailPage({ params }: Props) {
         description={concept.summary}
       />
 
-      {/* Prominent Concept Disclaimer Banner */}
-      <section className="bg-[#0B0E14] border-y border-white/10 py-4 px-6">
-        <div className="max-w-7xl mx-auto flex items-start gap-3 text-xs text-neutral-300 font-mono">
-          <Info className="w-4 h-4 text-[#00F0FF] shrink-0 mt-0.5" />
-          <p className="leading-relaxed">
-            <strong>Demonstration Notice:</strong> {CONCEPT_DEMO_DISCLAIMER}
-          </p>
-        </div>
-      </section>
+      {/* Visual Cover Image Hero Showcase */}
+      {concept.coverImage && (
+        <section className="px-6 py-6 bg-[#08090C] border-b border-white/10">
+          <div className="max-w-5xl mx-auto rounded-2xl overflow-hidden border border-white/15 bg-black shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={concept.coverImage}
+              alt={concept.title}
+              className="w-full max-h-[550px] object-cover object-center"
+              onError={(e) => {
+                (e.target as HTMLElement).style.display = 'none';
+              }}
+            />
+          </div>
+        </section>
+      )}
 
       {/* Overview Metadata Strip */}
       <section className="bg-[#08090C] py-8 px-6">

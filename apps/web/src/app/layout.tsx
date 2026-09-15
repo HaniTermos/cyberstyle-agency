@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter, Syne, JetBrains_Mono } from 'next/font/google';
 import { GoogleAnalytics } from '@next/third-parties/google';
+import { WebVitals } from '@/components/WebVitals';
 import './globals.css';
 
 const inter = Inter({
@@ -113,6 +114,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen bg-black text-white font-sans antialiased selection:bg-[#00F0FF] selection:text-black">
+        <WebVitals />
         {children}
         {gaId && <GoogleAnalytics gaId={gaId} />}
       </body>

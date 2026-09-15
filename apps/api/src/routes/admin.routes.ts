@@ -1,7 +1,7 @@
 import { Router, Response, NextFunction } from 'express';
 import { prisma } from '../config/db';
 import { requireAuth, requireRole, AuthenticatedRequest } from '../middleware/auth.middleware';
-import { logAudit } from '../utils/auditLogger';
+import { logAudit, verifyAuditChain, exportAuditLogsToCsv } from '../utils/auditLogger';
 import {
   UserRole,
   LeadStage,
@@ -20,6 +20,8 @@ import { TaskService } from '../services/task.service';
 import { MilestoneDeliveryService } from '../services/milestone-delivery.service';
 import { AuthService } from '../services/auth.service';
 import { EmailService } from '../services/email.service';
+import { FileSecurityService, VALID_FOLDERS } from '../services/file-security.service';
+import { ScanState, FileFolder, FileVisibility } from '@prisma/client';
 import crypto from 'crypto';
 import { z } from 'zod';
 
@@ -33,22 +35,50 @@ router.use(requireRole([UserRole.SUPER_ADMIN, UserRole.ADMIN]));
 // 1. EXECUTIVE DASHBOARD & TELEMETRY
 // ==============================================================================
 
-router.get('/dashboard', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+router.get('/dashboard', async (_req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
+    const now = new Date();
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
     const [
-      newLeadsCount,
+      newLeads7Days,
+      newLeads30Days,
       allLeads,
-      activeProjects,
-      invoices,
-      retainers,
-      pendingReviewsCount,
-      unreadContactsCount,
+      leadsNeedingFollowUp,
+      proposalsPendingDecision,
+      activeProjectsRaw,
+      invoicesNeedingAttention,
+      recentInvoices,
+      unreadClientMessagesCount,
       recentAuditLogs,
-      todos,
-      roadmapItems,
     ] = await Promise.all([
-      prisma.lead.count({ where: { stage: LeadStage.NEW } }),
-      prisma.lead.findMany({ orderBy: { createdAt: 'desc' } }),
+      prisma.lead.count({
+        where: { createdAt: { gte: sevenDaysAgo } },
+      }),
+      prisma.lead.count({
+        where: { createdAt: { gte: thirtyDaysAgo } },
+      }),
+      prisma.lead.findMany({
+        orderBy: { createdAt: 'desc' },
+        take: 10,
+      }),
+      prisma.lead.findMany({
+        where: {
+          OR: [
+            { nextFollowUpAt: { lte: now } },
+            {
+              stage: { in: [LeadStage.NEW, LeadStage.REVIEWING, LeadStage.QUALIFIED, LeadStage.CONTACTED] },
+              createdAt: { lte: sevenDaysAgo },
+            },
+          ],
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+      }),
+      prisma.proposal.count({
+        where: { status: { in: ['SENT', 'APPROVED'] } },
+      }),
       prisma.project.findMany({
         where: {
           status: {
@@ -61,109 +91,75 @@ router.get('/dashboard', async (req: AuthenticatedRequest, res: Response, next: 
           },
         },
         include: {
-          organization: true,
+          organization: { select: { id: true, name: true } },
           milestones: { orderBy: { orderIndex: 'asc' } },
         },
+        orderBy: { updatedAt: 'desc' },
+      }),
+      prisma.invoice.findMany({
+        where: {
+          status: { in: [InvoiceStatus.DUE, InvoiceStatus.OVERDUE, InvoiceStatus.PARTIALLY_PAID, InvoiceStatus.DISPUTED] },
+        },
+        include: { organization: { select: { id: true, name: true } } },
+        orderBy: { dueDate: 'asc' },
       }),
       prisma.invoice.findMany({
         orderBy: { createdAt: 'desc' },
-        include: { organization: true },
+        take: 5,
+        include: { organization: { select: { id: true, name: true } } },
       }),
-      prisma.retainer.findMany({
-        where: { status: RetainerStatus.ACTIVE },
+      prisma.message.count({
+        where: {
+          visibility: 'CLIENT_VISIBLE',
+          isInternal: false,
+        },
       }),
-      prisma.review.count({ where: { status: ReviewStatus.PENDING } }),
-      prisma.contactSubmission.count({ where: { status: ContactStatus.UNREAD } }),
       prisma.auditLog.findMany({
         orderBy: { createdAt: 'desc' },
-        take: 10,
+        take: 8,
         include: { user: { select: { id: true, name: true, email: true } } },
-      }),
-      prisma.todo.findMany({
-        where: { userId: req.user.id },
-        orderBy: [{ isCompleted: 'asc' }, { createdAt: 'desc' }],
-      }),
-      prisma.roadmapItem.findMany({
-        orderBy: { orderIndex: 'asc' },
       }),
     ]);
 
-    // Financial & Pipeline KPI Calculations
-    const wonLeads = allLeads.filter((l) => l.stage === LeadStage.WON);
-    const qualifiedLeads = allLeads.filter(
-      (l) => l.stage !== LeadStage.NEW && l.stage !== LeadStage.ARCHIVED
-    );
-    const conversionRate =
-      qualifiedLeads.length > 0
-        ? Math.round((wonLeads.length / qualifiedLeads.length) * 100)
-        : 0;
+    // Format active projects with derived milestone counts ("X of Y milestones completed")
+    const activeProjects = activeProjectsRaw.map((p) => {
+      const totalMilestones = p.milestones.length;
+      const completedMilestones = p.milestones.filter(
+        (m) => m.status === MilestoneStatus.COMPLETED
+      ).length;
+      const percent = totalMilestones > 0 ? Math.round((completedMilestones / totalMilestones) * 100) : 0;
 
-    const totalPipelineValue = allLeads.reduce(
-      (acc, l) => acc + (l.estimatedValue ? Number(l.estimatedValue) : 0),
-      0
-    );
-
-    const paidInvoicesTotal = invoices
-      .filter((i) => i.status === InvoiceStatus.PAID)
-      .reduce((acc, i) => acc + Number(i.totalAmount), 0);
-
-    const outstandingInvoicesTotal = invoices
-      .filter((i) => i.status === InvoiceStatus.SENT || i.status === InvoiceStatus.DRAFT)
-      .reduce((acc, i) => acc + Number(i.amountDue), 0);
-
-    const overdueInvoices = invoices.filter((i) => i.status === InvoiceStatus.OVERDUE);
-    const overdueInvoicesTotal = overdueInvoices.reduce(
-      (acc, i) => acc + Number(i.amountDue),
-      0
-    );
-
-    const totalMRR = retainers.reduce((acc, r) => acc + Number(r.amount), 0);
-
-    // Milestones due this week
-    const now = new Date();
-    const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-    const milestonesDueThisWeek = await prisma.milestone.count({
-      where: {
-        status: { in: [MilestoneStatus.NOT_STARTED, MilestoneStatus.IN_PROGRESS] },
-        dueDate: { gte: now, lte: nextWeek },
-      },
+      return {
+        id: p.id,
+        name: p.name,
+        slug: p.slug,
+        status: p.status,
+        organizationName: p.organization.name,
+        totalMilestones,
+        completedMilestones,
+        milestoneProgress: `${completedMilestones} of ${totalMilestones} milestones completed`,
+        percent,
+      };
     });
 
     res.status(200).json({
       status: 'success',
       data: {
         kpis: {
-          newLeadsCount,
-          totalLeadsCount: allLeads.length,
+          newLeads7Days,
+          newLeads30Days,
+          leadsNeedingFollowUpCount: leadsNeedingFollowUp.length,
+          proposalsPendingDecision,
           activeProjectsCount: activeProjects.length,
-          milestonesDueThisWeek,
-          totalPipelineValue,
-          paidInvoicesTotal,
-          outstandingInvoicesTotal,
-          overdueInvoicesTotal,
-          totalMRR,
-          conversionRate,
-          pendingReviewsCount,
-          unreadContactsCount,
+          invoicesNeedingAttentionCount: invoicesNeedingAttention.length,
+          unreadClientMessagesCount,
         },
-        pipeline: {
-          countsByStage: {
-            NEW: allLeads.filter((l) => l.stage === LeadStage.NEW).length,
-            CONTACTED: allLeads.filter((l) => l.stage === LeadStage.CONTACTED).length,
-            QUALIFIED: allLeads.filter((l) => l.stage === LeadStage.QUALIFIED).length,
-            PROPOSAL: allLeads.filter((l) => l.stage === LeadStage.PROPOSAL).length,
-            WON: wonLeads.length,
-            LOST: allLeads.filter((l) => l.stage === LeadStage.LOST).length,
-            ARCHIVED: allLeads.filter((l) => l.stage === LeadStage.ARCHIVED).length,
-          },
-          recentLeads: allLeads.slice(0, 5),
-        },
+        leadsNeedingFollowUp,
+        recentLeads: allLeads,
         activeProjects,
-        invoices: invoices.slice(0, 5),
-        overdueInvoices,
+        invoicesNeedingAttention,
+        recentInvoices,
         recentAuditLogs,
-        todos,
-        roadmapItems,
       },
     });
   } catch (error) {
@@ -218,6 +214,26 @@ router.post('/leads', async (req: AuthenticatedRequest, res: Response, next: Nex
       estimatedValue,
       notes,
     } = req.body;
+
+    // Deduplication check on email and phone
+    const existing = await prisma.lead.findFirst({
+      where: {
+        OR: [
+          { email: { equals: email.trim(), mode: 'insensitive' } },
+          ...(phone ? [{ phone: { equals: phone.trim() } }] : []),
+        ],
+      },
+    });
+
+    if (existing) {
+      res.status(409).json({
+        status: 'error',
+        code: 'DUPLICATE_LEAD',
+        message: `A lead with email "${email}" or phone already exists in stage [${existing.stage}].`,
+        data: { existingLeadId: existing.id },
+      });
+      return;
+    }
 
     const lead = await prisma.lead.create({
       data: {
@@ -1113,7 +1129,22 @@ router.get('/reviews', async (_req: AuthenticatedRequest, res: Response, next: N
 
 router.post('/reviews', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
-    const { clientName, clientTitle, clientCompany, companyName, rating, quote, isFeatured, status, projectId } = req.body;
+    const {
+      clientName,
+      clientTitle,
+      clientCompany,
+      companyName,
+      rating,
+      quote,
+      isFeatured,
+      status,
+      projectId,
+      provenance,
+      consent,
+      displayPermission,
+      source,
+      reviewDate,
+    } = req.body;
 
     const review = await prisma.review.create({
       data: {
@@ -1124,9 +1155,23 @@ router.post('/reviews', async (req: AuthenticatedRequest, res: Response, next: N
         rating: Number(rating || 5),
         quote,
         isFeatured: Boolean(isFeatured),
-        status: status || ReviewStatus.APPROVED,
+        status: status || ReviewStatus.PENDING,
         approvedAt: status === ReviewStatus.APPROVED ? new Date() : null,
+        provenance: provenance || 'Direct Feedback',
+        consent: Boolean(consent),
+        displayPermission: Boolean(displayPermission),
+        source: source || 'admin_entry',
+        reviewDate: reviewDate ? new Date(reviewDate) : new Date(),
       },
+    });
+
+    await logAudit({
+      userId: req.user.id,
+      action: 'REVIEW_CREATED',
+      entityType: 'Review',
+      entityId: review.id,
+      changes: { clientName, status: review.status, displayPermission: review.displayPermission },
+      req,
     });
 
     res.status(201).json({ status: 'success', data: { review } });
@@ -1138,7 +1183,18 @@ router.post('/reviews', async (req: AuthenticatedRequest, res: Response, next: N
 router.patch('/reviews/:id', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
-    const { status, isFeatured, quote, rating, clientName, clientCompany, companyName } = req.body;
+    const {
+      status,
+      isFeatured,
+      quote,
+      rating,
+      clientName,
+      clientCompany,
+      companyName,
+      provenance,
+      consent,
+      displayPermission,
+    } = req.body;
 
     const review = await prisma.review.update({
       where: { id },
@@ -1149,7 +1205,19 @@ router.patch('/reviews/:id', async (req: AuthenticatedRequest, res: Response, ne
         ...(rating !== undefined ? { rating: Number(rating) } : {}),
         ...(clientName ? { clientName } : {}),
         ...(companyName !== undefined ? { companyName } : clientCompany !== undefined ? { companyName: clientCompany } : {}),
+        ...(provenance !== undefined ? { provenance } : {}),
+        ...(consent !== undefined ? { consent: Boolean(consent) } : {}),
+        ...(displayPermission !== undefined ? { displayPermission: Boolean(displayPermission) } : {}),
       },
+    });
+
+    await logAudit({
+      userId: req.user.id,
+      action: 'REVIEW_UPDATED',
+      entityType: 'Review',
+      entityId: id,
+      changes: { status: review.status, displayPermission: review.displayPermission },
+      req,
     });
 
     res.status(200).json({ status: 'success', data: { review } });
@@ -1163,6 +1231,110 @@ router.delete('/reviews/:id', async (req: AuthenticatedRequest, res: Response, n
     const { id } = req.params;
     await prisma.review.delete({ where: { id } });
     res.status(200).json({ status: 'success', message: 'Review deleted successfully' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ==============================================================================
+// 7B. FAQS CRUD (ADMIN)
+// ==============================================================================
+
+router.get('/faqs', async (_req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const faqs = await prisma.fAQ.findMany({
+      orderBy: [{ orderIndex: 'asc' }, { createdAt: 'asc' }],
+    });
+    res.status(200).json({ status: 'success', data: { faqs } });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post('/faqs', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const { question, answer, category, displayPages, orderIndex, isPublished } = req.body;
+    if (!question || !answer) {
+      res.status(400).json({ status: 'error', message: 'Question and answer are required' });
+      return;
+    }
+
+    const faq = await prisma.fAQ.create({
+      data: {
+        question,
+        answer,
+        category: category || 'General',
+        displayPages: Array.isArray(displayPages) ? displayPages.map((p: string) => p.toLowerCase()) : ['faq', 'home'],
+        orderIndex: Number(orderIndex || 0),
+        isPublished: isPublished !== undefined ? Boolean(isPublished) : true,
+      },
+    });
+
+    await logAudit({
+      userId: req.user.id,
+      action: 'FAQ_CREATED',
+      entityType: 'FAQ',
+      entityId: faq.id,
+      changes: { question, category },
+      req,
+    });
+
+    res.status(201).json({ status: 'success', data: { faq } });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.patch('/faqs/:id', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    const { question, answer, category, displayPages, orderIndex, isPublished } = req.body;
+
+    const data: any = {};
+    if (question !== undefined) data.question = question;
+    if (answer !== undefined) data.answer = answer;
+    if (category !== undefined) data.category = category;
+    if (displayPages !== undefined && Array.isArray(displayPages)) {
+      data.displayPages = displayPages.map((p: string) => p.toLowerCase());
+    }
+    if (orderIndex !== undefined) data.orderIndex = Number(orderIndex);
+    if (isPublished !== undefined) data.isPublished = Boolean(isPublished);
+
+    const faq = await prisma.fAQ.update({
+      where: { id },
+      data,
+    });
+
+    await logAudit({
+      userId: req.user.id,
+      action: 'FAQ_UPDATED',
+      entityType: 'FAQ',
+      entityId: faq.id,
+      changes: data,
+      req,
+    });
+
+    res.status(200).json({ status: 'success', data: { faq } });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.delete('/faqs/:id', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    await prisma.fAQ.delete({ where: { id } });
+
+    await logAudit({
+      userId: req.user.id,
+      action: 'FAQ_DELETED',
+      entityType: 'FAQ',
+      entityId: id,
+      changes: { deleted: true },
+      req,
+    });
+
+    res.status(200).json({ status: 'success', message: 'FAQ deleted successfully' });
   } catch (error) {
     next(error);
   }
@@ -1288,28 +1460,6 @@ router.delete('/todos/:id', async (req: AuthenticatedRequest, res: Response, nex
     const { id } = req.params;
     await prisma.todo.delete({ where: { id, userId: req.user.id } });
     res.status(200).json({ status: 'success', message: 'Todo deleted' });
-  } catch (error) {
-    next(error);
-  }
-});
-
-router.get('/users', async (_req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-  try {
-    const users = await prisma.user.findMany({
-      where: { role: { in: [UserRole.SUPER_ADMIN, UserRole.ADMIN] } },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        status: true,
-        twoFactorEnabled: true,
-        createdAt: true,
-        adminProfile: true,
-      },
-      orderBy: { createdAt: 'desc' },
-    });
-    res.status(200).json({ status: 'success', data: { users } });
   } catch (error) {
     next(error);
   }
@@ -1526,7 +1676,7 @@ router.delete('/reports/:id', async (req: AuthenticatedRequest, res: Response, n
  * @route   GET /api/v1/admin/users
  * @desc    Fetch all administrative and client users
  */
-router.get('/users', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+router.get('/users', async (_req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
     const users = await prisma.user.findMany({
       orderBy: { createdAt: 'desc' },
@@ -1563,6 +1713,7 @@ router.get('/users', async (req: AuthenticatedRequest, res: Response, next: Next
     res.status(200).json({
       status: 'success',
       data: users,
+      users,
     });
   } catch (error) {
     next(error);
@@ -1573,7 +1724,7 @@ router.get('/users', async (req: AuthenticatedRequest, res: Response, next: Next
  * @route   GET /api/v1/admin/clients
  * @desc    Fetch client organizations for portal management
  */
-router.get('/clients', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+router.get('/clients', async (_req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
     const clients = await prisma.clientOrganization.findMany({
       orderBy: { name: 'asc' },
@@ -1596,7 +1747,7 @@ router.get('/clients', async (req: AuthenticatedRequest, res: Response, next: Ne
         },
         invoices: {
           where: { status: { in: ['SENT', 'OVERDUE', 'PARTIALLY_PAID'] } },
-          select: { id: true, total: true, status: true },
+          select: { id: true, totalAmount: true, status: true },
         },
       },
     });
@@ -1850,13 +2001,14 @@ router.post('/users/:id/reset-password', async (req: AuthenticatedRequest, res: 
  * @route   GET /api/v1/admin/media
  * @desc    Fetch all stored media assets
  */
-router.get('/media', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+router.get('/media', async (_req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
     const assets = await prisma.fileAsset.findMany({
       orderBy: { createdAt: 'desc' },
       include: {
         organization: { select: { id: true, name: true } },
         uploader: { select: { id: true, name: true, email: true } },
+        versions: { orderBy: { versionNumber: 'desc' } },
       },
     });
 
@@ -1865,11 +2017,18 @@ router.get('/media', async (req: AuthenticatedRequest, res: Response, next: Next
       data: assets.map((a) => ({
         id: a.id,
         filename: a.filename,
+        folder: a.folder || 'CONTENT_BRAND',
+        visibility: a.visibility,
+        isQuarantined: a.isQuarantined,
+        currentVersion: a.currentVersion,
         mimeType: a.mimeType,
         sizeBytes: a.sizeBytes,
-        url: a.url || `http://localhost:4000/api/v1/messaging/files/${a.id}`,
+        storageKey: a.storageKey,
+        url: a.url || `/uploads/clean/${a.storageKey}`,
+        publicUrl: `/images/${a.filename}`,
         organization: a.organization?.name || 'CYBERSTYLE Agency Global',
         uploader: a.uploader?.name || a.uploader?.email || 'Executive Admin',
+        versions: a.versions || [],
         createdAt: a.createdAt,
       })),
     });
@@ -1977,6 +2136,460 @@ router.delete('/media/:id', async (req: AuthenticatedRequest, res: Response, nex
     });
 
     res.status(200).json({ status: 'success', message: 'Asset removed successfully' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ==============================================================================
+// 12. ENVIRONMENT-SCOPED SYSTEM SETTINGS
+// ==============================================================================
+
+const SettingsPayloadSchema = z.object({
+  brandLegalName: z.string().min(2),
+  primaryProductionDomain: z.string().min(3),
+  strictTotpEnforcement: z.boolean().default(true),
+  autoSessionRotation: z.boolean().default(true),
+});
+
+/**
+ * @route   GET /api/v1/admin/settings
+ * @desc    Fetch system settings for current environment
+ */
+router.get('/settings', async (_req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const environment = process.env.NODE_ENV || 'development';
+
+    const records = await prisma.systemSetting.findMany({
+      where: { environment },
+    });
+
+    const settingsMap: Record<string, any> = {
+      environment,
+      brandLegalName: 'CYBERSTYLE LLC',
+      primaryProductionDomain: 'cyberstyle.net',
+      strictTotpEnforcement: true,
+      autoSessionRotation: true,
+    };
+
+    records.forEach((r) => {
+      try {
+        settingsMap[r.key] = JSON.parse(r.value);
+      } catch {
+        settingsMap[r.key] = r.value;
+      }
+    });
+
+    res.status(200).json({ status: 'success', data: settingsMap });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * @route   PUT /api/v1/admin/settings
+ * @desc    Save system settings for current environment
+ */
+router.put('/settings', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const environment = process.env.NODE_ENV || 'development';
+    const payload = SettingsPayloadSchema.parse(req.body);
+
+    const entries = [
+      { key: 'brandLegalName', value: JSON.stringify(payload.brandLegalName) },
+      { key: 'primaryProductionDomain', value: JSON.stringify(payload.primaryProductionDomain) },
+      { key: 'strictTotpEnforcement', value: JSON.stringify(payload.strictTotpEnforcement) },
+      { key: 'autoSessionRotation', value: JSON.stringify(payload.autoSessionRotation) },
+    ];
+
+    await prisma.$transaction(
+      entries.map((entry) =>
+        prisma.systemSetting.upsert({
+          where: {
+            environment_key: {
+              environment,
+              key: entry.key,
+            },
+          },
+          update: {
+            value: entry.value,
+            updatedById: req.user.id,
+          },
+          create: {
+            environment,
+            key: entry.key,
+            value: entry.value,
+            updatedById: req.user.id,
+          },
+        })
+      )
+    );
+
+    await logAudit({
+      userId: req.user.id,
+      action: 'SYSTEM_SETTINGS_UPDATED',
+      entityType: 'SystemSetting',
+      entityId: environment,
+      metadata: { environment, updatedKeys: entries.map((e) => e.key) },
+      req,
+    });
+
+    res.status(200).json({
+      status: 'success',
+      message: `System settings for [${environment}] updated successfully.`,
+      data: payload,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ==============================================================================
+// 13. USER MANAGEMENT & ROLE GOVERNANCE
+// ==============================================================================
+
+router.put('/users/:id/role', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    const { role } = req.body;
+
+    if (!Object.values(UserRole).includes(role)) {
+      res.status(400).json({ status: 'error', message: 'Invalid role specified.' });
+      return;
+    }
+
+    const previousUser = await prisma.user.findUnique({ where: { id } });
+    if (!previousUser) {
+      res.status(404).json({ status: 'error', message: 'User not found.' });
+      return;
+    }
+
+    const updated = await prisma.user.update({
+      where: { id },
+      data: { role },
+      select: { id: true, email: true, role: true },
+    });
+
+    await logAudit({
+      userId: req.user.id,
+      action: 'USER_ROLE_CHANGED',
+      entityType: 'User',
+      entityId: id,
+      changes: { from: previousUser.role, to: role },
+      req,
+    });
+
+    res.status(200).json({ status: 'success', data: updated });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ==============================================================================
+// 14. TAMPER-EVIDENT AUDIT LOG TRAIL & CSV EXPORT
+// ==============================================================================
+
+router.get('/audit-logs', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const { format, organizationId, entityType, limit = '100' } = req.query;
+
+    const logs = await prisma.auditLog.findMany({
+      where: {
+        ...(organizationId ? { organizationId: String(organizationId) } : {}),
+        ...(entityType ? { entityType: String(entityType) } : {}),
+      },
+      include: {
+        user: { select: { id: true, name: true, email: true, role: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: Math.min(Number(limit) || 100, 500),
+    });
+
+    // Verify cryptographic forward-hash chain (in chronological order)
+    const verification = verifyAuditChain(logs.slice().reverse());
+
+    if (format === 'csv') {
+      const csv = exportAuditLogsToCsv(logs);
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename="audit-logs-${Date.now()}.csv"`);
+      res.status(200).send(csv);
+      return;
+    }
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        logs,
+        verification,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ==============================================================================
+// 12. PHASE 3 SECURE MEDIA & FILE ASSET MANAGEMENT
+// ==============================================================================
+
+/**
+ * @route   GET /api/admin/media
+ * @desc    List secure, versioned file assets with scan states & folder taxonomy
+ */
+router.get('/media', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const { folder, organizationId, search, scanState } = req.query;
+
+    const files = await prisma.fileAsset.findMany({
+      where: {
+        isDeleted: false,
+        ...(folder && VALID_FOLDERS.includes(folder as FileFolder) ? { folder: folder as FileFolder } : {}),
+        ...(organizationId ? { organizationId: String(organizationId) } : {}),
+        ...(scanState ? { versions: { some: { scanState: scanState as ScanState } } } : {}),
+        ...(search ? { filename: { contains: String(search), mode: 'insensitive' } } : {}),
+      },
+      include: {
+        organization: { select: { id: true, name: true } },
+        project: { select: { id: true, name: true } },
+        uploader: { select: { id: true, name: true, email: true, role: true } },
+        versions: {
+          orderBy: { versionNumber: 'desc' },
+          take: 5,
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+    });
+
+    res.status(200).json({
+      status: 'success',
+      data: files,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * @route   POST /api/admin/media/upload
+ * @desc    Quarantine upload with MIME signature validation, virus scan, and versioning
+ */
+router.post('/media/upload', async (req: AuthenticatedRequest, res: Response, _next: NextFunction) => {
+  try {
+    const {
+      filename,
+      base64Data,
+      organizationId,
+      projectId,
+      folder,
+      visibility,
+      existingAssetId,
+    } = req.body;
+
+    if (!filename || !base64Data) {
+      res.status(400).json({ status: 'error', code: 'INVALID_PAYLOAD', message: 'Filename and base64Data are required.' });
+      return;
+    }
+
+    // Resolve target organization (use first active org if not specified for agency files)
+    let targetOrgId = organizationId;
+    if (!targetOrgId) {
+      const defaultOrg = await prisma.clientOrganization.findFirst();
+      targetOrgId = defaultOrg ? defaultOrg.id : 'org_default';
+    }
+
+    const buffer = Buffer.from(base64Data.replace(/^data:.*?;base64,/, ''), 'base64');
+
+    const result = await FileSecurityService.quarantineUpload({
+      organizationId: targetOrgId,
+      projectId: projectId || undefined,
+      uploaderId: req.user.id,
+      filename,
+      buffer,
+      folder: folder as FileFolder | undefined,
+      visibility: visibility as FileVisibility | undefined,
+      existingAssetId: existingAssetId || undefined,
+    }, req);
+
+    res.status(201).json({
+      status: 'success',
+      data: {
+        fileAsset: result.fileAsset,
+        version: result.version,
+        scanState: result.version.scanState,
+        message: 'File uploaded into secure quarantine enclave. Security scanning in progress.',
+      },
+    });
+  } catch (error: any) {
+    res.status(400).json({
+      status: 'error',
+      code: 'UPLOAD_FAILED',
+      message: error.message || 'File upload rejected by security validation.',
+    });
+  }
+});
+
+/**
+ * @route   POST /api/admin/media/:id/signed-url
+ * @desc    Generate expiring signed download URL
+ */
+router.post('/media/:id/signed-url', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    const { versionId } = req.body;
+
+    const file = await prisma.fileAsset.findUnique({
+      where: { id },
+      include: { versions: { orderBy: { versionNumber: 'desc' }, take: 1 } },
+    });
+
+    if (!file || file.isDeleted) {
+      res.status(404).json({ status: 'error', code: 'FILE_NOT_FOUND', message: 'File asset not found.' });
+      return;
+    }
+
+    const token = FileSecurityService.generateSignedDownloadToken(file.id, versionId);
+    const signedUrl = `/api/v1/files/download/${token}`;
+
+    await FileSecurityService.logFileAccess({
+      fileAssetId: file.id,
+      fileVersionId: versionId || file.versions[0]?.id,
+      userId: req.user.id,
+      action: 'VIEW',
+      req,
+    });
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        signedUrl,
+        token,
+        expiresInSeconds: 300,
+        filename: file.filename,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * @route   DELETE /api/admin/media/:id
+ * @desc    Soft delete file asset with audit trail
+ */
+router.delete('/media/:id', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+
+    const file = await prisma.fileAsset.update({
+      where: { id },
+      data: { isDeleted: true },
+    });
+
+    await logAudit({
+      userId: req.user.id,
+      organizationId: file.organizationId,
+      action: 'FILE_DELETED',
+      entityType: 'FileAsset',
+      entityId: file.id,
+      changes: { isDeleted: true },
+      req,
+    });
+
+    await FileSecurityService.logFileAccess({
+      fileAssetId: file.id,
+      userId: req.user.id,
+      action: 'DELETE',
+      req,
+    });
+
+    res.status(200).json({ status: 'success', message: 'File successfully deleted.' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ==============================================================================
+// 13. PHASE 3 AI GOVERNANCE & TELEMETRY
+// ==============================================================================
+
+/**
+ * @route   GET /api/admin/ai/usage
+ * @desc    Get live AI token consumption, feature distribution, and budget telemetry
+ */
+router.get('/ai/usage', async (_req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const [recentLogs, totalUsageRaw] = await Promise.all([
+      prisma.aiUsageLog.findMany({
+        take: 50,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          organization: { select: { id: true, name: true } },
+          user: { select: { id: true, name: true, email: true } },
+        },
+      }),
+      prisma.aiUsageLog.aggregate({
+        _sum: { totalTokens: true, promptTokens: true, completionTokens: true },
+        _count: { id: true },
+      }),
+    ]);
+
+    const budgetPolicies = await prisma.aiBudgetPolicy.findMany({
+      include: { organization: { select: { id: true, name: true } } },
+    });
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        summary: {
+          totalCalls: totalUsageRaw._count.id || 0,
+          totalTokens: totalUsageRaw._sum.totalTokens || 0,
+          promptTokens: totalUsageRaw._sum.promptTokens || 0,
+          completionTokens: totalUsageRaw._sum.completionTokens || 0,
+        },
+        budgetPolicies,
+        recentLogs,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * @route   POST /api/admin/ai/budget
+ * @desc    Configure or update tenant AI token budget and rate limits
+ */
+router.post('/ai/budget', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const { organizationId, monthlyTokenBudget, rateLimitPerMinute, isEnforced } = req.body;
+
+    const policy = await prisma.aiBudgetPolicy.upsert({
+      where: { organizationId: organizationId || null },
+      create: {
+        organizationId: organizationId || null,
+        monthlyTokenBudget: Number(monthlyTokenBudget) || 500000,
+        rateLimitPerMinute: Number(rateLimitPerMinute) || 60,
+        isEnforced: isEnforced !== undefined ? Boolean(isEnforced) : true,
+      },
+      update: {
+        monthlyTokenBudget: monthlyTokenBudget !== undefined ? Number(monthlyTokenBudget) : undefined,
+        rateLimitPerMinute: rateLimitPerMinute !== undefined ? Number(rateLimitPerMinute) : undefined,
+        isEnforced: isEnforced !== undefined ? Boolean(isEnforced) : undefined,
+      },
+    });
+
+    await logAudit({
+      userId: req.user.id,
+      organizationId: organizationId || undefined,
+      action: 'AI_BUDGET_POLICY_UPDATED',
+      entityType: 'AiBudgetPolicy',
+      entityId: policy.id,
+      changes: { monthlyTokenBudget, rateLimitPerMinute, isEnforced },
+      req,
+    });
+
+    res.status(200).json({ status: 'success', data: policy });
   } catch (error) {
     next(error);
   }

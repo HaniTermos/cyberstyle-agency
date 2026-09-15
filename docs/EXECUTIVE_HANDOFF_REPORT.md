@@ -169,9 +169,9 @@ DATABASE_URL="postgresql://user:pass@host:5432/cyberstyle_prod"
 JWT_SECRET="your_long_random_production_secret"
 STRIPE_SECRET_KEY="sk_live_..."
 STRIPE_WEBHOOK_SECRET="whsec_..."
-GMAIL_USER="contact@cyberstyle.net"
+GMAIL_USER="info@cyberstyle.net"
 GMAIL_APP_PASSWORD="your_google_app_password"
-EMAIL_FROM='"CYBERSTYLE Executive" <contact@cyberstyle.net>'
+EMAIL_FROM='"CYBERSTYLE Executive" <info@cyberstyle.net>'
 NEXT_PUBLIC_API_URL="https://api.cyberstyle.net/api/v1"
 NEXT_PUBLIC_APP_URL="https://cyberstyle.net"
 ```

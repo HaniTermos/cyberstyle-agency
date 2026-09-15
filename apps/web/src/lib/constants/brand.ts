@@ -6,7 +6,7 @@
 export const BRAND_NAME = 'CYBERSTYLE';
 export const LEGAL_ENTITY_NAME = 'CYBERSTYLE LLC';
 export const PRIMARY_DOMAIN = 'https://cyberstyle.net';
-export const CONTACT_EMAIL = 'contact@cyberstyle.net';
+export const CONTACT_EMAIL = 'info@cyberstyle.net';
 export const PRIVACY_EMAIL = 'privacy@cyberstyle.net';
 
 // Core Positioning
@@ -20,20 +20,72 @@ export const AVAILABILITY_NOTICE =
   'Taking on a limited number of new website and automation projects.';
 
 // Standard Disclaimers & Disclosures
-export const OWNERSHIP_DISCLOSURE =
-  'After final payment, you own the custom deliverables specified in your agreement, subject to third-party licenses and provider terms.';
+export const INCLUDED_SCOPE_DISCLOSURE =
+  'Your quote covers the agreed strategy, design, development, testing, and launch of your project.';
 
 export const ONGOING_COSTS_DISCLOSURE =
-  'Project pricing covers custom build services. Ongoing operating costs such as hosting, domain registration/renewal, email, SMS, calendar tools, AI API usage, payment processing, cloud storage, monitoring, maintenance, and third-party software are separate and disclosed upfront before activation.';
+  'Some services are paid directly to external providers, such as your domain name, web hosting, email platform, online payments, booking software, or AI usage. We explain these costs clearly before anything is activated—there are no surprise subscriptions.';
+
+export const OWNERSHIP_DISCLOSURE =
+  'After final payment, you receive ownership of the custom work created for your project, as specified in your agreement. External tools remain subject to their own provider terms.';
 
 export const AI_LIMITATIONS_DISCLOSURE =
   'AI can make mistakes. We use approved information, guardrails, testing, and human handoff rules to reduce risk. Your team remains responsible for high-impact decisions and final approvals.';
 
 export const SUPPORT_DISCLOSURE =
-  'Support plans are tailored to hosting, monitoring, backups, update needs, response expectations, and monthly change allowances. Exact inclusions and fees are detailed in your proposal.';
+  'We stay available after launch for 30 days of post-launch support to resolve issues related to the agreed project and help your team settle into the new system.';
 
-export const CONCEPT_DEMO_DISCLAIMER =
-  'This is a concept demonstration created by CYBERSTYLE to showcase design and architectural capabilities. It is not an actual client result or commercial endorsement.';
+// High-Perception Value Extras Included with Every Engagement
+export const VALUE_EXTRAS = [
+  {
+    title: 'Business-first planning session',
+    description: 'Before design starts, we map your service, ideal customers, common questions, and the action you want visitors to take.',
+  },
+  {
+    title: 'A website designed to guide decisions',
+    description: 'We organise your content so visitors quickly understand your offer, see why they should trust you, and know exactly what to do next.',
+  },
+  {
+    title: 'Ready-to-launch checklist',
+    description: 'We help you prepare the essentials—contact details, enquiry notifications, legal links, analytics, and launch checks—before your site goes live.',
+  },
+  {
+    title: 'Personal handover walkthrough',
+    description: 'Receive a short recorded walkthrough showing how to update key content, manage enquiries, and use the tools included in your project.',
+  },
+  {
+    title: '30 days of post-launch support',
+    description: 'We stay available after launch to resolve issues related to the agreed project and help your team settle into the new system.',
+  },
+  {
+    title: 'Mobile, speed, and enquiry-flow review',
+    description: 'Before launch, we test the most important customer journey: arriving on your site, understanding your offer, and contacting you successfully.',
+  },
+];
+
+// Simple 4-Step Engagement Process
+export const PROJECT_PROCESS_STEPS = [
+  {
+    step: '01',
+    title: 'Tell us what you need',
+    desc: 'Share your business, goals, and current challenges.',
+  },
+  {
+    step: '02',
+    title: 'Receive a clear plan',
+    desc: 'We send recommended scope, timeline, deliverables, and price.',
+  },
+  {
+    step: '03',
+    title: 'Review before we build',
+    desc: 'You approve the direction before development begins.',
+  },
+  {
+    step: '04',
+    title: 'Launch with confidence',
+    desc: 'We test, launch, hand over, and support the agreed work.',
+  },
+];
 
 export interface ServiceItem {
   id: string;
@@ -45,6 +97,8 @@ export interface ServiceItem {
   shortDesc: string;
   description: string;
   problemSolved: string;
+  bestFor?: string;
+  ctaText?: string;
   highLevelInclusions: string[];
   inclusions: string[];
 }
@@ -53,91 +107,106 @@ const rawServices: ServiceItem[] = [
   {
     id: 'premium-web',
     slug: 'premium-web',
-    title: 'High-Performing Websites',
-    name: 'High-Performing Websites',
+    title: 'Business Website Launch',
+    name: 'Business Website Launch',
     startingPrice: '$800',
-    pricePrefix: 'From',
+    pricePrefix: 'Starting from',
     shortDesc:
-      'Clear, responsive business websites designed to help visitors understand your offer, build trust, and take the next step.',
+      'For businesses that need a credible online presence that turns visitors into enquiries.',
     description:
-      'Clear, responsive business websites designed to help visitors understand your offer, build trust, and take the next step.',
+      'For businesses that need a credible online presence that turns visitors into enquiries.',
     problemSolved:
-      'Websites that are confusing, outdated, or slow on mobile fail to convey credibility and lose prospective enquiries.',
+      'Websites that are confusing, outdated, or hard to use on phones lose customer confidence before they ever reach out.',
+    bestFor:
+      'New businesses, local services, consultants, restaurants, clinics, agencies, contractors, and businesses replacing an outdated site.',
+    ctaText: 'Build My Business Website',
     highLevelInclusions: [
-      'Responsive, mobile-friendly design and layout',
-      'Clear information hierarchy and service content structure',
-      'Search-friendly foundation and technical SEO setup',
-      'Optional interactive visual layers where appropriate',
-      'Contact workflows with spam protection and notifications',
-      'Custom deliverables defined in writing before kickoff',
+      'A custom website that reflects your business and builds trust',
+      'Clear pages that explain what you offer and why customers should choose you',
+      'A smooth experience on mobile, tablet, and desktop',
+      'Contact and enquiry forms sent directly to you',
+      'Basic search visibility setup so customers can find you more easily',
+      'Launch support and guidance for managing your website',
     ],
     inclusions: [
-      'Responsive, mobile-friendly design and layout',
-      'Clear information hierarchy and service content structure',
-      'Search-friendly foundation and technical SEO setup',
-      'Optional interactive visual layers where appropriate',
-      'Contact workflows with spam protection and notifications',
-      'Custom deliverables defined in writing before kickoff',
+      'A custom website that reflects your business and builds trust',
+      'Clear pages that explain what you offer and why customers should choose you',
+      'A smooth experience on mobile, tablet, and desktop',
+      'Contact and enquiry forms sent directly to you',
+      'Basic search visibility setup so customers can find you more easily',
+      'Launch support and guidance for managing your website',
     ],
   },
   {
     id: 'ai-automation',
     slug: 'ai-automation',
-    title: 'AI & Enquiry Automation Workflows',
-    name: 'AI & Enquiry Automation Workflows',
+    title: 'Website + Smart Enquiry System',
+    name: 'Website + Smart Enquiry System',
     startingPrice: '$1,200',
-    pricePrefix: 'From',
+    pricePrefix: 'Starting from',
     shortDesc:
-      'Practical workflows that answer approved questions, capture enquiry details, and help your team respond and follow up consistently.',
+      'For businesses that want to respond faster, qualify leads, and spend less time repeating the same answers.',
     description:
-      'Practical workflows that answer approved questions, capture enquiry details, and help your team respond and follow up consistently.',
+      'For businesses that want to respond faster, qualify leads, and spend less time repeating the same answers.',
     problemSolved:
-      'Manual email back-and-forth leads to delayed replies, inconsistent communication, and missed follow-ups.',
+      'Manual email delays and missed messages cause qualified prospects to look to competitors instead.',
+    bestFor:
+      'Companies receiving frequent enquiries, appointment-based businesses, real estate, logistics, agencies, education providers, and service businesses.',
+    ctaText: 'Improve My Enquiry Process',
     highLevelInclusions: [
-      'Approved FAQ knowledgebase and structured response rules',
-      'Enquiry detail capture, routing, and team alerts',
-      'Optional calendar integration and appointment scheduling',
-      'Human handoff and escalation rules for complex enquiries',
-      'Safety guardrails, testing, and team walkthrough',
-      'Transparent operating cost overview before activation',
+      'Everything in the Business Website Launch package',
+      'Autonomous 24/7 AI Enquiry Assistant trained on your business knowledge',
+      'Automated Lead Qualification & Triage (scores prospects before notifying your team)',
+      'Calendar Scheduling Automation (Google Calendar / Calendly auto-booking)',
+      'Instant Multi-Channel Alerts (Email, Slack, WhatsApp, or CRM Webhooks)',
+      'Smart Form Intake with structured field validation & follow-up pipelines',
+      'Seamless Human Handover protocols with strict safety guardrails',
+      'End-to-end integration with your sales CRM or email workflow',
     ],
     inclusions: [
-      'Approved FAQ knowledgebase and structured response rules',
-      'Enquiry detail capture, routing, and team alerts',
-      'Optional calendar integration and appointment scheduling',
-      'Human handoff and escalation rules for complex enquiries',
-      'Safety guardrails, testing, and team walkthrough',
-      'Transparent operating cost overview before activation',
+      'Everything in the Business Website Launch package',
+      'Autonomous 24/7 AI Enquiry Assistant trained on your business knowledge',
+      'Automated Lead Qualification & Triage (scores prospects before notifying your team)',
+      'Calendar Scheduling Automation (Google Calendar / Calendly auto-booking)',
+      'Instant Multi-Channel Alerts (Email, Slack, WhatsApp, or CRM Webhooks)',
+      'Smart Form Intake with structured field validation & follow-up pipelines',
+      'Seamless Human Handover protocols with strict safety guardrails',
+      'End-to-end integration with your sales CRM or email workflow',
     ],
   },
   {
     id: 'custom-saas',
     slug: 'custom-saas',
-    title: 'Custom Digital Systems & MVPs',
-    name: 'Custom Digital Systems & MVPs',
+    title: 'Custom Business Growth System',
+    name: 'Custom Business Growth System',
     startingPrice: '$3,000',
-    pricePrefix: 'From',
+    pricePrefix: 'Starting from',
     shortDesc:
-      'Focused internal tools, client portals, approval workflows, and MVP systems built around the way your business actually operates.',
+      'For teams that have outgrown spreadsheets, scattered messages, and manual follow-up.',
     description:
-      'Focused internal tools, client portals, approval workflows, and MVP systems built around the way your business actually operates.',
+      'For teams that have outgrown spreadsheets, scattered messages, and manual follow-up.',
     problemSolved:
-      'Disconnected spreadsheets and rigid off-the-shelf software create duplicated data entry and unnecessary per-user licence fees.',
+      'Disconnected spreadsheets and scattered messages create administrative drag, manual errors, and lost client time.',
+    bestFor:
+      'Businesses needing a client portal, booking system, order workflow, internal operations tool, membership platform, or first version of a digital product.',
+    ctaText: 'Discuss My Custom System',
     highLevelInclusions: [
-      'Focused client or internal dashboard tailored to one core workflow',
-      'Role-based access controls and secure authentication setup',
-      'Document exchange, milestone tracking, or intake workflows',
-      'Optional Stripe payment processing integration',
-      'Custom code deliverable transferred after final payment',
-      'Hosting, data migration, and third-party services scoped separately',
+      'A tailored system built around one important business process',
+      'One organised place for clients, requests, bookings, orders, or project updates',
+      'Secure staff access based on each person’s role',
+      'A simple view of the information that matters to your business',
+      'Customer payments, notifications, or third-party tools connected where needed',
+      'A private test version before launch, so you can review everything safely',
+      'Training, handover, and documentation for your team',
     ],
     inclusions: [
-      'Focused client or internal dashboard tailored to one core workflow',
-      'Role-based access controls and secure authentication setup',
-      'Document exchange, milestone tracking, or intake workflows',
-      'Optional Stripe payment processing integration',
-      'Custom code deliverable transferred after final payment',
-      'Hosting, data migration, and third-party services scoped separately',
+      'A tailored system built around one important business process',
+      'One organised place for clients, requests, bookings, orders, or project updates',
+      'Secure staff access based on each person’s role',
+      'A simple view of the information that matters to your business',
+      'Customer payments, notifications, or third-party tools connected where needed',
+      'A private test version before launch, so you can review everything safely',
+      'Training, handover, and documentation for your team',
     ],
   },
   {
@@ -153,6 +222,9 @@ const rawServices: ServiceItem[] = [
       'Tailored storefront experiences and product catalogue systems configured around your inventory, checkout, and fulfillment needs.',
     problemSolved:
       'Generic store templates with poor mobile checkouts and rigid layouts limit conversion and customer trust.',
+    bestFor:
+      'Retail brands, boutique studios, direct-to-consumer businesses, and digital product merchants.',
+    ctaText: 'Discuss Store Scopes',
     highLevelInclusions: [
       'Custom product catalogue and collection layouts',
       'Secure cart and checkout configuration',

@@ -13,6 +13,7 @@
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,css}\"",
     "test": "turbo run test",
+    "test:e2e": "npm run test:e2e --workspace=@cyberstyle/api",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "ts-node prisma/seed.ts",

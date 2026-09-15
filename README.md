@@ -16,12 +16,14 @@ A modern, high-conversion web platform, client operations portal, and internal C
 
 ---
 
-## 🔑 Default System Credentials
+## 🔐 Initial Account Bootstrap
 
-| Role | Email | Password | Access Scope |
-|---|---|---|---|
-| **Executive Super Admin** | `admin@cyberstyle.net` | `Admin123456!` | Full Admin Console (`/admin`), CRM pipeline, project management, financial invoices |
-| **Demo Client** | `client@apexcapital.com` | `Client123456!` | Client Portal (`/portal`), milestone tracking, deliverable vault, invoice payment |
+> [!IMPORTANT]
+> For security, default credentials are not pre-packaged. Generate your initial local administrator credentials using the secure CLI seed script:
+> ```bash
+> npm run prisma:seed
+> ```
+> This creates a unique development administrator account and outputs credentials strictly to your local terminal. In production, administrator accounts must be provisioned through secure invitation tokens with mandatory TOTP MFA enrollment.
 
 ---
 
