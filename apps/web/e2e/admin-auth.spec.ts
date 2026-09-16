@@ -23,10 +23,9 @@ test.describe('Admin Authentication & Route Protection Suite', () => {
     await page.click('button[type="submit"]');
 
     // Verify error banner is shown
-    await expect(
-      page.locator('[role="alert"]')
-    ).toBeVisible({ timeout: 8000 });
-    await expect(page.locator('[role="alert"]')).toContainText(/invalid|error|credentials/i);
+    const errorAlert = page.locator('[data-testid="auth-error"]');
+    await expect(errorAlert).toBeVisible({ timeout: 8000 });
+    await expect(errorAlert).toContainText(/invalid|error|credentials/i);
   });
 
   test('Unauthenticated user cannot access internal admin dashboard directly', async ({ page }) => {

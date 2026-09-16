@@ -21,9 +21,7 @@ test.describe('Inquiry & Project Form Submission Suite', () => {
     await submitButton.click();
 
     // Verify confirmation message or submitted state
-    await expect(
-      page.locator('text=Message Received, text=Thank you, text=sent successfully, text=Direct Communication')
-    ).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('[data-testid="contact-success"]')).toBeVisible({ timeout: 10000 });
   });
 
   test('Start Project form enforces consent and validates required fields', async ({ page }) => {

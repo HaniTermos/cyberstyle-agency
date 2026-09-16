@@ -100,7 +100,7 @@ export default function ContactPage() {
           <div className="lg:col-span-7">
             <Card variant="dark" className="p-8 md:p-10 bg-[#0E1118] border border-white/10">
               {submitted ? (
-                <div className="text-center py-12 space-y-4">
+                <div data-testid="contact-success" className="text-center py-12 space-y-4">
                   <CheckCircle2 className="w-12 h-12 text-[#00F0FF] mx-auto" />
                   <h3 className="font-display font-bold text-2xl text-white">Message Received</h3>
                   <p className="text-sm text-neutral-300 max-w-md mx-auto leading-relaxed">
