@@ -54,7 +54,7 @@ test.describe('Public Pages Smoke & Navigation Suite', () => {
     await expect(page).toHaveTitle(/CYBERSTYLE/i);
 
     // Verify FAQ items exist
-    const faqQuestions = page.locator('button[aria-expanded]');
+    const faqQuestions = page.locator('button[data-testid="faq-accordion-button"]');
     await expect(faqQuestions.first()).toBeVisible();
 
     // Test expanding first accordion item

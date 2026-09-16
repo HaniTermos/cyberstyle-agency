@@ -5,9 +5,9 @@ test.describe('Inquiry & Project Form Submission Suite', () => {
     await page.goto('/contact');
 
     // Fill form
-    await page.fill('input[placeholder*="Alex" i], input[type="text"]:first-of-type', 'Playwright Test User');
+    await page.fill('input[name="name"]', 'Playwright Test User');
     await page.fill('input[type="email"]', 'qa.test@cyberstyle.net');
-    await page.fill('input[placeholder*="subject" i], input[name="subject"]', 'Automated E2E Test Inquiry');
+    await page.fill('input[name="subject"]', 'Automated E2E Test Inquiry');
     await page.fill('textarea', 'This is an automated Playwright end-to-end verification test.');
 
     // Ensure honeypot is empty

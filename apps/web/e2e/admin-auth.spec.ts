@@ -24,8 +24,9 @@ test.describe('Admin Authentication & Route Protection Suite', () => {
 
     // Verify error banner is shown
     await expect(
-      page.locator('text=Invalid administrative email or password., text=Invalid, text=credentials')
+      page.locator('[role="alert"]')
     ).toBeVisible({ timeout: 8000 });
+    await expect(page.locator('[role="alert"]')).toContainText(/invalid|error|credentials/i);
   });
 
   test('Unauthenticated user cannot access internal admin dashboard directly', async ({ page }) => {

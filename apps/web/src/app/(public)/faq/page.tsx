@@ -110,6 +110,9 @@ export default function FaqPage() {
               className="rounded-2xl border border-black/10 bg-[#F8F9FB] p-6 transition-all duration-200"
             >
               <button
+                type="button"
+                aria-expanded={activeIdx === idx}
+                data-testid="faq-accordion-button"
                 onClick={() => setActiveIdx(activeIdx === idx ? null : idx)}
                 className="w-full flex items-center justify-between text-left font-display font-bold text-lg text-black focus:outline-none"
               >

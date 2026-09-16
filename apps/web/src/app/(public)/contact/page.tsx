@@ -138,6 +138,7 @@ export default function ContactPage() {
                       <label className="block text-xs font-mono uppercase text-neutral-400 mb-2">Your Name *</label>
                       <input
                         type="text"
+                        name="name"
                         required
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -149,6 +150,7 @@ export default function ContactPage() {
                       <label className="block text-xs font-mono uppercase text-neutral-400 mb-2">Your Email *</label>
                       <input
                         type="email"
+                        name="email"
                         required
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -157,13 +159,15 @@ export default function ContactPage() {
                       />
                     </div>
                   </div>
+
                   <div>
-                    <label className="block text-xs font-mono uppercase text-neutral-400 mb-2">Subject</label>
+                    <label className="block text-xs font-mono uppercase text-neutral-400 mb-2">Project Subject</label>
                     <input
                       type="text"
+                      name="subject"
                       value={formData.subject}
                       onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                      placeholder="Website Scope / AI Enquiry Workflow / General Inquiry"
+                      placeholder="e.g. Website Redesign / AI Scoping"
                       className="w-full px-4 py-3 rounded-xl bg-black/60 border border-white/10 text-white placeholder-neutral-600 focus:outline-none focus:border-[#00F0FF] text-sm"
                     />
                   </div>
