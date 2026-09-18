@@ -56,8 +56,8 @@ const DEFAULT_REVIEWS: ClientReview[] = [
 ];
 
 export default function ReviewsPage() {
-  const [reviews, setReviews] = useState<ClientReview[]>(DEFAULT_REVIEWS);
-  const [loading, setLoading] = useState(false);
+  const [reviews, setReviews] = useState<ClientReview[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
@@ -66,11 +66,15 @@ export default function ReviewsPage() {
     apiRequest<{ reviews: ClientReview[] }>('/reviews')
       .then((res) => {
         if (!isMounted) return;
-        if (res.success && res.data?.reviews && res.data.reviews.length > 0) {
+        if (res.success && Array.isArray(res.data?.reviews) && res.data.reviews.length > 0) {
           setReviews(res.data.reviews);
+        } else {
+          setReviews([]);
         }
       })
-      .catch(() => {})
+      .catch(() => {
+        if (isMounted) setReviews([]);
+      })
       .finally(() => {
         if (isMounted) setLoading(false);
       });
@@ -115,58 +119,74 @@ export default function ReviewsPage() {
         <div className="max-w-7xl mx-auto space-y-20">
           
           {/* Verified Reviews Section */}
-          <div className="space-y-8">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-white/10">
+          <div className="space-y-6 sm:space-y-8">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 sm:gap-4 pb-4 border-b border-white/10">
               <div>
-                <span className="text-xs font-mono uppercase tracking-widest text-[#00F0FF] block mb-1">
+                <span className="text-[11px] sm:text-xs font-mono uppercase tracking-widest text-[#00F0FF] block mb-1">
                   Verified Client Results
                 </span>
-                <h2 className="font-display font-bold text-2xl sm:text-4xl text-white">
+                <h2 className="font-display font-bold text-xl sm:text-3xl md:text-4xl text-white break-words">
                   What Clients Say About Working With CYBERSTYLE
                 </h2>
               </div>
-              <span className="text-xs font-mono text-neutral-400">
+              <span className="text-[11px] sm:text-xs font-mono text-neutral-400">
                 {reviews.length} Verified Engagements
               </span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {reviews.map((rev) => (
-                <Card
-                  key={rev.id}
-                  variant="dark"
-                  className="p-8 flex flex-col justify-between bg-[#0E1118] border border-white/10 hover:border-[#00F0FF]/40 transition-all space-y-6"
-                >
-                  <div className="space-y-4">
-                    {/* Stars */}
-                    <div className="flex items-center gap-1 text-[#00F0FF]">
-                      {Array.from({ length: rev.rating || 5 }).map((_, i) => (
-                        <Star key={i} className="w-4 h-4 fill-current" />
-                      ))}
+            {loading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="min-h-[180px] sm:min-h-[220px] rounded-xl sm:rounded-2xl bg-white/5 border border-white/10 animate-pulse p-6" />
+                ))}
+              </div>
+            ) : reviews.length === 0 ? (
+              <div className="py-14 sm:py-20 text-center border border-dashed border-white/10 rounded-xl sm:rounded-2xl p-6 sm:p-8 bg-white/[0.02]">
+                <MessageSquare className="w-8 h-8 sm:w-10 sm:h-10 text-neutral-600 mx-auto mb-2 sm:mb-3" />
+                <p className="text-white text-sm sm:text-base font-display font-bold">No client reviews published yet.</p>
+                <p className="text-neutral-400 text-xs font-mono mt-1">
+                  Reviews are published upon client consent and completion of project milestones.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                {reviews.map((rev) => (
+                  <Card
+                    key={rev.id}
+                    variant="dark"
+                    className="p-4 sm:p-6 lg:p-8 flex flex-col justify-between bg-[#0E1118] border border-white/10 hover:border-[#00F0FF]/40 transition-all space-y-3 sm:space-y-5"
+                  >
+                    <div className="space-y-3 sm:space-y-4">
+                      {/* Stars */}
+                      <div className="flex items-center gap-1 text-[#00F0FF]">
+                        {Array.from({ length: rev.rating || 5 }).map((_, i) => (
+                          <Star key={i} className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current" />
+                        ))}
+                      </div>
+
+                      <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed italic font-sans">
+                        "{rev.quote}"
+                      </p>
                     </div>
 
-                    <p className="text-sm text-neutral-300 leading-relaxed italic font-sans">
-                      "{rev.quote}"
-                    </p>
-                  </div>
-
-                  <div className="pt-4 border-t border-white/10 flex items-center justify-between">
-                    <div>
-                      <div className="font-display font-semibold text-sm text-white">
-                        {rev.clientName}
+                    <div className="pt-3 sm:pt-4 border-t border-white/10 flex items-center justify-between">
+                      <div>
+                        <div className="font-display font-semibold text-xs sm:text-sm text-white">
+                          {rev.clientName}
+                        </div>
+                        <div className="text-[11px] sm:text-xs text-neutral-400 font-mono">
+                          {rev.clientTitle && `${rev.clientTitle}, `}
+                          {rev.companyName}
+                        </div>
                       </div>
-                      <div className="text-xs text-neutral-400 font-mono">
-                        {rev.clientTitle && `${rev.clientTitle}, `}
-                        {rev.companyName}
-                      </div>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-950/60 text-emerald-400 border border-emerald-800/50 flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3" /> VERIFIED
+                      </span>
                     </div>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-950/60 text-emerald-400 border border-emerald-800/50 flex items-center gap-1">
-                      <CheckCircle2 className="w-3 h-3" /> VERIFIED
-                    </span>
-                  </div>
-                </Card>
-              ))}
-            </div>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Policy & Confidentiality Notice */}

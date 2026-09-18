@@ -14,30 +14,30 @@ export function Footer() {
   };
 
   return (
-    <footer className="relative bg-black text-white pt-24 pb-12 overflow-hidden border-t border-white/10">
+    <footer className="relative bg-black text-white pt-16 sm:pt-24 pb-10 sm:pb-12 overflow-hidden border-t border-white/10">
       {/* Background Silk Ambient Waves */}
       <Silk className="opacity-40" speed={0.4} />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6">
         {/* Giant Direct Contact Statement */}
-        <div className="mb-20 pb-16 border-b border-white/10 flex flex-col lg:flex-row items-start lg:items-end justify-between gap-8">
-          <div>
-            <span className="text-xs font-mono uppercase tracking-widest text-[#00F0FF] mb-3 block">
+        <div className="mb-12 sm:mb-20 pb-10 sm:pb-16 border-b border-white/10 flex flex-col lg:flex-row items-start lg:items-end justify-between gap-6 sm:gap-8">
+          <div className="max-w-full">
+            <span className="text-[11px] sm:text-xs font-mono uppercase tracking-widest text-[#00F0FF] mb-2 sm:mb-3 block">
               Inquiries &amp; Project Requests
             </span>
             <a
               href={`mailto:${CONTACT_EMAIL}`}
-              className="font-display font-bold text-3xl md:text-5xl lg:text-6xl text-white hover:text-[#00F0FF] transition-colors tracking-tight inline-flex items-center gap-4 group"
+              className="font-display font-bold text-lg sm:text-2xl md:text-4xl lg:text-5xl text-white hover:text-[#00F0FF] transition-colors tracking-tight inline-flex items-center gap-2 sm:gap-3 group break-all sm:break-normal max-w-full"
             >
-              {CONTACT_EMAIL}
-              <ArrowUpRight className="w-8 h-8 md:w-12 md:h-12 text-[#00F0FF] group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+              <span>{CONTACT_EMAIL}</span>
+              <ArrowUpRight className="w-5 h-5 sm:w-8 sm:h-8 md:w-10 md:h-10 text-[#00F0FF] group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform shrink-0" />
             </a>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 w-full sm:w-auto">
             <Link
               href="/start-project"
-              className="px-6 py-3 rounded-xl bg-[#00F0FF] text-black font-display font-bold text-sm hover:bg-[#00D8E6] transition-all shadow-[0_0_25px_rgba(0,240,255,0.25)] flex items-center gap-2"
+              className="w-full sm:w-auto justify-center px-6 py-3 rounded-xl bg-[#00F0FF] text-black font-display font-bold text-sm hover:bg-[#00D8E6] transition-all shadow-[0_0_25px_rgba(0,240,255,0.25)] flex items-center gap-2"
             >
               <span>Start a Project</span>
               <ArrowUpRight className="w-4 h-4" />
@@ -46,7 +46,7 @@ export function Footer() {
         </div>
 
         {/* Multi-Column Link Directory — All Website Pages */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-20 text-sm">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 sm:gap-10 mb-12 sm:mb-20 text-xs sm:text-sm">
           {/* Col 1: Services */}
           <div>
             <h4 className="font-mono text-xs uppercase tracking-widest text-neutral-400 mb-4 flex items-center gap-2">

@@ -14,4 +14,4 @@ RUN npx prisma generate
 COPY . .
 
 EXPOSE 4000
-CMD ["sh", "-c", "npx prisma generate && npm run dev:direct --workspace=@cyberstyle/api"]
+CMD ["sh", "-c", "npx prisma generate && npx prisma db push && node prisma/seed_faqs.js && node prisma/seed_reviews.js && npm run dev:direct --workspace=@cyberstyle/api"]

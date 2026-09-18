@@ -68,14 +68,15 @@ const faqs: FaqItem[] = [
 
 export default function FaqPage() {
   const [activeIdx, setActiveIdx] = useState<number | null>(null);
-  const [items, setItems] = useState<FaqItem[]>(faqs);
+  const [items, setItems] = useState<FaqItem[]>([]);
+  const [hasLoaded, setHasLoaded] = useState(false);
 
   React.useEffect(() => {
     let isMounted = true;
     apiRequest<{ faqs: Array<{ question: string; answer: string; category: string }> }>('/faqs?page=faq')
       .then((res) => {
         if (!isMounted) return;
-        if (res.success && res.data?.faqs && res.data.faqs.length > 0) {
+        if (res.success && Array.isArray(res.data?.faqs) && res.data.faqs.length > 0) {
           setItems(
             res.data.faqs.map((f) => ({
               q: f.question,
@@ -83,9 +84,17 @@ export default function FaqPage() {
               category: f.category || 'General',
             }))
           );
+        } else {
+          setItems([]);
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        if (isMounted) setItems([]);
+      })
+      .finally(() => {
+        if (isMounted) setHasLoaded(true);
+      });
+
     return () => {
       isMounted = false;
     };
@@ -102,39 +111,60 @@ export default function FaqPage() {
       {/* Atmospheric Black-to-White Scrim Gradient */}
       <SectionGradient direction="black-to-white" heightClass="h-44 sm:h-60" />
 
-      <section className="pt-4 pb-24 px-6 bg-white text-black">
-        <div className="max-w-4xl mx-auto space-y-6">
-          {items.map((faq, idx) => (
+      <section className="pt-4 pb-16 sm:pb-24 px-4 sm:px-6 bg-white text-black">
+        <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
+          {!hasLoaded ? (
+            <div className="space-y-3 sm:space-y-4">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="h-16 sm:h-20 rounded-xl sm:rounded-2xl bg-black/[0.03] border border-black/10 animate-pulse" />
+              ))}
+            </div>
+          ) : items.length === 0 ? (
+            <div className="py-14 sm:py-20 text-center border border-dashed border-black/10 rounded-xl sm:rounded-2xl p-6 sm:p-8 bg-black/[0.02]">
+              <HelpCircle className="w-8 h-8 sm:w-10 sm:h-10 text-neutral-400 mx-auto mb-2 sm:mb-3" />
+              <p className="text-neutral-600 text-sm sm:text-base font-display font-bold">
+                No frequently asked questions published yet.
+              </p>
+              <p className="text-neutral-400 text-xs font-mono mt-1">
+                Please check back shortly or reach out to our team directly.
+              </p>
+            </div>
+          ) : (
+            items.map((faq, idx) => (
             <div
               key={idx}
-              className="rounded-2xl border border-black/10 bg-[#F8F9FB] p-6 transition-all duration-200"
+              className="rounded-xl sm:rounded-2xl border border-black/10 bg-[#F8F9FB] p-4 sm:p-6 transition-all duration-200"
             >
               <button
                 type="button"
                 aria-expanded={activeIdx === idx}
                 data-testid="faq-accordion-button"
                 onClick={() => setActiveIdx(activeIdx === idx ? null : idx)}
-                className="w-full flex items-center justify-between text-left font-display font-bold text-lg text-black focus:outline-none"
+                className="w-full flex items-center justify-between text-left font-display font-bold text-base sm:text-lg text-black focus:outline-none gap-3"
               >
                 <div className="space-y-1">
-                  <span className="text-[11px] font-mono uppercase tracking-wider text-neutral-400 block">
-                    {faq.category}
+                  <span className="text-[10px] sm:text-[11px] font-mono uppercase tracking-wider text-neutral-400 block">
+                    {faq.category || 'General Scope'}
                   </span>
-                  <span>{faq.q}</span>
+                  <span className="break-words leading-snug">{faq.q}</span>
                 </div>
-                <ChevronDown
-                  className={`w-5 h-5 text-neutral-500 transition-transform duration-200 shrink-0 ml-4 ${
-                    activeIdx === idx ? 'rotate-180 text-[#0080FF]' : ''
-                  }`}
-                />
+                <div className="w-8 h-8 rounded-lg bg-black/5 flex items-center justify-center shrink-0">
+                  <ChevronDown
+                    className={`w-4 h-4 text-black transition-transform duration-200 ${
+                      activeIdx === idx ? 'rotate-180 text-[#0080FF]' : ''
+                    }`}
+                  />
+                </div>
               </button>
+
               {activeIdx === idx && (
-                <p className="mt-4 text-sm text-neutral-700 leading-relaxed font-sans border-t border-black/5 pt-4">
+                <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-black/10 text-xs sm:text-sm text-neutral-600 leading-relaxed font-sans">
                   {faq.a}
-                </p>
+                </div>
               )}
             </div>
-          ))}
+          ))
+          )}
 
           <div className="pt-12 text-center space-y-4">
             <h3 className="font-display font-bold text-2xl text-black">Have a specific question not listed here?</h3>
@@ -142,13 +172,13 @@ export default function FaqPage() {
               Reach out to our team directly or schedule an introductory project call.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
-              <Link href="/start-project">
-                <Button variant="electric" size="md" icon={<ArrowUpRight className="w-4 h-4" />}>
+              <Link href="/start-project" className="w-full sm:w-auto">
+                <Button variant="electric" size="md" className="w-full sm:w-auto justify-center" icon={<ArrowUpRight className="w-4 h-4" />}>
                   {CTA_LABELS.primary}
                 </Button>
               </Link>
-              <a href={`mailto:${CONTACT_EMAIL}`}>
-                <Button variant="secondary" size="md">
+              <a href={`mailto:${CONTACT_EMAIL}`} className="w-full sm:w-auto">
+                <Button variant="secondary" size="md" className="w-full sm:w-auto justify-center text-xs sm:text-sm">
                   Email: {CONTACT_EMAIL}
                 </Button>
               </a>

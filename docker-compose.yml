@@ -46,10 +46,11 @@ services:
   # 3. Express.js REST API Backend
   # ----------------------------------------------------------------------------
   api:
+    image: agencyproject-api:latest
     build:
       context: .
       dockerfile: apps/api/Dockerfile
-    container_name: cyberstyle_api
+    container_name: cyberstyle_api_server
     restart: unless-stopped
     environment:
       NODE_ENV: development
@@ -66,9 +67,9 @@ services:
       - "4000:4000"
     volumes:
       - .:/app
-      - /app/node_modules
-      - /app/apps/api/node_modules
-      - /app/apps/web/node_modules
+      - root_node_modules:/app/node_modules
+      - api_node_modules:/app/apps/api/node_modules
+      - web_node_modules:/app/apps/web/node_modules
     depends_on:
       postgres:
         condition: service_healthy
@@ -89,10 +90,11 @@ services:
   # 4. Next.js App Router Web Frontend & Portal
   # ----------------------------------------------------------------------------
   web:
+    image: agencyproject-web:latest
     build:
       context: .
       dockerfile: apps/web/Dockerfile
-    container_name: cyberstyle_web
+    container_name: cyberstyle_web_app
     restart: unless-stopped
     environment:
       NODE_ENV: development
@@ -100,14 +102,15 @@ services:
       HOSTNAME: "0.0.0.0"
       NEXT_PUBLIC_APP_URL: http://localhost:3000
       NEXT_PUBLIC_API_URL: http://localhost:4000/api
+      INTERNAL_API_URL: http://api:4000/api
       WATCHPACK_POLLING: "true"
     ports:
       - "3000:3000"
     volumes:
       - .:/app
-      - /app/node_modules
-      - /app/apps/api/node_modules
-      - /app/apps/web/node_modules
+      - root_node_modules:/app/node_modules
+      - api_node_modules:/app/apps/api/node_modules
+      - web_node_modules:/app/apps/web/node_modules
     depends_on:
       api:
         condition: service_started
@@ -126,6 +129,12 @@ volumes:
   postgres_data:
     driver: local
   redis_data:
+    driver: local
+  root_node_modules:
+    driver: local
+  api_node_modules:
+    driver: local
+  web_node_modules:
     driver: local
 
 networks:

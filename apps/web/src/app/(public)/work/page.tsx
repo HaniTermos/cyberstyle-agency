@@ -63,8 +63,8 @@ export default function WorkIndexPage() {
           setCaseStudies(mapped);
         }
       })
-      .catch((err) => {
-        console.error('Failed to load live case studies:', err);
+      .catch(() => {
+        if (isMounted) setCaseStudies([]);
       })
       .finally(() => {
         if (isMounted) setLoading(false);
@@ -119,19 +119,21 @@ export default function WorkIndexPage() {
       </section>
 
       {/* Deliverables Grid */}
-      <section className="py-20 px-6 bg-black">
+      <section className="py-12 sm:py-20 px-4 sm:px-6 bg-black">
         <div className="max-w-7xl mx-auto">
           {loading ? (
-            <div className="py-24 text-center text-neutral-500 font-mono text-xs animate-pulse">
-              Loading verified deliverables from database...
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="min-h-[380px] sm:min-h-[420px] rounded-xl sm:rounded-2xl bg-white/5 border border-white/10 animate-pulse p-6" />
+              ))}
             </div>
           ) : filteredConcepts.length === 0 ? (
-            <div className="py-24 text-center border border-dashed border-white/10 rounded-2xl p-12">
-              <FolderKanban className="w-10 h-10 text-neutral-600 mx-auto mb-3" />
-              <p className="text-neutral-400 text-sm font-mono">No case studies found in this category.</p>
+            <div className="py-14 sm:py-24 text-center border border-dashed border-white/10 rounded-xl sm:rounded-2xl p-6 sm:p-12">
+              <FolderKanban className="w-8 h-8 sm:w-10 sm:h-10 text-neutral-600 mx-auto mb-2 sm:mb-3" />
+              <p className="text-neutral-400 text-xs sm:text-sm font-mono">No case studies found in this category.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
               {filteredConcepts.map((item) => (
                 <Link key={item.id} href={`/work/${item.slug}`} className="group block focus:outline-none">
                   <Card
@@ -141,7 +143,7 @@ export default function WorkIndexPage() {
                   >
                     {/* Visual Cover Image Header if present */}
                     {item.coverImage && (
-                      <div className="w-full h-52 relative overflow-hidden bg-black/40 border-b border-white/10">
+                      <div className="w-full h-44 sm:h-52 relative overflow-hidden bg-black/40 border-b border-white/10">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={item.coverImage}
@@ -156,8 +158,8 @@ export default function WorkIndexPage() {
                       </div>
                     )}
 
-                    <div className="p-8 flex-1 flex flex-col justify-between space-y-6">
-                      <div className="space-y-4">
+                    <div className="p-4 sm:p-6 lg:p-8 flex-1 flex flex-col justify-between space-y-3 sm:space-y-6">
+                      <div className="space-y-2.5 sm:space-y-4">
                         {/* Category Banner */}
                         <div className="flex items-center justify-between text-xs font-mono">
                           <span className="text-[#00F0FF] uppercase tracking-wider font-semibold">
@@ -168,11 +170,11 @@ export default function WorkIndexPage() {
                           </span>
                         </div>
 
-                        <h3 className="font-display font-bold text-2xl text-white group-hover:text-[#00F0FF] transition-colors leading-snug">
+                        <h3 className="font-display font-bold text-lg sm:text-xl md:text-2xl text-white group-hover:text-[#00F0FF] transition-colors leading-snug break-words">
                           {item.title}
                         </h3>
 
-                        <p className="text-sm text-neutral-400 leading-relaxed font-sans line-clamp-3">
+                        <p className="text-xs sm:text-sm text-neutral-400 leading-relaxed font-sans line-clamp-3">
                           {item.summary}
                         </p>
 

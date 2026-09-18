@@ -2,7 +2,9 @@
  * CYBERSTYLE API Client Helper
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+const API_BASE_URL = typeof window === 'undefined'
+  ? (process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://api:4000/api')
+  : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api');
 
 export function getAuthToken(): string | null {
   if (typeof window === 'undefined') return null;
@@ -97,7 +99,9 @@ export async function apiRequest<T = any>(
       data: data?.data !== undefined ? data.data : data,
     };
   } catch (error: any) {
-    console.warn(`API Request Error [${endpoint}]:`, error.message || error);
+    if (process.env.NODE_ENV === 'development' && !endpoint.includes('/content/') && !endpoint.includes('/faqs') && !endpoint.includes('/reviews')) {
+      console.warn(`API Request Error [${endpoint}]:`, error.message || error);
+    }
     return {
       success: false,
       error: error.message || 'Network communication failure with CYBERSTYLE Core API',

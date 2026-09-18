@@ -56,22 +56,22 @@ export default function ContactPage() {
         description="Have questions about building a new website, setting up an enquiry automation pipeline, or developing custom software? Send us a message."
       />
 
-      <section className="py-24 px-6 bg-[#08090C]">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12">
+      <section className="py-14 sm:py-24 px-4 sm:px-6 bg-[#08090C]">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
           {/* Left Column: Direct Info */}
-          <div className="lg:col-span-5 space-y-8">
-            <div className="space-y-4">
-              <span className="text-xs font-mono uppercase tracking-widest text-[#00F0FF]">Direct Contact</span>
-              <h2 className="font-display font-bold text-3xl text-white">Direct, straightforward communication.</h2>
-              <p className="text-sm text-neutral-400 leading-relaxed font-sans">
+          <div className="lg:col-span-5 space-y-6 sm:space-y-8">
+            <div className="space-y-3 sm:space-y-4">
+              <span className="text-[11px] sm:text-xs font-mono uppercase tracking-widest text-[#00F0FF]">Direct Contact</span>
+              <h2 className="font-display font-bold text-2xl sm:text-3xl text-white break-words">Direct, straightforward communication.</h2>
+              <p className="text-xs sm:text-sm text-neutral-400 leading-relaxed font-sans">
                 You communicate directly with the engineers and designers executing client systems. Reach out to discuss your technical needs, current digital bottlenecks, or project feasibility.
               </p>
             </div>
 
-            <div className="p-6 rounded-2xl bg-[#0E1118] border border-white/10 space-y-4">
-              <div className="flex items-center gap-3 text-sm">
-                <Mail className="w-5 h-5 text-[#00F0FF]" />
-                <a href={`mailto:${CONTACT_EMAIL}`} className="font-display font-bold text-lg text-white hover:text-[#00F0FF] transition-colors">
+            <div className="p-5 sm:p-6 rounded-xl sm:rounded-2xl bg-[#0E1118] border border-white/10 space-y-3 sm:space-y-4">
+              <div className="flex items-center gap-3 text-xs sm:text-sm">
+                <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-[#00F0FF] shrink-0" />
+                <a href={`mailto:${CONTACT_EMAIL}`} className="font-display font-bold text-base sm:text-lg text-white hover:text-[#00F0FF] transition-colors break-all sm:break-normal">
                   {CONTACT_EMAIL}
                 </a>
               </div>
@@ -98,7 +98,7 @@ export default function ContactPage() {
 
           {/* Right Column: Contact Submission Form */}
           <div className="lg:col-span-7">
-            <Card variant="dark" className="p-8 md:p-10 bg-[#0E1118] border border-white/10">
+            <Card variant="dark" className="p-4 sm:p-6 md:p-10 bg-[#0E1118] border border-white/10">
               {submitted ? (
                 <div data-testid="contact-success" className="text-center py-12 space-y-4">
                   <CheckCircle2 className="w-12 h-12 text-[#00F0FF] mx-auto" />

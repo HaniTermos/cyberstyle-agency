@@ -18,6 +18,7 @@ import {
   Sparkles,
   MessageSquare,
   Building2,
+  FolderKanban,
 } from 'lucide-react';
 import Silk from '@/components/backgrounds/Silk';
 import { Button } from '@/components/ui/Button';
@@ -150,17 +151,19 @@ const FALLBACK_REVIEWS: ReviewItem[] = [
 ];
 
 export default function HomePage() {
-  const [caseStudies, setCaseStudies] = useState<CaseStudyItem[]>(DEFAULT_CASE_STUDIES);
-  const [reviews, setReviews] = useState<ReviewItem[]>(FALLBACK_REVIEWS);
+  const [caseStudies, setCaseStudies] = useState<CaseStudyItem[]>([]);
+  const [reviews, setReviews] = useState<ReviewItem[]>([]);
+  const [hasLoadedCaseStudies, setHasLoadedCaseStudies] = useState(false);
+  const [hasLoadedReviews, setHasLoadedReviews] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
 
-    // Load Live Case Studies (up to 6)
+    // Load Live Case Studies from Database
     apiRequest<{ caseStudies: any[] }>('/content/case-studies')
       .then((res) => {
         if (!isMounted) return;
-        if (res.success && res.data?.caseStudies && res.data.caseStudies.length > 0) {
+        if (res.success && Array.isArray(res.data?.caseStudies) && res.data.caseStudies.length > 0) {
           const parsed = res.data.caseStudies.map((item: any) => ({
             ...item,
             metrics: Array.isArray(item.metrics)
@@ -171,19 +174,33 @@ export default function HomePage() {
             techStack: Array.isArray(item.techStack) ? item.techStack : [],
           }));
           setCaseStudies(parsed.slice(0, 6));
+        } else {
+          setCaseStudies([]);
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        if (isMounted) setCaseStudies([]);
+      })
+      .finally(() => {
+        if (isMounted) setHasLoadedCaseStudies(true);
+      });
 
-    // Load Live Reviews
+    // Load Live Reviews from Database
     apiRequest<{ reviews: ReviewItem[] }>('/reviews')
       .then((res) => {
         if (!isMounted) return;
-        if (res.success && res.data?.reviews && res.data.reviews.length > 0) {
+        if (res.success && Array.isArray(res.data?.reviews) && res.data.reviews.length > 0) {
           setReviews(res.data.reviews);
+        } else {
+          setReviews([]);
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        if (isMounted) setReviews([]);
+      })
+      .finally(() => {
+        if (isMounted) setHasLoadedReviews(true);
+      });
 
     return () => {
       isMounted = false;
@@ -199,57 +216,42 @@ export default function HomePage() {
         {/* Silk Ambient Wave Shader */}
         <Silk className="opacity-60" speed={0.7} />
 
-        <div className="relative z-10 max-w-7xl mx-auto px-6 w-full">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 w-full">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 items-center">
             {/* Left Column: Headline & Sequential Hero Animation */}
-            <div className="lg:col-span-7 space-y-8">
+            <div className="lg:col-span-7 space-y-6 sm:space-y-8">
               {/* Eyebrow */}
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.1, ease: STUDIO_EASE }}
-                className="inline-flex items-center gap-2"
-              >
-                <span className="text-xs font-mono uppercase tracking-widest text-[#00F0FF] flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#00F0FF] animate-pulse" />
+              <div className="inline-flex items-center gap-2">
+                <span className="text-[10px] sm:text-xs font-mono uppercase tracking-wider sm:tracking-widest text-[#00F0FF] flex flex-wrap items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#00F0FF] animate-pulse shrink-0" />
                   High-Performance Web Engineering &amp; AI Studio
                 </span>
-              </motion.div>
+              </div>
 
-              {/* Main Headline */}
-              <motion.h1
-                initial={{ opacity: 0, y: 18 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.2, ease: STUDIO_EASE }}
-                className="font-display font-extrabold text-4xl sm:text-6xl xl:text-7xl leading-[1.05] tracking-tight text-white"
-              >
+              {/* Main Headline (Instant First Paint for Sub-Second LCP) */}
+              <h1 className="font-display font-extrabold text-2xl sm:text-4xl md:text-6xl xl:text-7xl leading-[1.15] sm:leading-[1.05] tracking-tight text-white break-words [overflow-wrap:anywhere]">
                 Fast-loading websites and digital systems built around real business needs.
-              </motion.h1>
+              </h1>
 
               {/* Paragraph */}
-              <motion.p
-                initial={{ opacity: 0, y: 14 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.32, ease: STUDIO_EASE }}
-                className="text-lg sm:text-xl text-neutral-300 max-w-2xl leading-relaxed font-normal"
-              >
+              <p className="text-xs sm:text-base md:text-lg text-neutral-300 max-w-2xl leading-relaxed font-normal">
                 {PRIMARY_MESSAGE}
-              </motion.p>
+              </p>
 
               {/* Action CTAs */}
               <motion.div
                 initial={{ opacity: 0, y: 14 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.55, delay: 0.44, ease: STUDIO_EASE }}
-                className="flex flex-wrap items-center gap-4 pt-2"
+                className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 pt-2 w-full sm:w-auto"
               >
-                <Link href="/start-project">
-                  <Button variant="electric" size="lg" icon={<ArrowUpRight className="w-5 h-5" />}>
+                <Link href="/start-project" className="w-full sm:w-auto">
+                  <Button variant="electric" size="lg" className="w-full sm:w-auto justify-center" icon={<ArrowUpRight className="w-5 h-5" />}>
                     {CTA_LABELS.primary}
                   </Button>
                 </Link>
-                <Link href="/services">
-                  <Button variant="outline" size="lg">
+                <Link href="/services" className="w-full sm:w-auto">
+                  <Button variant="outline" size="lg" className="w-full sm:w-auto justify-center">
                     {CTA_LABELS.secondary}
                   </Button>
                 </Link>
@@ -260,19 +262,19 @@ export default function HomePage() {
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.56, ease: STUDIO_EASE }}
-                className="pt-6 border-t border-white/10 grid grid-cols-3 gap-6 max-w-lg text-xs font-mono text-neutral-400"
+                className="pt-5 sm:pt-6 border-t border-white/10 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 max-w-lg text-xs font-mono text-neutral-400"
               >
-                <div>
-                  <span className="text-white font-semibold block text-sm">&lt; 1s Load Speed</span>
-                  <span>Core Web Vitals 99+</span>
+                <div className="flex sm:block items-center justify-between sm:justify-start gap-2">
+                  <span className="text-white font-semibold block text-xs sm:text-sm">&lt; 1s Load Speed</span>
+                  <span className="text-[11px] sm:text-xs">Core Web Vitals 99+</span>
                 </div>
-                <div>
-                  <span className="text-[#00F0FF] font-semibold block text-sm">Bespoke 3D Design</span>
-                  <span>Unique brand authority</span>
+                <div className="flex sm:block items-center justify-between sm:justify-start gap-2">
+                  <span className="text-[#00F0FF] font-semibold block text-xs sm:text-sm">Bespoke 3D Design</span>
+                  <span className="text-[11px] sm:text-xs">Unique brand authority</span>
                 </div>
-                <div>
-                  <span className="text-white font-semibold block text-sm">Direct Builders</span>
-                  <span>No agency telephone games</span>
+                <div className="flex sm:block items-center justify-between sm:justify-start gap-2">
+                  <span className="text-white font-semibold block text-xs sm:text-sm">Direct Builders</span>
+                  <span className="text-[11px] sm:text-xs">No agency telephone games</span>
                 </div>
               </motion.div>
             </div>
@@ -286,9 +288,9 @@ export default function HomePage() {
             >
               <div className="w-full max-w-lg relative group">
                 <div className="absolute -inset-1 bg-gradient-to-r from-[#00F0FF]/30 to-white/10 rounded-3xl blur-xl opacity-50 group-hover:opacity-80 transition duration-500" />
-                <Card variant="highlight" className="p-7 sm:p-8 backdrop-blur-2xl relative bg-[#07090E]/95 border border-white/15">
+                <Card variant="highlight" className="p-5 sm:p-8 backdrop-blur-2xl relative bg-[#07090E]/95 border border-white/15">
                   {/* Header */}
-                  <div className="pb-5 border-b border-white/10 space-y-1.5">
+                  <div className="pb-4 sm:pb-5 border-b border-white/10 space-y-1 sm:space-y-1.5">
                     <span className="font-mono text-[11px] uppercase tracking-wider text-[#00F0FF] block">
                       CORE ENGINEERING POWERS
                     </span>
@@ -364,14 +366,14 @@ export default function HomePage() {
       {/* =====================================================================
           2. EDITORIAL STATEMENT / PHILOSOPHY (Pure White Canvas)
           ===================================================================== */}
-      <section id="about" className="bg-white text-black pt-4 pb-28 px-6 transition-colors duration-500">
-        <div className="max-w-7xl mx-auto space-y-20">
+      <section id="about" className="bg-white text-black pt-4 pb-16 sm:pb-28 px-4 sm:px-6 transition-colors duration-500">
+        <div className="max-w-7xl mx-auto space-y-12 sm:space-y-20">
           <Reveal>
-            <div className="space-y-6 max-w-5xl">
-              <span className="text-xs font-mono uppercase tracking-widest text-neutral-500 block">
+            <div className="space-y-4 sm:space-y-6 max-w-5xl">
+              <span className="text-[11px] sm:text-xs font-mono uppercase tracking-widest text-neutral-500 block">
                 Core Philosophy
               </span>
-              <h2 className="font-display font-bold text-3xl sm:text-5xl lg:text-6xl text-black leading-[1.1] tracking-tight">
+              <h2 className="font-display font-bold text-2xl sm:text-4xl md:text-5xl lg:text-6xl text-black leading-[1.15] sm:leading-[1.1] tracking-tight break-words">
                 A business website should make your capabilities crystal clear and make it effortless for high-ticket clients to contact you.
               </h2>
             </div>
@@ -379,7 +381,7 @@ export default function HomePage() {
 
           {/* Multi-Column Supporting Editorial Text */}
           <Reveal delay={0.15}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-8 border-t border-black/10 text-neutral-700 text-base sm:text-lg leading-relaxed">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12 pt-6 sm:pt-8 border-t border-black/10 text-neutral-700 text-sm sm:text-base md:text-lg leading-relaxed">
               <p>
                 If your website is confusing on mobile screens, takes more than two seconds to load, or looks like every generic template on the internet, prospective clients bounce immediately. First impressions in B2B transactions are forged in milliseconds.
               </p>
@@ -390,29 +392,29 @@ export default function HomePage() {
           </Reveal>
 
           {/* Engineering Benchmarks */}
-          <StaggerContainer className="grid grid-cols-2 md:grid-cols-4 gap-8 pt-12 border-t border-black/10">
+          <StaggerContainer className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8 pt-8 sm:pt-12 border-t border-black/10">
             <StaggerItem>
-              <div className="space-y-1 border-l-2 border-black pl-4">
-                <div className="font-display font-bold text-3xl sm:text-4xl text-black">&lt; 800ms</div>
-                <div className="text-xs font-mono uppercase tracking-wider text-neutral-500">Sub-Second Page Loads</div>
+              <div className="space-y-1 border-l-2 border-black pl-3 sm:pl-4">
+                <div className="font-display font-bold text-2xl sm:text-4xl text-black">&lt; 800ms</div>
+                <div className="text-[10px] sm:text-xs font-mono uppercase tracking-wider text-neutral-500">Sub-Second Page Loads</div>
               </div>
             </StaggerItem>
             <StaggerItem>
-              <div className="space-y-1 border-l-2 border-black pl-4">
-                <div className="font-display font-bold text-3xl sm:text-4xl text-black">99+ CWV</div>
-                <div className="text-xs font-mono uppercase tracking-wider text-neutral-500">Lighthouse Performance</div>
+              <div className="space-y-1 border-l-2 border-black pl-3 sm:pl-4">
+                <div className="font-display font-bold text-2xl sm:text-4xl text-black">99+ CWV</div>
+                <div className="text-[10px] sm:text-xs font-mono uppercase tracking-wider text-neutral-500">Lighthouse Performance</div>
               </div>
             </StaggerItem>
             <StaggerItem>
-              <div className="space-y-1 border-l-2 border-black pl-4">
-                <div className="font-display font-bold text-3xl sm:text-4xl text-black">24/7 AI</div>
-                <div className="text-xs font-mono uppercase tracking-wider text-neutral-500">Automated Lead Triage</div>
+              <div className="space-y-1 border-l-2 border-black pl-3 sm:pl-4">
+                <div className="font-display font-bold text-2xl sm:text-4xl text-black">24/7 AI</div>
+                <div className="text-[10px] sm:text-xs font-mono uppercase tracking-wider text-neutral-500">Automated Lead Triage</div>
               </div>
             </StaggerItem>
             <StaggerItem>
-              <div className="space-y-1 border-l-2 border-black pl-4">
-                <div className="font-display font-bold text-3xl sm:text-4xl text-black">100% Handoff</div>
-                <div className="text-xs font-mono uppercase tracking-wider text-neutral-500">Code &amp; Database Owned</div>
+              <div className="space-y-1 border-l-2 border-black pl-3 sm:pl-4">
+                <div className="font-display font-bold text-2xl sm:text-4xl text-black">100% Handoff</div>
+                <div className="text-[10px] sm:text-xs font-mono uppercase tracking-wider text-neutral-500">Code &amp; Database Owned</div>
               </div>
             </StaggerItem>
           </StaggerContainer>
@@ -425,23 +427,23 @@ export default function HomePage() {
       {/* =====================================================================
           3. WORK SHOWCASE (Connected to Database & Dynamic Case Studies)
           ===================================================================== */}
-      <section id="work" className="bg-[#F8F9FB] text-black pt-8 pb-28 px-6">
-        <div className="max-w-7xl mx-auto space-y-16">
+      <section id="work" className="bg-[#F8F9FB] text-black pt-6 sm:pt-8 pb-16 sm:pb-28 px-4 sm:px-6">
+        <div className="max-w-7xl mx-auto space-y-10 sm:space-y-16">
           <Reveal>
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-black/10">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 sm:pb-8 border-b border-black/10">
               <div>
                 <div className="inline-flex items-center gap-2 mb-2">
                   <span className="w-2 h-2 rounded-full bg-[#0080FF] animate-pulse" />
-                  <span className="text-xs font-mono uppercase tracking-widest text-neutral-500 block">
+                  <span className="text-[11px] sm:text-xs font-mono uppercase tracking-widest text-neutral-500 block">
                     Work Showcase // Live Database
                   </span>
                 </div>
-                <h2 className="font-display font-bold text-3xl sm:text-5xl text-black tracking-tight">
+                <h2 className="font-display font-bold text-2xl sm:text-4xl md:text-5xl text-black tracking-tight break-words">
                   Featured Client Work &amp; System Deliverables.
                 </h2>
               </div>
-              <div className="flex flex-col sm:flex-row sm:items-start md:items-center gap-4">
-                <p className="text-neutral-600 text-sm max-w-md font-sans">
+              <div className="flex flex-col sm:flex-row sm:items-start md:items-center gap-3 sm:gap-4">
+                <p className="text-neutral-600 text-xs sm:text-sm max-w-md font-sans">
                   Real production architectures, automated AI pipelines, and bespoke client platforms engineered to drive measurable conversion and operational leverage.
                 </p>
                 <Link href="/work" className="shrink-0">
@@ -453,108 +455,118 @@ export default function HomePage() {
             </div>
           </Reveal>
 
-          {/* Dynamic Work Cards */}
-          <StaggerContainer className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {caseStudies.map((project, index) => {
-              const metricsList = Array.isArray(project.metrics) ? project.metrics.slice(0, 3) : [];
-              const techList = Array.isArray(project.techStack) ? project.techStack.slice(0, 4) : [];
+          {/* Dynamic Work Cards with CLS Prevention */}
+          {!hasLoadedCaseStudies ? (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="min-h-[380px] sm:min-h-[420px] rounded-2xl bg-black/[0.03] border border-black/10 animate-pulse p-6" />
+              ))}
+            </div>
+          ) : caseStudies.length === 0 ? (
+            <div className="py-12 sm:py-16 text-center border border-dashed border-black/10 rounded-2xl p-6 sm:p-8 bg-black/[0.02]">
+              <FolderKanban className="w-8 h-8 text-neutral-400 mx-auto mb-2" />
+              <p className="text-neutral-500 text-xs sm:text-sm font-mono">
+                No case studies published yet.
+              </p>
+            </div>
+          ) : (
+            <StaggerContainer className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+              {caseStudies.map((project, index) => {
+                const metricsList = Array.isArray(project.metrics) ? project.metrics.slice(0, 3) : [];
+                const techList = Array.isArray(project.techStack) ? project.techStack.slice(0, 4) : [];
 
-              return (
-                <StaggerItem key={project.id || project.slug || index}>
-                  <motion.div
-                    whileHover={{ y: -4, scale: 1.015 }}
-                    transition={{ duration: 0.22, ease: STUDIO_EASE }}
-                    className="h-full"
-                  >
-                    <Card
-                      variant="light"
-                      className="p-8 flex flex-col justify-between h-full bg-white border border-black/10 hover:border-black/30 hover:shadow-xl transition-all duration-300 group"
+                return (
+                  <StaggerItem key={project.id || project.slug || index}>
+                    <motion.div
+                      whileHover={{ y: -4, scale: 1.015 }}
+                      transition={{ duration: 0.22, ease: STUDIO_EASE }}
+                      className="h-full"
                     >
-                      <div className="space-y-6">
-                        {/* Header badge */}
-                        <div className="flex items-center justify-between text-xs font-mono">
-                          <span className="text-[#0080FF] font-semibold uppercase tracking-wider truncate max-w-[60%]">
-                            {project.clientIndustry || 'Enterprise System'}
-                          </span>
-                          <span className="px-2.5 py-0.5 rounded-full text-[10px] bg-black/5 text-neutral-600 font-mono border border-black/5 shrink-0">
-                            0{index + 1} // {project.serviceCategory || 'Architecture'}
-                          </span>
+                      <Card
+                        variant="light"
+                        className="p-5 sm:p-8 flex flex-col justify-between h-full bg-white border border-black/10 hover:border-black/30 hover:shadow-xl transition-all duration-300 group"
+                      >
+                        <div className="space-y-6">
+                          {/* Header badge */}
+                          <div className="flex items-center justify-between text-xs font-mono">
+                            <span className="text-[#0080FF] font-semibold uppercase tracking-wider truncate max-w-[60%]">
+                              {project.clientIndustry || 'Enterprise System'}
+                            </span>
+                            <span className="px-2.5 py-0.5 rounded-full text-[10px] bg-black/5 text-neutral-600 font-mono border border-black/5 shrink-0">
+                              0{index + 1} // {project.serviceCategory || 'Architecture'}
+                            </span>
+                          </div>
+
+                          {/* Title & Summary */}
+                          <div className="space-y-2 sm:space-y-3">
+                            <h3 className="font-display font-bold text-lg sm:text-xl md:text-2xl text-black group-hover:text-[#0080FF] transition-colors leading-snug break-words">
+                              {project.title}
+                            </h3>
+                            <p className="text-xs sm:text-sm text-neutral-600 font-sans leading-relaxed line-clamp-3">
+                              {project.summary}
+                            </p>
+                          </div>
+
+                          {/* Metrics Grid */}
+                          {metricsList.length > 0 && (
+                            <div className="grid grid-cols-3 gap-2 pt-4 border-t border-black/5">
+                              {metricsList.map((m: any, mIdx: number) => (
+                                <div key={mIdx} className="bg-black/[0.03] rounded-lg p-2.5 text-center">
+                                  <div className="font-display font-bold text-base text-black">
+                                    {typeof m === 'string' ? m : m.value || m.label}
+                                  </div>
+                                  <div className="text-[10px] font-mono text-neutral-500 truncate uppercase mt-0.5">
+                                    {typeof m === 'string' ? 'Metric' : m.label || 'Value'}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Tech Stack Chips */}
+                          {techList.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 pt-2">
+                              {techList.map((tech: string, tIdx: number) => (
+                                <span
+                                  key={tIdx}
+                                  className="px-2 py-0.5 rounded bg-black/5 text-neutral-700 text-[11px] font-mono"
+                                >
+                                  {tech}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </div>
 
-                        {/* Title & Client */}
-                        <div className="space-y-1">
-                          <span className="text-xs font-mono text-neutral-500 uppercase tracking-wide">
-                            {project.clientName}
-                          </span>
-                          <h3 className="font-display font-bold text-2xl text-black group-hover:text-[#0080FF] transition-colors leading-snug">
-                            {project.title}
-                          </h3>
-                        </div>
-
-                        {/* Summary */}
-                        <p className="text-sm text-neutral-600 leading-relaxed font-sans line-clamp-3">
-                          {project.summary}
-                        </p>
-
-                        {/* Metrics Grid */}
-                        {metricsList.length > 0 && (
-                          <div className="grid grid-cols-3 gap-2 pt-4 border-t border-black/5">
-                            {metricsList.map((m: any, mIdx: number) => (
-                              <div key={mIdx} className="bg-black/[0.03] rounded-lg p-2.5 text-center">
-                                <div className="font-display font-bold text-base text-black">
-                                  {typeof m === 'string' ? m : m.value || m.label}
-                                </div>
-                                <div className="text-[10px] font-mono text-neutral-500 truncate uppercase mt-0.5">
-                                  {typeof m === 'string' ? 'Metric' : m.label || 'Value'}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-
-                        {/* Tech Stack Chips */}
-                        {techList.length > 0 && (
-                          <div className="flex flex-wrap gap-1.5 pt-2">
-                            {techList.map((tech: string, tIdx: number) => (
-                              <span
-                                key={tIdx}
-                                className="px-2 py-0.5 rounded bg-black/5 text-neutral-700 text-[11px] font-mono"
-                              >
-                                {tech}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Card Footer */}
-                      <div className="pt-6 mt-6 border-t border-black/10 flex items-center justify-between">
-                        <Link
-                          href={`/work/${project.slug}`}
-                          className="inline-flex items-center gap-1.5 text-xs font-mono font-semibold text-black hover:text-[#0080FF] transition-colors"
-                        >
-                          <span>Explore Case Study</span>
-                          <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-                        </Link>
-
-                        {project.liveUrl && (
-                          <a
-                            href={project.liveUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="text-neutral-400 hover:text-black transition-colors"
-                            title="View Live Demo"
+                        {/* Card Footer */}
+                        <div className="pt-6 mt-6 border-t border-black/10 flex items-center justify-between">
+                          <Link
+                            href={`/work/${project.slug}`}
+                            className="inline-flex items-center gap-1.5 text-xs font-mono font-semibold text-black hover:text-[#0080FF] transition-colors"
                           >
-                            <ArrowUpRight className="w-4 h-4" />
-                          </a>
-                        )}
-                      </div>
-                    </Card>
-                  </motion.div>
-                </StaggerItem>
-              );
-            })}
-          </StaggerContainer>
+                            <span>Explore Case Study</span>
+                            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                          </Link>
+
+                          {project.liveUrl && (
+                            <a
+                              href={project.liveUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-neutral-400 hover:text-black transition-colors"
+                              title="View Live Demo"
+                            >
+                              <ArrowUpRight className="w-4 h-4" />
+                            </a>
+                          )}
+                        </div>
+                      </Card>
+                    </motion.div>
+                  </StaggerItem>
+                );
+              })}
+            </StaggerContainer>
+          )}
 
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-black/10 text-xs font-mono text-neutral-500">
             <span>Verified production deliverables and architecture blueprints.</span>
@@ -572,38 +584,38 @@ export default function HomePage() {
       {/* =====================================================================
           4. SERVICES & PRICING PACKAGES (Website + Smart Enquiry System Upgraded)
           ===================================================================== */}
-      <section id="pricing" className="bg-white text-black pt-8 pb-28 px-6">
-        <div className="max-w-7xl mx-auto space-y-16">
+      <section id="pricing" className="bg-white text-black pt-6 sm:pt-8 pb-16 sm:pb-28 px-4 sm:px-6">
+        <div className="max-w-7xl mx-auto space-y-10 sm:space-y-16">
           <Reveal>
-            <div className="max-w-3xl space-y-4">
-              <span className="text-xs font-mono uppercase tracking-widest text-[#0080FF] block">
+            <div className="max-w-3xl space-y-3 sm:space-y-4">
+              <span className="text-[11px] sm:text-xs font-mono uppercase tracking-widest text-[#0080FF] block">
                 Project Investments
               </span>
-              <h2 className="font-display font-bold text-3xl sm:text-5xl text-black tracking-tight">
+              <h2 className="font-display font-bold text-2xl sm:text-4xl md:text-5xl text-black tracking-tight break-words">
                 Clear Scopes. Fixed Build Fees. No Surprises.
               </h2>
-              <p className="text-neutral-600 text-base leading-relaxed">
+              <p className="text-neutral-600 text-sm sm:text-base leading-relaxed">
                 Choose the scope that best aligns with your business goals. All proposals detail deliverables, milestones, and timelines in writing before building begins.
               </p>
             </div>
           </Reveal>
 
           {/* Pricing Grid */}
-          <StaggerContainer className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
+          <StaggerContainer className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 items-stretch">
             {/* Tier 1: Business Website Launch */}
             <StaggerItem>
               <motion.div whileHover={{ y: -3 }} transition={{ duration: 0.2 }} className="h-full">
-                <Card variant="light" className="p-8 flex flex-col justify-between h-full border border-black/15 bg-white shadow-sm hover:shadow-md transition-all">
-                  <div className="space-y-6">
+                <Card variant="light" className="p-5 sm:p-8 flex flex-col justify-between h-full border border-black/15 bg-white shadow-sm hover:shadow-md transition-all">
+                  <div className="space-y-4 sm:space-y-6">
                     <div>
-                      <h3 className="font-display font-bold text-2xl text-black">{SERVICES.web.name}</h3>
+                      <h3 className="font-display font-bold text-xl sm:text-2xl text-black">{SERVICES.web.name}</h3>
                       <p className="text-xs text-neutral-500 mt-1">{SERVICES.web.description}</p>
                     </div>
-                    <div className="pt-4 border-t border-black/10">
-                      <div className="font-display font-bold text-3xl text-black">{SERVICES.web.startingPrice}</div>
+                    <div className="pt-3 sm:pt-4 border-t border-black/10">
+                      <div className="font-display font-bold text-2xl sm:text-3xl text-black">{SERVICES.web.startingPrice}</div>
                       <span className="text-xs text-neutral-500 font-mono">One-time build fee baseline</span>
                     </div>
-                    <ul className="space-y-3 text-xs text-neutral-700 pt-4 border-t border-black/10">
+                    <ul className="space-y-2.5 sm:space-y-3 text-xs text-neutral-700 pt-3 sm:pt-4 border-t border-black/10">
                       {SERVICES.web.inclusions.map((item, idx) => (
                         <li key={idx} className="flex items-start gap-2">
                           <CheckCircle2 className="w-4 h-4 text-[#0080FF] flex-shrink-0 mt-0.5" />
@@ -611,7 +623,7 @@ export default function HomePage() {
                         </li>
                       ))}
                     </ul>
-                    <div className="pt-4 border-t border-black/10 text-xs font-sans text-neutral-600">
+                    <div className="pt-3 sm:pt-4 border-t border-black/10 text-xs font-sans text-neutral-600">
                       <span className="font-semibold text-black block mb-1">Best for:</span>
                       {SERVICES.web.bestFor}
                     </div>
@@ -632,28 +644,28 @@ export default function HomePage() {
                 transition={{ duration: 0.2 }}
                 className="relative rounded-2xl p-[1px] bg-gradient-to-b from-[#00F0FF]/50 to-white/10 shadow-[0_0_40px_rgba(0,240,255,0.18)] h-full"
               >
-                <Card variant="dark" className="p-8 h-full flex flex-col justify-between relative overflow-hidden bg-[#06080D]">
+                <Card variant="dark" className="p-5 sm:p-8 h-full flex flex-col justify-between relative overflow-hidden bg-[#06080D]">
                   <Silk className="opacity-30" speed={0.5} />
 
-                  <div className="relative z-10 space-y-6">
-                    <div className="space-y-3 text-center">
+                  <div className="relative z-10 space-y-4 sm:space-y-6">
+                    <div className="space-y-2.5 sm:space-y-3 text-center">
                       <div className="flex justify-center">
                         <Badge variant="electric" className="px-3 py-1 text-xs shadow-[0_0_15px_rgba(0,240,255,0.4)]">
                           Popular Scope
                         </Badge>
                       </div>
                       <div>
-                        <h3 className="font-display font-bold text-2xl text-white">{SERVICES.ai.name}</h3>
+                        <h3 className="font-display font-bold text-xl sm:text-2xl text-white">{SERVICES.ai.name}</h3>
                         <p className="text-xs text-neutral-400 mt-1">{SERVICES.ai.description}</p>
                       </div>
                     </div>
 
-                    <div className="pt-4 border-t border-white/10">
-                      <div className="font-display font-bold text-3xl text-white">{SERVICES.ai.startingPrice}</div>
+                    <div className="pt-3 sm:pt-4 border-t border-white/10">
+                      <div className="font-display font-bold text-2xl sm:text-3xl text-white">{SERVICES.ai.startingPrice}</div>
                       <span className="text-xs text-[#00F0FF] font-mono">One-time build fee baseline</span>
                     </div>
 
-                    <ul className="space-y-3 text-xs text-neutral-200 pt-4 border-t border-white/10">
+                    <ul className="space-y-2.5 sm:space-y-3 text-xs text-neutral-200 pt-3 sm:pt-4 border-t border-white/10">
                       {SERVICES.ai.inclusions.map((item, idx) => (
                         <li key={idx} className="flex items-start gap-2">
                           <CheckCircle2 className="w-4 h-4 text-[#00F0FF] flex-shrink-0 mt-0.5" />
@@ -662,13 +674,13 @@ export default function HomePage() {
                       ))}
                     </ul>
 
-                    <div className="pt-4 border-t border-white/10 text-xs font-sans text-neutral-300">
+                    <div className="pt-3 sm:pt-4 border-t border-white/10 text-xs font-sans text-neutral-300">
                       <span className="font-semibold text-white block mb-1">Best for:</span>
                       {SERVICES.ai.bestFor}
                     </div>
                   </div>
 
-                  <Link href="/start-project" className="relative z-10 mt-8">
+                  <Link href="/start-project" className="relative z-10 mt-6 sm:mt-8">
                     <Button variant="electric" className="w-full justify-center">
                       {SERVICES.ai.ctaText}
                     </Button>
@@ -680,17 +692,17 @@ export default function HomePage() {
             {/* Tier 3: Custom Business Growth System */}
             <StaggerItem>
               <motion.div whileHover={{ y: -3 }} transition={{ duration: 0.2 }} className="h-full">
-                <Card variant="light" className="p-8 flex flex-col justify-between h-full border border-black/15 bg-white shadow-sm hover:shadow-md transition-all">
-                  <div className="space-y-6">
+                <Card variant="light" className="p-5 sm:p-8 flex flex-col justify-between h-full border border-black/15 bg-white shadow-sm hover:shadow-md transition-all">
+                  <div className="space-y-4 sm:space-y-6">
                     <div>
-                      <h3 className="font-display font-bold text-2xl text-black">{SERVICES.saas.name}</h3>
+                      <h3 className="font-display font-bold text-xl sm:text-2xl text-black">{SERVICES.saas.name}</h3>
                       <p className="text-xs text-neutral-500 mt-1">{SERVICES.saas.description}</p>
                     </div>
-                    <div className="pt-4 border-t border-black/10">
-                      <div className="font-display font-bold text-3xl text-black">{SERVICES.saas.startingPrice}</div>
+                    <div className="pt-3 sm:pt-4 border-t border-black/10">
+                      <div className="font-display font-bold text-2xl sm:text-3xl text-black">{SERVICES.saas.startingPrice}</div>
                       <span className="text-xs text-neutral-500 font-mono">One-time build fee baseline</span>
                     </div>
-                    <ul className="space-y-3 text-xs text-neutral-700 pt-4 border-t border-black/10">
+                    <ul className="space-y-2.5 sm:space-y-3 text-xs text-neutral-700 pt-3 sm:pt-4 border-t border-black/10">
                       {SERVICES.saas.inclusions.map((item, idx) => (
                         <li key={idx} className="flex items-start gap-2">
                           <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
@@ -698,7 +710,7 @@ export default function HomePage() {
                         </li>
                       ))}
                     </ul>
-                    <div className="pt-4 border-t border-black/10 text-xs font-sans text-neutral-600">
+                    <div className="pt-3 sm:pt-4 border-t border-black/10 text-xs font-sans text-neutral-600">
                       <span className="font-semibold text-black block mb-1">Best for:</span>
                       {SERVICES.saas.bestFor}
                     </div>
@@ -714,13 +726,13 @@ export default function HomePage() {
           </StaggerContainer>
 
           {/* Transparent Process Steps */}
-          <div className="pt-16 border-t border-black/10 space-y-8">
+          <div className="pt-10 sm:pt-16 border-t border-black/10 space-y-6 sm:space-y-8">
             <Reveal>
-              <div className="text-center max-w-xl mx-auto space-y-2">
-                <span className="text-xs font-mono uppercase tracking-widest text-[#0080FF]">
+              <div className="text-center max-w-xl mx-auto space-y-1.5 sm:space-y-2">
+                <span className="text-[11px] sm:text-xs font-mono uppercase tracking-widest text-[#0080FF]">
                   Transparent Process
                 </span>
-                <h3 className="font-display font-bold text-2xl sm:text-3xl text-black">
+                <h3 className="font-display font-bold text-xl sm:text-3xl text-black">
                   Starting a project is simple
                 </h3>
                 <p className="text-xs text-neutral-500 font-sans">
@@ -729,10 +741,10 @@ export default function HomePage() {
               </div>
             </Reveal>
 
-            <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               {PROJECT_PROCESS_STEPS.map((step) => (
                 <StaggerItem key={step.step}>
-                  <div className="p-6 rounded-2xl bg-white border border-black/10 space-y-3 relative hover:border-[#0080FF]/40 transition-colors">
+                  <div className="p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-white border border-black/10 space-y-2 sm:space-y-3 relative hover:border-[#0080FF]/40 transition-colors">
                     <span className="text-xs font-mono text-[#0080FF] font-bold">
                       STEP {step.step}
                     </span>
@@ -756,20 +768,20 @@ export default function HomePage() {
       {/* =====================================================================
           5. VERIFIED CLIENT REVIEWS SECTION (New Dedicated Homepage Section)
           ===================================================================== */}
-      <section id="reviews" className="bg-[#08090C] text-white pt-12 pb-28 px-6 border-t border-white/10">
-        <div className="max-w-7xl mx-auto space-y-16">
+      <section id="reviews" className="bg-[#08090C] text-white pt-10 sm:pt-12 pb-16 sm:pb-28 px-4 sm:px-6 border-t border-white/10">
+        <div className="max-w-7xl mx-auto space-y-10 sm:space-y-16">
           <Reveal>
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-white/10">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 sm:pb-8 border-b border-white/10">
               <div>
-                <span className="text-xs font-mono uppercase tracking-widest text-[#00F0FF] block mb-2">
+                <span className="text-[11px] sm:text-xs font-mono uppercase tracking-widest text-[#00F0FF] block mb-2">
                   Client Verification // Verified Results
                 </span>
-                <h2 className="font-display font-bold text-3xl sm:text-5xl text-white tracking-tight">
+                <h2 className="font-display font-bold text-2xl sm:text-4xl md:text-5xl text-white tracking-tight break-words">
                   What Clients Say About Working With Us.
                 </h2>
               </div>
               <div className="flex items-center gap-4">
-                <span className="text-xs font-mono text-neutral-400">
+                <span className="text-[11px] sm:text-xs font-mono text-neutral-400">
                   {reviews.length} Verified Engagements
                 </span>
                 <Link href="/reviews">
@@ -781,55 +793,70 @@ export default function HomePage() {
             </div>
           </Reveal>
 
-          {/* Reviews Grid */}
-          <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {reviews.map((rev) => (
-              <StaggerItem key={rev.id}>
-                <motion.div
-                  whileHover={{ y: -4 }}
-                  transition={{ duration: 0.2 }}
-                  className="h-full"
-                >
-                  <Card
-                    variant="dark"
-                    className="p-8 flex flex-col justify-between h-full bg-[#0E1118] border border-white/10 hover:border-[#00F0FF]/40 transition-all space-y-6"
+          {/* Reviews Grid with CLS Prevention */}
+          {!hasLoadedReviews ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="min-h-[180px] sm:min-h-[220px] rounded-2xl bg-white/5 border border-white/10 animate-pulse p-6" />
+              ))}
+            </div>
+          ) : reviews.length === 0 ? (
+            <div className="py-12 sm:py-16 text-center border border-dashed border-white/10 rounded-2xl p-6 sm:p-8 bg-white/[0.02]">
+              <MessageSquare className="w-8 h-8 text-neutral-500 mx-auto mb-2" />
+              <p className="text-neutral-400 text-xs sm:text-sm font-mono">
+                No client reviews published yet.
+              </p>
+            </div>
+          ) : (
+            <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+              {reviews.map((rev) => (
+                <StaggerItem key={rev.id}>
+                  <motion.div
+                    whileHover={{ y: -4 }}
+                    transition={{ duration: 0.2 }}
+                    className="h-full"
                   >
-                    <div className="space-y-4">
-                      {/* 5 Stars */}
-                      <div className="flex items-center gap-1 text-[#00F0FF]">
-                        {Array.from({ length: rev.rating || 5 }).map((_, i) => (
-                          <Star key={i} className="w-4 h-4 fill-current" />
-                        ))}
+                    <Card
+                      variant="dark"
+                      className="p-4 sm:p-6 lg:p-8 flex flex-col justify-between h-full bg-[#0E1118] border border-white/10 hover:border-[#00F0FF]/40 transition-all space-y-3 sm:space-y-5"
+                    >
+                      <div className="space-y-3">
+                        {/* 5 Stars */}
+                        <div className="flex items-center gap-1 text-[#00F0FF]">
+                          {Array.from({ length: rev.rating || 5 }).map((_, i) => (
+                            <Star key={i} className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current" />
+                          ))}
+                        </div>
+
+                        <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed italic font-sans">
+                          "{rev.quote}"
+                        </p>
                       </div>
 
-                      <p className="text-sm text-neutral-300 leading-relaxed italic font-sans">
-                        "{rev.quote}"
-                      </p>
-                    </div>
-
-                    <div className="pt-4 border-t border-white/10 flex items-center justify-between">
-                      <div>
-                        <div className="font-display font-semibold text-sm text-white">
-                          {rev.clientName}
+                      <div className="pt-3 sm:pt-4 border-t border-white/10 flex items-center justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <div className="font-display font-semibold text-xs sm:text-sm text-white truncate">
+                            {rev.clientName}
+                          </div>
+                          <div className="text-[11px] sm:text-xs text-neutral-400 font-mono truncate">
+                            {rev.clientTitle && `${rev.clientTitle}, `}
+                            {rev.companyName}
+                          </div>
                         </div>
-                        <div className="text-xs text-neutral-400 font-mono">
-                          {rev.clientTitle && `${rev.clientTitle}, `}
-                          {rev.companyName}
-                        </div>
+                        <span className="px-2 py-0.5 rounded text-[9px] sm:text-[10px] font-mono bg-emerald-950/60 text-emerald-400 border border-emerald-800/50 flex items-center gap-1 shrink-0">
+                          <CheckCircle2 className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> VERIFIED
+                        </span>
                       </div>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-950/60 text-emerald-400 border border-emerald-800/50 flex items-center gap-1">
-                        <CheckCircle2 className="w-3 h-3" /> VERIFIED
-                      </span>
-                    </div>
-                  </Card>
-                </motion.div>
-              </StaggerItem>
-            ))}
-          </StaggerContainer>
+                    </Card>
+                  </motion.div>
+                </StaggerItem>
+              ))}
+            </StaggerContainer>
+          )}
 
           {/* Commitments Bar */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-8 border-t border-white/10">
-            <div className="p-6 rounded-xl bg-white/5 border border-white/10 space-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-8 pt-6 sm:pt-8 border-t border-white/10">
+            <div className="p-4 sm:p-6 rounded-xl bg-white/5 border border-white/10 space-y-1.5 sm:space-y-2">
               <div className="flex items-center gap-2 text-[#00F0FF]">
                 <Clock className="w-4 h-4" />
                 <h4 className="font-display font-bold text-sm text-white">Fixed Written Scopes</h4>
@@ -868,17 +895,17 @@ export default function HomePage() {
       {/* =====================================================================
           6. DYNAMIC FAQ ACCORDION (Connected to Postgres & Multi-Page Sync)
           ===================================================================== */}
-      <section id="faq" className="bg-white text-black pt-8 pb-28 px-6">
-        <div className="max-w-4xl mx-auto space-y-12">
+      <section id="faq" className="bg-white text-black pt-6 sm:pt-8 pb-16 sm:pb-28 px-4 sm:px-6">
+        <div className="max-w-4xl mx-auto space-y-8 sm:space-y-12">
           <Reveal>
-            <div className="text-center space-y-4">
-              <span className="text-xs font-mono uppercase tracking-widest text-neutral-500 block">
+            <div className="text-center space-y-3 sm:space-y-4">
+              <span className="text-[11px] sm:text-xs font-mono uppercase tracking-widest text-neutral-500 block">
                 Common Inquiries
               </span>
-              <h2 className="font-display font-bold text-3xl sm:text-4xl text-black tracking-tight">
+              <h2 className="font-display font-bold text-2xl sm:text-3xl md:text-4xl text-black tracking-tight break-words">
                 Frequently Asked Questions
               </h2>
-              <p className="text-sm text-neutral-600 max-w-md mx-auto">
+              <p className="text-xs sm:text-sm text-neutral-600 max-w-md mx-auto">
                 Direct, honest answers about project timelines, code handoff, AI workflows, and pricing.
               </p>
             </div>

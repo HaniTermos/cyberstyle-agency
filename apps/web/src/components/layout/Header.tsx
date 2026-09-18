@@ -61,7 +61,7 @@ export function Header() {
           : 'bg-transparent border-b border-white/5 py-5'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
         {/* Brand Logo & Wordmark */}
         <Link href="/" className="flex items-center group focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00F0FF] rounded-lg">
           <LogoMotion />
