@@ -1,3 +1,5 @@
+name: cyberstyle_prod
+
 services:
   # ----------------------------------------------------------------------------
   # Next.js Web Frontend & Portal (Production Standalone)
