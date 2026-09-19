@@ -5,6 +5,7 @@ services:
   # Next.js Web Frontend & Portal (Production Standalone)
   # ----------------------------------------------------------------------------
   web:
+    image: cyberstyle-web:prod
     build:
       context: .
       dockerfile: apps/web/Dockerfile.prod
@@ -18,11 +19,6 @@ services:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://cyberstyle.net/api}
     ports:
       - "127.0.0.1:${PROD_WEB_PORT:-3001}:3000"
-    healthcheck:
-      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:3000').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))\""]
-      interval: 10s
-      timeout: 5s
-      retries: 5
     networks:
       - cyberstyle_network
       - proxy
@@ -35,13 +31,13 @@ services:
       - "traefik.http.routers.agency-web.priority=10"
       - "traefik.http.services.agency-web.loadbalancer.server.port=3000"
     depends_on:
-      api:
-        condition: service_healthy
+      - api
 
   # ----------------------------------------------------------------------------
   # Express.js REST API (Production Compiled)
   # ----------------------------------------------------------------------------
   api:
+    image: cyberstyle-api:prod
     build:
       context: .
       dockerfile: apps/api/Dockerfile.prod
@@ -60,11 +56,6 @@ services:
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost:3001,https://cyberstyle.net}
     ports:
       - "127.0.0.1:${PROD_API_PORT:-4001}:4000"
-    healthcheck:
-      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:4000/api/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))\""]
-      interval: 10s
-      timeout: 5s
-      retries: 5
     networks:
       - cyberstyle_network
       - proxy
@@ -77,15 +68,14 @@ services:
       - "traefik.http.routers.agency-api.priority=100"
       - "traefik.http.services.agency-api.loadbalancer.server.port=4000"
     depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+      - postgres
+      - redis
 
   # ----------------------------------------------------------------------------
   # BullMQ Asynchronous Queue Worker (Production Compiled)
   # ----------------------------------------------------------------------------
   worker:
+    image: cyberstyle-api:prod
     build:
       context: .
       dockerfile: apps/api/Dockerfile.prod
@@ -99,12 +89,9 @@ services:
     networks:
       - cyberstyle_network
     depends_on:
-      api:
-        condition: service_healthy
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+      - api
+      - postgres
+      - redis
 
   # ----------------------------------------------------------------------------
   # PostgreSQL 16 (Production)
@@ -121,11 +108,6 @@ services:
       - postgres_data_prod:/var/lib/postgresql/data
     ports:
       - "127.0.0.1:${PROD_POSTGRES_PORT:-5434}:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-db_agency_prod}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
     networks:
       - cyberstyle_network
 
@@ -141,11 +123,6 @@ services:
       - redis_data_prod:/data
     ports:
       - "127.0.0.1:${PROD_REDIS_PORT:-6380}:6379"
-    healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-redis_secure_password}", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
     networks:
       - cyberstyle_network
 
