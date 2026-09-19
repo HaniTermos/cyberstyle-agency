@@ -184,39 +184,78 @@ export default function AdminMessagesPage() {
     }
   }, [activeThreadId, loadThreadDetail]);
 
-  // Polling mechanism (incremental via ?since=<lastMsgId>)
+  // Polling mechanism (incremental via ?since=<lastMsgId>) with bfcache lifecycle awareness
   useEffect(() => {
     if (!activeThreadId) return;
 
-    const pollInterval = setInterval(async () => {
-      const lastMsg = messages[messages.length - 1];
-      const sinceParam = lastMsg ? `?since=${lastMsg.id}` : '';
-      try {
-        const res = await apiRequest<{
-          threadId: string;
-          messages: MessageItem[];
-          hasMore: boolean;
-        }>(`/messaging/threads/${activeThreadId}/poll${sinceParam}`);
+    let isPaused = false;
+    let pollInterval: NodeJS.Timeout | null = null;
 
-        if (res.success && res.data && res.data.messages.length > 0) {
-          setMessages((prev) => {
-            const existingIds = new Set(prev.map((m) => m.id));
-            const newOnes = res.data!.messages.filter((m) => !existingIds.has(m.id));
-            if (newOnes.length > 0) {
-              setTimeout(scrollToBottom, 50);
-              return [...prev, ...newOnes];
-            }
-            return prev;
-          });
+    const startPolling = () => {
+      if (pollInterval) clearInterval(pollInterval);
+      pollInterval = setInterval(async () => {
+        if (isPaused || document.hidden) return;
+        const lastMsg = messages[messages.length - 1];
+        const sinceParam = lastMsg ? `?since=${lastMsg.id}` : '';
+        try {
+          const res = await apiRequest<{
+            threadId: string;
+            messages: MessageItem[];
+            hasMore: boolean;
+          }>(`/messaging/threads/${activeThreadId}/poll${sinceParam}`);
+
+          if (res.success && res.data && res.data.messages.length > 0) {
+            setMessages((prev) => {
+              const existingIds = new Set(prev.map((m) => m.id));
+              const newOnes = res.data!.messages.filter((m) => !existingIds.has(m.id));
+              if (newOnes.length > 0) {
+                setTimeout(scrollToBottom, 50);
+                return [...prev, ...newOnes];
+              }
+              return prev;
+            });
+          }
+        } catch (err) {
+          // Silent polling error handling
         }
-      } catch (err) {
-        // Silent polling error handling
-      }
-    }, 3500);
+      }, 3500);
+      pollTimerRef.current = pollInterval;
+    };
 
-    pollTimerRef.current = pollInterval;
-    return () => clearInterval(pollInterval);
-  }, [activeThreadId, messages]);
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        isPaused = true;
+      } else {
+        isPaused = false;
+        loadThreadDetail(activeThreadId);
+      }
+    };
+
+    const handlePageHide = () => {
+      isPaused = true;
+      if (pollInterval) clearInterval(pollInterval);
+    };
+
+    const handlePageShow = (event: PageTransitionEvent) => {
+      isPaused = false;
+      startPolling();
+      if (event.persisted) {
+        loadThreadDetail(activeThreadId);
+      }
+    };
+
+    startPolling();
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('pagehide', handlePageHide);
+    window.addEventListener('pageshow', handlePageShow);
+
+    return () => {
+      if (pollInterval) clearInterval(pollInterval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('pagehide', handlePageHide);
+      window.removeEventListener('pageshow', handlePageShow);
+    };
+  }, [activeThreadId, messages, loadThreadDetail]);
 
   // Send Message Handler
   const handleSendMessage = async (e?: React.FormEvent) => {

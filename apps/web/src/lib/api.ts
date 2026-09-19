@@ -2,9 +2,14 @@
  * CYBERSTYLE API Client Helper
  */
 
-const API_BASE_URL = typeof window === 'undefined'
-  ? (process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://api:4000/api')
-  : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api');
+export function getApiBaseUrl(): string {
+  if (typeof window === 'undefined') {
+    // Server-side (inside Docker or SSR server): route to internal API container
+    return process.env.INTERNAL_API_URL || 'http://api:4000/api';
+  }
+  // Client-side (in browser): route to public API URL on host
+  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
+}
 
 export function getAuthToken(): string | null {
   if (typeof window === 'undefined') return null;
@@ -64,10 +69,17 @@ export async function apiRequest<T = any>(
       ...(options.headers as Record<string, string> || {}),
     };
 
-    // Clean endpoint path
+    // Clean and normalize endpoint path
+    let cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    // Strip redundant leading /api if base URL already includes /api
+    if (cleanEndpoint.startsWith('/api/')) {
+      cleanEndpoint = cleanEndpoint.substring(4);
+    }
+
+    const baseUrl = getApiBaseUrl().replace(/\/+$/, '');
     const url = endpoint.startsWith('http')
       ? endpoint
-      : `${API_BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+      : `${baseUrl}${cleanEndpoint}`;
 
     const response = await fetch(url, {
       ...options,
@@ -76,12 +88,21 @@ export async function apiRequest<T = any>(
     });
 
     let data: any;
-    const contentType = response.headers.get('content-type');
-    if (contentType && contentType.includes('application/json')) {
-      data = await response.json();
+    const contentType = response.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      try {
+        data = await response.json();
+      } catch {
+        const text = await response.text().catch(() => '');
+        data = { error: 'Invalid JSON response from API server', raw: text };
+      }
     } else {
-      const text = await response.text();
-      data = { success: response.ok, data: text };
+      const text = await response.text().catch(() => '');
+      try {
+        data = JSON.parse(text);
+      } catch {
+        data = { success: response.ok, data: text };
+      }
     }
 
     if (!response.ok) {

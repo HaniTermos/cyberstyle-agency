@@ -4,6 +4,7 @@ import { requireAuth, requireRole, AuthenticatedRequest } from '../middleware/au
 import { logAudit } from '../utils/auditLogger';
 import { ReviewStatus, PostStatus, UserRole } from '@prisma/client';
 import { z } from 'zod';
+import { getCache, setCache, invalidateCachePattern, CACHE_TTL } from '../utils/cache';
 
 const router = Router();
 
@@ -232,6 +233,17 @@ router.get('/case-studies', async (req: Request, res: Response, next: NextFuncti
   try {
     const { category, industry, geoCountry, featured, search } = req.query;
 
+    const cacheKey = (!category && !industry && !geoCountry && !featured && !search)
+      ? 'cache:content:case-studies'
+      : `cache:content:case-studies:cat=${category || 'all'}:ind=${industry || 'all'}:geo=${geoCountry || 'all'}:feat=${featured || 'all'}:q=${search || ''}`;
+
+    const cached = await getCache<{ status: string; data: { caseStudies: any[]; total: number } }>(cacheKey);
+    if (cached) {
+      res.setHeader('X-Cache', 'HIT');
+      res.status(200).json(cached);
+      return;
+    }
+
     const where: any = {
       status: PostStatus.PUBLISHED,
     };
@@ -262,13 +274,18 @@ router.get('/case-studies', async (req: Request, res: Response, next: NextFuncti
       orderBy: [{ sortOrder: 'asc' }, { publishedAt: 'desc' }, { createdAt: 'desc' }],
     });
 
-    res.status(200).json({
+    const responsePayload = {
       status: 'success',
       data: {
         caseStudies,
         total: caseStudies.length,
       },
-    });
+    };
+
+    setCache(cacheKey, responsePayload, CACHE_TTL.CASE_STUDIES);
+
+    res.setHeader('X-Cache', 'MISS');
+    res.status(200).json(responsePayload);
   } catch (error) {
     next(error);
   }
@@ -280,6 +297,15 @@ router.get('/case-studies', async (req: Request, res: Response, next: NextFuncti
 router.get('/case-studies/:slug', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { slug } = req.params;
+    const cacheKey = `cache:content:case-studies:slug=${slug}`;
+
+    const cached = await getCache<{ status: string; data: { caseStudy: any } }>(cacheKey);
+    if (cached) {
+      res.setHeader('X-Cache', 'HIT');
+      res.status(200).json(cached);
+      return;
+    }
+
     const caseStudy = await prisma.caseStudy.findUnique({
       where: { slug },
     });
@@ -293,10 +319,15 @@ router.get('/case-studies/:slug', async (req: Request, res: Response, next: Next
       return;
     }
 
-    res.status(200).json({
+    const responsePayload = {
       status: 'success',
       data: { caseStudy },
-    });
+    };
+
+    setCache(cacheKey, responsePayload, CACHE_TTL.CASE_STUDIES);
+
+    res.setHeader('X-Cache', 'MISS');
+    res.status(200).json(responsePayload);
   } catch (error) {
     next(error);
   }
@@ -448,6 +479,8 @@ router.post(
         req,
       });
 
+      invalidateCachePattern('cache:content:case-studies:*');
+
       res.status(201).json({
         status: 'success',
         message: 'Case study created successfully',
@@ -514,6 +547,8 @@ router.patch(
         req,
       });
 
+      invalidateCachePattern('cache:content:case-studies:*');
+
       res.status(200).json({
         status: 'success',
         message: 'Case study updated successfully',
@@ -552,6 +587,8 @@ router.delete(
         changes: { title: existing.title, slug: existing.slug },
         req,
       });
+
+      invalidateCachePattern('cache:content:case-studies:*');
 
       res.status(200).json({
         status: 'success',
@@ -908,12 +945,25 @@ router.delete(
  */
 router.get('/reviews', async (_req: Request, res: Response, next: NextFunction) => {
   try {
+    const cacheKey = 'cache:reviews:approved';
+    const cached = await getCache<{ status: string; data: { reviews: any[] } }>(cacheKey);
+    if (cached) {
+      res.setHeader('X-Cache', 'HIT');
+      res.status(200).json(cached);
+      return;
+    }
+
     const reviews = await prisma.review.findMany({
       where: { status: ReviewStatus.APPROVED },
       orderBy: { createdAt: 'desc' },
     });
 
-    res.status(200).json({ status: 'success', data: { reviews } });
+    const responsePayload = { status: 'success', data: { reviews } };
+
+    setCache(cacheKey, responsePayload, CACHE_TTL.REVIEWS);
+
+    res.setHeader('X-Cache', 'MISS');
+    res.status(200).json(responsePayload);
   } catch (error) {
     next(error);
   }
@@ -995,6 +1045,8 @@ router.patch(
         req,
       });
 
+      invalidateCachePattern('cache:reviews:*');
+
       res.status(200).json({ status: 'success', data: { review: updated } });
     } catch (error) {
       next(error);
@@ -1009,6 +1061,19 @@ router.patch(
 router.get('/faqs', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { page, category, search } = req.query;
+
+    const cacheKey = (!category && !search && page)
+      ? `cache:faqs:${String(page).toLowerCase()}`
+      : (!category && !search && !page)
+      ? 'cache:faqs:all'
+      : `cache:faqs:p=${page || 'all'}:c=${category || 'all'}:q=${search || ''}`;
+
+    const cached = await getCache<{ status: string; data: { faqs: any[] } }>(cacheKey);
+    if (cached) {
+      res.setHeader('X-Cache', 'HIT');
+      res.status(200).json(cached);
+      return;
+    }
 
     const where: any = {
       isPublished: true,
@@ -1040,7 +1105,12 @@ router.get('/faqs', async (req: Request, res: Response, next: NextFunction) => {
       orderBy: [{ orderIndex: 'asc' }, { createdAt: 'asc' }],
     });
 
-    res.status(200).json({ status: 'success', data: { faqs } });
+    const responsePayload = { status: 'success', data: { faqs } };
+
+    setCache(cacheKey, responsePayload, CACHE_TTL.FAQS);
+
+    res.setHeader('X-Cache', 'MISS');
+    res.status(200).json(responsePayload);
   } catch (error) {
     next(error);
   }

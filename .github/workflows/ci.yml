@@ -10,9 +10,6 @@ permissions:
   contents: read
   actions: read
 
-env:
-  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: "true"
-
 jobs:
   # ----------------------------------------------------------------------------
   # 1. Typecheck, Security Unit Tests & Production Build
@@ -61,33 +58,25 @@ jobs:
           npx prisma validate
           npx prisma generate
 
-      - name: Typecheck Monorepo
-        run: |
-          npx --workspace=@cyberstyle/api tsc --noEmit
-          npx --workspace=@cyberstyle/web tsc --noEmit
+      - name: Lint & Typecheck Monorepo
+        run: npm run ci:typecheck
 
       - name: Run Backend Security & Integration Test Suites
         env:
           DATABASE_URL: "postgresql://postgres:postgres_password@localhost:5432/cyberstyle_test_db?schema=public"
           REDIS_URL: "redis://localhost:6379"
-          AUTH_SECRET: "ci_test_secret_key_minimum_32_bytes_long_here!"
-          SESSION_SECRET: "ci_test_session_secret_minimum_32_bytes_long!"
+          AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+          SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
         run: |
-          npx prisma db push
-          npm run test:tenant --workspace=@cyberstyle/api
-          npm run test:portal --workspace=@cyberstyle/api
-          npm run test:phase3 --workspace=@cyberstyle/api
-          npm run test:restore --workspace=@cyberstyle/api
-          npm run test:e2e --workspace=@cyberstyle/api
+          npx prisma migrate deploy
+          npm run ci:test
 
       - name: Production Builds
         env:
           DATABASE_URL: "postgresql://postgres:postgres_password@localhost:5432/cyberstyle_test_db?schema=public"
-          AUTH_SECRET: "ci_test_secret_key_minimum_32_bytes_long_here!"
-          SESSION_SECRET: "ci_test_session_secret_minimum_32_bytes_long!"
-        run: |
-          npm run build --workspace=@cyberstyle/api
-          npm run build --workspace=@cyberstyle/web
+          AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+          SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+        run: npm run ci:build
 
   # ----------------------------------------------------------------------------
   # 2. Playwright End-to-End (E2E) Browser Testing
@@ -135,7 +124,7 @@ jobs:
           DATABASE_URL: "postgresql://postgres:postgres_password@localhost:5432/cyberstyle_test_db?schema=public"
         run: |
           npx prisma generate
-          npx prisma db push
+          npx prisma migrate deploy
           node prisma/safe_reset_and_bootstrap.js
 
       - name: Install Playwright Chromium Browser
@@ -151,8 +140,8 @@ jobs:
         env:
           DATABASE_URL: "postgresql://postgres:postgres_password@localhost:5432/cyberstyle_test_db?schema=public"
           REDIS_URL: "redis://localhost:6379"
-          AUTH_SECRET: "ci_test_secret_key_minimum_32_bytes_long_here!"
-          SESSION_SECRET: "ci_test_session_secret_minimum_32_bytes_long!"
+          AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+          SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
           PORT: 4000
         run: |
           nohup npm run dev:direct --workspace=@cyberstyle/api > api.log 2>&1 &
@@ -181,10 +170,10 @@ jobs:
           retention-days: 7
 
   # ----------------------------------------------------------------------------
-  # 3. Docker Image Build Verification
+  # 3. Production Docker Image Build Verification
   # ----------------------------------------------------------------------------
   docker-check:
-    name: Dockerfile Build & Container Verification
+    name: Production Dockerfile Build Verification
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source Code
@@ -193,18 +182,18 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build API Docker Image
+      - name: Build API Production Docker Image
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: apps/api/Dockerfile
+          file: apps/api/Dockerfile.prod
           push: false
-          tags: cyberstyle-api:test
+          tags: cyberstyle-api:prod-ci
 
-      - name: Build Web Docker Image
+      - name: Build Web Production Docker Image
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: apps/web/Dockerfile
+          file: apps/web/Dockerfile.prod
           push: false
-          tags: cyberstyle-web:test
+          tags: cyberstyle-web:prod-ci

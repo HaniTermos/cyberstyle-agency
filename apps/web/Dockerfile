@@ -8,7 +8,7 @@ COPY apps/api/package.json ./apps/api/package.json
 COPY packages ./packages
 COPY prisma ./prisma
 
-RUN --mount=type=cache,target=/root/.npm npm install --legacy-peer-deps --no-audit
+RUN --mount=type=cache,target=/root/.npm npm ci --legacy-peer-deps
 RUN npx prisma generate
 
 COPY . .

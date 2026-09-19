@@ -8,6 +8,9 @@ const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-sans',
+  fallback: ['system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+  adjustFontFallback: true,
+  preload: true,
 });
 
 const syne = Syne({
@@ -15,6 +18,9 @@ const syne = Syne({
   weight: ['600', '700', '800'],
   display: 'swap',
   variable: '--font-display',
+  fallback: ['system-ui', '-apple-system', 'sans-serif'],
+  adjustFontFallback: true,
+  preload: true,
 });
 
 const jetbrainsMono = JetBrains_Mono({
@@ -22,6 +28,9 @@ const jetbrainsMono = JetBrains_Mono({
   weight: ['400', '500'],
   display: 'swap',
   variable: '--font-mono',
+  fallback: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
+  adjustFontFallback: true,
+  preload: false,
 });
 
 export const viewport: Viewport = {

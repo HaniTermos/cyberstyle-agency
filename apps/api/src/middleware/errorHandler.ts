@@ -15,7 +15,7 @@ export function errorHandler(
   _next: NextFunction
 ) {
   const timeStr = new Date().toLocaleTimeString();
-  const statusCode = err.statusCode || (err instanceof ZodError ? 400 : 500);
+  const statusCode = err.statusCode || err.status || (err instanceof ZodError ? 400 : 500);
 
   // Capture exception in operational tracker with correlationId and user context
   ErrorTracker.captureException(err, { req, statusCode });
@@ -29,7 +29,19 @@ export function errorHandler(
   console.error(`${RED}║ 🚨 EXCEPTION CAUGHT [${timeStr}] ON ${req.method} ${req.originalUrl || req.url}${RESET}`);
   console.error(`${RED}╠═════════════════════════════════════════════════════════════════${RESET}`);
 
-  // 1. Zod Validation Error
+  // 1. Body-Parser JSON Syntax Error (Malformed JSON payload)
+  if (err instanceof SyntaxError && (err as any).status === 400 && 'body' in err) {
+    console.error(`${YELLOW}║ [BODY PARSER MALFORMED JSON]${RESET} ${err.message}`);
+    console.error(`${RED}╚═════════════════════════════════════════════════════════════════${RESET}\n`);
+
+    return res.status(400).json({
+      status: 'error',
+      code: 'INVALID_JSON',
+      message: 'Malformed JSON payload in request body',
+    });
+  }
+
+  // 2. Zod Validation Error
   if (err instanceof ZodError) {
     console.error(`${YELLOW}║ [ZOD VALIDATION FAILED]${RESET}`);
     err.errors.forEach((e, idx) => {

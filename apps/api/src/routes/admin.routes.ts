@@ -25,6 +25,7 @@ import { FileSecurityService, VALID_FOLDERS } from '../services/file-security.se
 import { ScanState, FileFolder, FileVisibility } from '@prisma/client';
 import crypto from 'crypto';
 import { z } from 'zod';
+import { invalidateCachePattern } from '../utils/cache';
 
 const router = Router();
 
@@ -1175,6 +1176,8 @@ router.post('/reviews', async (req: AuthenticatedRequest, res: Response, next: N
       req,
     });
 
+    invalidateCachePattern('cache:reviews:*');
+
     res.status(201).json({ status: 'success', data: { review } });
   } catch (error) {
     next(error);
@@ -1221,6 +1224,8 @@ router.patch('/reviews/:id', async (req: AuthenticatedRequest, res: Response, ne
       req,
     });
 
+    invalidateCachePattern('cache:reviews:*');
+
     res.status(200).json({ status: 'success', data: { review } });
   } catch (error) {
     next(error);
@@ -1231,6 +1236,9 @@ router.delete('/reviews/:id', async (req: AuthenticatedRequest, res: Response, n
   try {
     const { id } = req.params;
     await prisma.review.delete({ where: { id } });
+
+    invalidateCachePattern('cache:reviews:*');
+
     res.status(200).json({ status: 'success', message: 'Review deleted successfully' });
   } catch (error) {
     next(error);
@@ -1280,6 +1288,8 @@ router.post('/faqs', async (req: AuthenticatedRequest, res: Response, next: Next
       req,
     });
 
+    invalidateCachePattern('cache:faqs:*');
+
     res.status(201).json({ status: 'success', data: { faq } });
   } catch (error) {
     next(error);
@@ -1315,6 +1325,8 @@ router.patch('/faqs/:id', async (req: AuthenticatedRequest, res: Response, next:
       req,
     });
 
+    invalidateCachePattern('cache:faqs:*');
+
     res.status(200).json({ status: 'success', data: { faq } });
   } catch (error) {
     next(error);
@@ -1334,6 +1346,8 @@ router.delete('/faqs/:id', async (req: AuthenticatedRequest, res: Response, next
       changes: { deleted: true },
       req,
     });
+
+    invalidateCachePattern('cache:faqs:*');
 
     res.status(200).json({ status: 'success', message: 'FAQ deleted successfully' });
   } catch (error) {

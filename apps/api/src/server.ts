@@ -79,25 +79,19 @@ export function createServer() {
   const mountRoutes = (prefix: string) => {
     app.use(`${prefix}`, healthRoutes);
     app.use(`${prefix}`, leadsRoutes);
-    app.use(`${prefix}/admin`, leadsRoutes);
     app.use(`${prefix}/auth`, authRoutes);
     app.use(`${prefix}/content`, contentRoutes);
-    app.use(`${prefix}`, contentRoutes);
+    app.use(`${prefix}`, contentRoutes); // Public /faqs, /reviews, /case-studies shortcuts
     app.use(`${prefix}/portal`, portalRoutes);
     app.use(`${prefix}/admin`, adminRoutes);
     app.use(`${prefix}/admin/ai`, aiRoutes);
-    app.use(`${prefix}/admin`, aiRoutes);
     app.use(`${prefix}/admin/email`, emailRoutes);
+    app.use(`${prefix}/admin/geo`, geoRoutes);
     app.use(`${prefix}/invoices`, invoicesRoutes);
     app.use(`${prefix}/messaging`, messagingRoutes);
     app.use(`${prefix}/monitoring`, monitoringRoutes);
-    app.use(`${prefix}/admin/monitoring`, monitoringRoutes);
     app.use(`${prefix}/seo`, seoRoutes);
-    app.use(`${prefix}/admin/seo`, seoRoutes);
     app.use(`${prefix}/analytics`, analyticsRoutes);
-    app.use(`${prefix}/admin/analytics`, analyticsRoutes);
-    app.use(`${prefix}/admin/geo`, geoRoutes);
-    app.use(`${prefix}/geo`, geoRoutes);
     app.use(`${prefix}/files`, fileRoutes);
   };
 

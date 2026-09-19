@@ -1,35 +1,50 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Silk from '@/components/backgrounds/Silk';
 
 export function PublicLoader() {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [fading, setFading] = useState(false);
 
   useEffect(() => {
-    // Only show for initial load on public routes
-    const timer = setTimeout(() => {
-      setFading(true);
-      const removeTimer = setTimeout(() => {
-        setLoading(false);
-      }, 400);
-      return () => clearTimeout(removeTimer);
-    }, 600);
+    // Only show on the very first visit in a session to avoid blocking internal navigations
+    try {
+      if (sessionStorage.getItem('cyberstyle_brand_seen')) {
+        return;
+      }
+    } catch {}
 
-    return () => clearTimeout(timer);
+    // First visit in session: show brief branded entry animation
+    setLoading(true);
+
+    let removeTimer: NodeJS.Timeout | null = null;
+    const fadeTimer = setTimeout(() => {
+      setFading(true);
+      removeTimer = setTimeout(() => {
+        setLoading(false);
+        try {
+          sessionStorage.setItem('cyberstyle_brand_seen', 'true');
+        } catch {}
+      }, 350);
+    }, 200);
+
+    return () => {
+      clearTimeout(fadeTimer);
+      if (removeTimer) clearTimeout(removeTimer);
+    };
   }, []);
 
   if (!loading) return null;
 
   return (
     <div
-      className={`fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center transition-opacity duration-400 select-none ${
+      className={`fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center transition-opacity duration-350 select-none ${
         fading ? 'opacity-0 pointer-events-none' : 'opacity-100'
       }`}
       aria-hidden="true"
     >
-      <Silk className="opacity-30" speed={0.4} />
+      {/* Lightweight Ambient Brand Glow (Pure CSS - zero WebGL GPU overhead) */}
+      <div className="absolute inset-0 bg-radial-at-c from-[#00F0FF]/15 via-[#05070A]/85 to-[#000000] pointer-events-none" />
 
       <div className="relative z-10 flex flex-col items-center space-y-6">
         {/* Animated Electric Progress Ring */}

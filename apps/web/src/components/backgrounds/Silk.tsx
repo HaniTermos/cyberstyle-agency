@@ -122,12 +122,18 @@ export function Silk({
 
     let animationFrameId: number;
     let startTime = performance.now();
+    let lastRenderTime = 0;
+    const TARGET_FPS = 36;
+    const FRAME_INTERVAL = 1000 / TARGET_FPS;
+    let isIntersecting = true;
+    let isTabVisible = !document.hidden;
 
     function resize() {
       if (!canvas) return;
-      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-      const width = canvas.clientWidth * dpr;
-      const height = canvas.clientHeight * dpr;
+      // Clamp DPR to max 1.25 to prevent GPU stalls on 4K / Retina screens
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.25);
+      const width = Math.floor(canvas.clientWidth * dpr);
+      const height = Math.floor(canvas.clientHeight * dpr);
       if (canvas.width !== width || canvas.height !== height) {
         canvas.width = width;
         canvas.height = height;
@@ -136,6 +142,21 @@ export function Silk({
     }
 
     function render(now: number) {
+      // Pause completely if canvas is scrolled offscreen or browser tab is hidden
+      if (!isIntersecting || !isTabVisible) {
+        animationFrameId = 0;
+        return;
+      }
+
+      // Throttle rendering to TARGET_FPS to preserve GPU and CPU budget
+      const elapsedSinceLast = now - lastRenderTime;
+      if (elapsedSinceLast < FRAME_INTERVAL) {
+        animationFrameId = requestAnimationFrame(render);
+        return;
+      }
+
+      lastRenderTime = now - (elapsedSinceLast % FRAME_INTERVAL);
+
       if (!gl || !program) return;
       resize();
 
@@ -152,10 +173,69 @@ export function Silk({
       animationFrameId = requestAnimationFrame(render);
     }
 
-    animationFrameId = requestAnimationFrame(render);
+    function startLoop() {
+      if (!animationFrameId && isIntersecting && isTabVisible) {
+        animationFrameId = requestAnimationFrame(render);
+      }
+    }
+
+    function stopLoop() {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = 0;
+      }
+    }
+
+    // 1. IntersectionObserver: pause rendering when scrolled out of viewport
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        isIntersecting = entry?.isIntersecting ?? false;
+        if (isIntersecting) {
+          startLoop();
+        } else {
+          stopLoop();
+        }
+      },
+      { threshold: 0.05 }
+    );
+    observer.observe(canvas);
+
+    // 2. Page Visibility API & bfcache lifecycle: pause when tab hidden or entering bfcache
+    const handleVisibilityChange = () => {
+      isTabVisible = !document.hidden;
+      if (isTabVisible && isIntersecting) {
+        startLoop();
+      } else {
+        stopLoop();
+      }
+    };
+
+    const handlePageHide = () => {
+      isTabVisible = false;
+      stopLoop();
+    };
+
+    const handlePageShow = (e: PageTransitionEvent) => {
+      isTabVisible = !document.hidden;
+      if (isTabVisible && isIntersecting) {
+        startLoop();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('pagehide', handlePageHide);
+    window.addEventListener('pageshow', handlePageShow);
+
+    // Start initial animation
+    startLoop();
 
     return () => {
-      cancelAnimationFrame(animationFrameId);
+      stopLoop();
+      observer.disconnect();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('pagehide', handlePageHide);
+      window.removeEventListener('pageshow', handlePageShow);
       gl.deleteProgram(program);
       gl.deleteShader(vs);
       gl.deleteShader(fs);
