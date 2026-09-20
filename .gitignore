@@ -147,6 +147,8 @@ vite.config.ts.timestamp-*
 backups/
 **/backups/**
 *.sql
+!prisma/migrations/**/*.sql
+!prisma/migrations/**
 *.sql.gz
 *.sha256
 

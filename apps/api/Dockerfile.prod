@@ -3,13 +3,14 @@
 # Optimized for minimal image size, zero devDependencies, and non-root security.
 # ==============================================================================
 
-ARG BUILD_IMAGE=agencyproject-api:latest
-
 # --- Stage 1: TypeScript Production Build & Dependency Pruning ---
-FROM ${BUILD_IMAGE} AS builder
+FROM node:22-alpine AS builder
+RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 
 COPY . .
+
+RUN npm ci --legacy-peer-deps
 RUN npx tsc packages/config/src/schemas.ts
 RUN npx prisma generate
 RUN npm run build --workspace=@cyberstyle/api

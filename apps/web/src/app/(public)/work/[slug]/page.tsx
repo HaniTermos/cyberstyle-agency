@@ -114,6 +114,7 @@ const aliasMap: Record<string, string> = {
   'nexus-logistics-ai-routing': 'logistics-lead-routing-concept',
   'apex-capital-web-experience': 'professional-services-web-concept',
   'lumina-saas-client-portal': 'operations-portal-concept',
+  'hani': 'professional-services-web-concept',
 };
 
 async function getConcept(slug: string): Promise<ConceptDetail | null> {
