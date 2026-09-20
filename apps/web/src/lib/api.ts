@@ -7,7 +7,16 @@ export function getApiBaseUrl(): string {
     // Server-side (inside Docker or SSR server): route to internal API container
     return process.env.INTERNAL_API_URL || 'http://api:4000/api';
   }
-  // Client-side (in browser): route to public API URL on host
+  // Client-side (in browser):
+  // 1. If explicitly configured with a non-localhost URL, use it
+  if (process.env.NEXT_PUBLIC_API_URL && !process.env.NEXT_PUBLIC_API_URL.includes('localhost:4000')) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+  // 2. If running on a remote host/domain (VPS, production, mobile), route relative to current origin /api
+  if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    return `${window.location.origin}/api`;
+  }
+  // 3. Fallback for local development
   return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 }
 

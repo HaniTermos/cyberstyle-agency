@@ -17,6 +17,14 @@ const nextConfig: NextConfig = {
   experimental: {
     // Optimizations for WebGL & Silk component rendering
   },
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: `${process.env.INTERNAL_API_URL || 'http://api:4000/api'}/:path*`,
+      },
+    ];
+  },
   async headers() {
     return [
       {

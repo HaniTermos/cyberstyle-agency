@@ -4,6 +4,19 @@ import { prisma } from './config/db';
 import { getRedisClient } from './config/redis';
 import { emailQueue } from './queues/email.queue';
 
+import { execSync } from 'child_process';
+
+// Auto-deploy database migrations on startup in production if enabled
+if (process.env.AUTO_MIGRATE !== 'false') {
+  try {
+    console.log('🔄 Checking and deploying database migrations on startup...');
+    execSync('npx prisma migrate deploy', { stdio: 'inherit' });
+    console.log('✅ Database schema migrations up-to-date.');
+  } catch (err: any) {
+    console.warn('⚠️ [Migration] Startup deployment notice:', err.message || err);
+  }
+}
+
 const app = createServer();
 const port = env.PORT || 4000;
 

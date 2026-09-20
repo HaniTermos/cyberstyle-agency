@@ -98,7 +98,7 @@ export function Footer() {
             </h4>
             <ul className="space-y-2.5 text-neutral-300">
               <li>
-                <Link href="/portal" className="hover:text-[#00F0FF] transition-colors flex items-center gap-1.5">
+                <Link href="/portal/login" className="hover:text-[#00F0FF] transition-colors flex items-center gap-1.5">
                   <ShieldCheck className="w-3.5 h-3.5 text-[#00F0FF]" />
                   <span>Client Operations Portal</span>
                 </Link>
