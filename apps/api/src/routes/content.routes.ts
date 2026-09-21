@@ -5,7 +5,6 @@ import { logAudit } from '../utils/auditLogger';
 import { ReviewStatus, PostStatus, UserRole } from '@prisma/client';
 import { z } from 'zod';
 import { getCache, setCache, invalidateCachePattern, CACHE_TTL } from '../utils/cache';
-import { FALLBACK_CASE_STUDIES, FALLBACK_REVIEWS, FALLBACK_FAQS } from '../utils/fallbackContent';
 
 const router = Router();
 
@@ -29,6 +28,7 @@ function slugify(text: string): string {
  * Ensures initial default case studies and blog articles exist if database is fresh.
  */
 async function seedDefaultContentIfEmpty() {
+  return;
   try {
     const csCount = await prisma.caseStudy.count();
     if (csCount === 0) {
@@ -221,7 +221,7 @@ async function seedDefaultContentIfEmpty() {
 }
 
 // Kick off background check without blocking
-seedDefaultContentIfEmpty();
+// seedDefaultContentIfEmpty();
 
 // ==============================================================================
 // 1. PUBLIC CASE STUDIES

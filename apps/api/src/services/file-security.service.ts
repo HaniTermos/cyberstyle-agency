@@ -2,6 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import crypto from 'crypto';
 import { prisma } from '../config/db';
+import { env } from '../config/env';
 import { ScanState, FileFolder, FileVisibility, UserRole } from '@prisma/client';
 import { logAudit } from '../utils/auditLogger';
 
@@ -69,7 +70,7 @@ export class FileSecurityService {
   private static quarantineDir = path.resolve(process.cwd(), 'uploads', 'quarantine');
   private static cleanDir = path.resolve(process.cwd(), 'uploads', 'clean');
   private static rejectedDir = path.resolve(process.cwd(), 'uploads', 'rejected');
-  private static secretKey = process.env.SESSION_SECRET || 'cyberstyle-file-security-hmac-key-default-2026';
+  private static secretKey = env.SESSION_SECRET;
 
   /**
    * Ensure directories exist on startup

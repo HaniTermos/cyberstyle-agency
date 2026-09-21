@@ -36,7 +36,7 @@ export const AGENCY_EMAIL_TEMPLATES = [
 <p>Would you be open to reviewing a 3-minute video breakdown of how we recently helped an enterprise client achieve <strong>+340% qualified inquiry growth</strong>?</p>
 <p>Best regards,<br>
 <strong>CYBERSTYLE Engineering Command</strong><br>
-<a href="https://cyberstyle.agency">cyberstyle.agency</a></p>`,
+<a href="https://cyberstyle.net">cyberstyle.net</a></p>`,
   },
   {
     id: 'follow-up-day3',
@@ -120,7 +120,7 @@ export class EmailService {
 
     const gmailUser = process.env.GMAIL_USER || process.env.SMTP_USER;
     const gmailPass = (process.env.GMAIL_APP_PASSWORD || process.env.SMTP_PASS)?.replace(/\s+/g, '');
-    const smtpHost = process.env.SMTP_HOST || 'smtp.gmail.com';
+    const smtpHost = process.env.SMTP_HOST || 'smtp.hostinger.com';
     const smtpPort = Number(process.env.SMTP_PORT || 465);
 
     if (gmailUser && gmailPass) {
@@ -133,19 +133,13 @@ export class EmailService {
           pass: gmailPass,
         },
       });
-      console.log(`📧 [EmailService] Using live SMTP host [${smtpHost}] for [${gmailUser}]`);
+      console.log(`📧 [EmailService] Using live SMTP host [${smtpHost}:${smtpPort}] for [${gmailUser}]`);
     } else {
-      // Logged Dev Transporter
+      // Non-transmitting test/local transporter that logs message structure safely
       this.transporter = nodemailer.createTransport({
-        host: 'smtp.ethereal.email',
-        port: 587,
-        secure: false,
-        auth: {
-          user: 'dev.command@cyberstyle.net',
-          pass: 'mock_password_cyberstyle',
-        },
+        jsonTransport: true,
       });
-      console.log(`ℹ️ [EmailService] Using logged development transporter (Simulated Live Mode)`);
+      console.log(`ℹ️ [EmailService] SMTP credentials not configured; operating in safe memory/test transport mode`);
     }
 
     return this.transporter;
@@ -514,8 +508,6 @@ export class EmailService {
    * List all threads
    */
   public static async listThreads(status?: string) {
-    await this.seedDefaultThreadsIfEmpty();
-
     const where: any = {};
     if (status && status !== 'ALL') {
       where.status = status;
